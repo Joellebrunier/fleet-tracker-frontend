@@ -30,19 +30,19 @@ export default function Sidebar() {
       label: 'Dashboard',
       icon: Home,
       path: '/',
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.VIEWER, UserRole.SUPER_ADMIN],
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
     },
     {
       label: 'Map',
       icon: Map,
       path: '/map',
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DRIVER, UserRole.VIEWER, UserRole.SUPER_ADMIN],
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DRIVER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
     },
     {
       label: 'Vehicles',
       icon: Truck,
       path: '/vehicles',
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.VIEWER, UserRole.SUPER_ADMIN],
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
     },
     {
       label: 'Geofences',
@@ -54,7 +54,7 @@ export default function Sidebar() {
       label: 'Alerts',
       icon: AlertCircle,
       path: '/alerts',
-      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.VIEWER, UserRole.SUPER_ADMIN],
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
     },
     {
       label: 'Reports',
