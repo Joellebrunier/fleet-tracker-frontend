@@ -8,7 +8,7 @@ import { formatSpeed, formatDistance, formatDateTime } from '@/lib/utils'
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data: vehicle, isLoading: vehicleLoading } = useVehicle(id || '')
-  const { data: stats, isLoading: statsLoading } = useVehicleStats(id || '')
+  const { data: stats } = useVehicleStats(id || '') as { data: any }
   const { data: history, isLoading: historyLoading } = useVehicleHistory(id || '')
 
   if (vehicleLoading) {
