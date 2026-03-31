@@ -41,9 +41,15 @@ class ApiClient {
       (error) => Promise.reject(error)
     )
 
-    // Response interceptor
+    // Response interceptor — unwrap backend {success, data} envelope
     this.instance.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        // If the backend wraps responses in {success, data}, unwrap them
+        if (response.data && typeof response.data === 'object' && 'success' in response.data && 'data' in response.data) {
+          response.data = response.data.data
+        }
+        return response
+      },
       async (error: AxiosError) => {
         const originalRequest = error.config as any
 
