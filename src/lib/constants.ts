@@ -1,48 +1,51 @@
+// Helper to build org-scoped routes
+const org = (orgId: string) => `/api/organizations/${orgId}`;
+
 // API Routes
 export const API_ROUTES = {
-  // Auth
+  // Auth (no org scope)
   AUTH_LOGIN: '/api/auth/login',
   AUTH_REGISTER: '/api/auth/register',
   AUTH_REFRESH: '/api/auth/refresh',
   AUTH_LOGOUT: '/api/auth/logout',
   AUTH_ME: '/api/auth/me',
 
-  // Vehicles
-  VEHICLES: '/api/vehicles',
-  VEHICLE_DETAIL: (id: string) => `/api/vehicles/${id}`,
-  VEHICLE_POSITION: (id: string) => `/api/vehicles/${id}/position`,
-  VEHICLE_HISTORY: (id: string) => `/api/vehicles/${id}/history`,
-  VEHICLE_STATS: (id: string) => `/api/vehicles/${id}/stats`,
+  // Organizations
+  ORGANIZATIONS: '/api/organizations',
+  ORGANIZATION: (orgId: string) => `/api/organizations/${orgId}`,
 
-  // Vehicle Groups
-  VEHICLE_GROUPS: '/api/vehicle-groups',
-  VEHICLE_GROUP_DETAIL: (id: string) => `/api/vehicle-groups/${id}`,
+  // Vehicles (org-scoped)
+  VEHICLES: (orgId: string) => `${org(orgId)}/vehicles`,
+  VEHICLE_DETAIL: (orgId: string, id: string) => `${org(orgId)}/vehicles/${id}`,
+  VEHICLE_POSITION: (orgId: string, id: string) => `${org(orgId)}/vehicles/${id}/position`,
 
-  // Geofences
-  GEOFENCES: '/api/geofences',
-  GEOFENCE_DETAIL: (id: string) => `/api/geofences/${id}`,
-  GEOFENCE_VIOLATIONS: (id: string) => `/api/geofences/${id}/violations`,
+  // Geofences (org-scoped)
+  GEOFENCES: (orgId: string) => `${org(orgId)}/geofences`,
+  GEOFENCE_DETAIL: (orgId: string, id: string) => `${org(orgId)}/geofences/${id}`,
+  GEOFENCE_ASSIGN_VEHICLE: (orgId: string, id: string, vehicleId: string) =>
+    `${org(orgId)}/geofences/${id}/assign-vehicle/${vehicleId}`,
 
-  // Alerts
-  ALERTS: '/api/alerts',
-  ALERT_DETAIL: (id: string) => `/api/alerts/${id}`,
-  ALERT_ACKNOWLEDGE: (id: string) => `/api/alerts/${id}/acknowledge`,
-  ALERT_RULES: '/api/alert-rules',
-  ALERT_RULE_DETAIL: (id: string) => `/api/alert-rules/${id}`,
+  // Alerts (org-scoped)
+  ALERTS: (orgId: string) => `${org(orgId)}/alerts`,
+  ALERT_ACKNOWLEDGE: (orgId: string, id: string) => `${org(orgId)}/alerts/${id}/acknowledge`,
+  ALERT_ACKNOWLEDGE_MULTIPLE: (orgId: string) => `${org(orgId)}/alerts/acknowledge-multiple`,
+  ALERT_RULES: (orgId: string) => `${org(orgId)}/alerts/rules`,
+  ALERT_RULE_DETAIL: (orgId: string, ruleId: string) => `${org(orgId)}/alerts/rules/${ruleId}`,
 
-  // Reports
-  REPORTS: '/api/reports',
-  REPORT_GENERATE: '/api/reports/generate',
-  REPORT_EXPORT: (id: string) => `/api/reports/${id}/export`,
+  // GPS History (org-scoped)
+  GPS_HISTORY: (orgId: string) => `${org(orgId)}/gps-history`,
+  GPS_PLAYBACK: (orgId: string, vehicleId: string) => `${org(orgId)}/gps-history/${vehicleId}/playback`,
 
-  // Users
-  USERS: '/api/users',
-  USER_DETAIL: (id: string) => `/api/users/${id}`,
-  USER_PROFILE: '/api/users/profile',
+  // Reports (org-scoped)
+  REPORTS_GENERATE: (orgId: string) => `${org(orgId)}/reports/generate`,
 
-  // Organization
-  ORGANIZATION: '/api/organization',
-  ORGANIZATION_SETTINGS: '/api/organization/settings',
+  // Users (org-scoped)
+  USERS: (orgId: string) => `${org(orgId)}/users`,
+  USER_DETAIL: (orgId: string, id: string) => `${org(orgId)}/users/${id}`,
+
+  // Super Admin
+  SUPER_ADMIN_HEALTH: '/api/super-admin/health',
+  SUPER_ADMIN_STATS: '/api/super-admin/stats',
 } as const;
 
 // Map defaults

@@ -3,6 +3,7 @@ import { apiClient } from '@/lib/api'
 import { Vehicle, VehicleListQuery, VehicleFormData, VehicleGroup } from '@/types/vehicle'
 import { PaginatedResponse } from '@/types/api'
 import { API_ROUTES, PAGINATION_DEFAULTS } from '@/lib/constants'
+import { useAuthStore } from '@/stores/authStore'
 
 // Query keys
 const vehicleKeys = {
@@ -19,6 +20,7 @@ const vehicleKeys = {
 
 // Get vehicles list
 export function useVehicles(filters: VehicleListQuery = {}) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const {
     page = PAGINATION_DEFAULTS.DEFAULT_PAGE,
     limit = PAGINATION_DEFAULTS.DEFAULT_PAGE_SIZE,
@@ -35,7 +37,7 @@ export function useVehicles(filters: VehicleListQuery = {}) {
       } as any)
 
       const response = await apiClient.get<PaginatedResponse<Vehicle>>(
-        `${API_ROUTES.VEHICLES}?${params}`
+        `${API_ROUTES.VEHICLES(orgId)}?${params}`
       )
       return response.data
     },
@@ -45,10 +47,11 @@ export function useVehicles(filters: VehicleListQuery = {}) {
 
 // Get single vehicle
 export function useVehicle(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: vehicleKeys.detail(id),
     queryFn: async () => {
-      const response = await apiClient.get<Vehicle>(API_ROUTES.VEHICLE_DETAIL(id))
+      const response = await apiClient.get<Vehicle>(API_ROUTES.VEHICLE_DETAIL(orgId, id))
       return response.data
     },
     enabled: !!id,
@@ -58,10 +61,11 @@ export function useVehicle(id: string) {
 
 // Get vehicle position
 export function useVehiclePosition(id: string, enabled = true) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: vehicleKeys.position(id),
     queryFn: async () => {
-      const response = await apiClient.get(API_ROUTES.VEHICLE_POSITION(id))
+      const response = await apiClient.get(API_ROUTES.VEHICLE_POSITION(orgId, id))
       return response.data
     },
     enabled: !!id && enabled,
@@ -71,15 +75,17 @@ export function useVehiclePosition(id: string, enabled = true) {
 
 // Get vehicle history
 export function useVehicleHistory(id: string, dateFrom?: Date, dateTo?: Date) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: vehicleKeys.history(id),
     queryFn: async () => {
       const params = new URLSearchParams()
+      params.append('vehicleId', id)
       if (dateFrom) params.append('dateFrom', dateFrom.toISOString())
       if (dateTo) params.append('dateTo', dateTo.toISOString())
 
       const response = await apiClient.get(
-        `${API_ROUTES.VEHICLE_HISTORY(id)}?${params}`
+        `${API_ROUTES.GPS_HISTORY(orgId)}?${params}`
       )
       return response.data
     },
@@ -88,12 +94,14 @@ export function useVehicleHistory(id: string, dateFrom?: Date, dateTo?: Date) {
 }
 
 // Get vehicle stats
+// NOTE: VEHICLE_STATS route has been removed from the backend
+// This hook is deprecated - stats are now included in vehicle detail or GPS_HISTORY endpoints
 export function useVehicleStats(id: string) {
   return useQuery({
     queryKey: vehicleKeys.stats(id),
     queryFn: async () => {
-      const response = await apiClient.get(API_ROUTES.VEHICLE_STATS(id))
-      return response.data
+      // Placeholder - returns null until endpoint is restored or replaced
+      return null
     },
     enabled: !!id,
     staleTime: 1000 * 60, // 1 minute
@@ -101,12 +109,14 @@ export function useVehicleStats(id: string) {
 }
 
 // Get vehicle groups
+// NOTE: VEHICLE_GROUPS route has been removed from the backend
+// This functionality has been deprecated
 export function useVehicleGroups() {
   return useQuery({
     queryKey: vehicleKeys.groups,
     queryFn: async () => {
-      const response = await apiClient.get<VehicleGroup[]>(API_ROUTES.VEHICLE_GROUPS)
-      return response.data
+      // Placeholder - returns empty array until endpoint is restored
+      return []
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
@@ -114,11 +124,12 @@ export function useVehicleGroups() {
 
 // Create vehicle
 export function useCreateVehicle() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: VehicleFormData) => {
-      const response = await apiClient.post<Vehicle>(API_ROUTES.VEHICLES, data)
+      const response = await apiClient.post<Vehicle>(API_ROUTES.VEHICLES(orgId), data)
       return response.data
     },
     onSuccess: () => {
@@ -129,12 +140,13 @@ export function useCreateVehicle() {
 
 // Update vehicle
 export function useUpdateVehicle(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: Partial<VehicleFormData>) => {
       const response = await apiClient.put<Vehicle>(
-        API_ROUTES.VEHICLE_DETAIL(id),
+        API_ROUTES.VEHICLE_DETAIL(orgId, id),
         data
       )
       return response.data
@@ -148,11 +160,12 @@ export function useUpdateVehicle(id: string) {
 
 // Delete vehicle
 export function useDeleteVehicle(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
-      await apiClient.delete(API_ROUTES.VEHICLE_DETAIL(id))
+      await apiClient.delete(API_ROUTES.VEHICLE_DETAIL(orgId, id))
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
@@ -162,6 +175,7 @@ export function useDeleteVehicle(id: string) {
 
 // Bulk operations
 export function useBulkUpdateVehicles() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -169,7 +183,7 @@ export function useBulkUpdateVehicles() {
       vehicleIds: string[]
       updates: Partial<VehicleFormData>
     }) => {
-      const response = await apiClient.post('/api/vehicles/bulk-update', data)
+      const response = await apiClient.post(`${API_ROUTES.VEHICLES(orgId)}/bulk-update`, data)
       return response.data
     },
     onSuccess: () => {

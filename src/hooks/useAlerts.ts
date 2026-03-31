@@ -3,6 +3,7 @@ import { apiClient } from '@/lib/api'
 import { Alert, AlertListQuery, AlertRule, AlertStats } from '@/types/alert'
 import { PaginatedResponse } from '@/types/api'
 import { API_ROUTES, PAGINATION_DEFAULTS } from '@/lib/constants'
+import { useAuthStore } from '@/stores/authStore'
 
 const alertKeys = {
   all: ['alerts'] as const,
@@ -16,6 +17,7 @@ const alertKeys = {
 
 // Get alerts list
 export function useAlerts(filters: AlertListQuery = {}) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const {
     page = PAGINATION_DEFAULTS.DEFAULT_PAGE,
     limit = PAGINATION_DEFAULTS.DEFAULT_PAGE_SIZE,
@@ -32,7 +34,7 @@ export function useAlerts(filters: AlertListQuery = {}) {
       } as any)
 
       const response = await apiClient.get<PaginatedResponse<Alert>>(
-        `${API_ROUTES.ALERTS}?${params}`
+        `${API_ROUTES.ALERTS(orgId)}?${params}`
       )
       return response.data
     },
@@ -41,12 +43,18 @@ export function useAlerts(filters: AlertListQuery = {}) {
 }
 
 // Get single alert
+// NOTE: ALERT_DETAIL route has been removed - use ALERTS with filter instead
 export function useAlert(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: alertKeys.detail(id),
     queryFn: async () => {
-      const response = await apiClient.get<Alert>(API_ROUTES.ALERT_DETAIL(id))
-      return response.data
+      const params = new URLSearchParams({ alertId: id })
+      const response = await apiClient.get<PaginatedResponse<Alert>>(
+        `${API_ROUTES.ALERTS(orgId)}?${params}`
+      )
+      // Return first alert from results, or create empty alert object
+      return response.data?.data?.[0] || ({} as Alert)
     },
     enabled: !!id,
   })
@@ -54,10 +62,11 @@ export function useAlert(id: string) {
 
 // Get alert statistics
 export function useAlertStats() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: alertKeys.stats,
     queryFn: async () => {
-      const response = await apiClient.get<AlertStats>('/api/alerts/stats')
+      const response = await apiClient.get<AlertStats>(`${API_ROUTES.ALERTS(orgId)}/stats`)
       return response.data
     },
     staleTime: 1000 * 30, // 30 seconds
@@ -66,10 +75,11 @@ export function useAlertStats() {
 
 // Get alert rules
 export function useAlertRules() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: alertKeys.rules,
     queryFn: async () => {
-      const response = await apiClient.get<AlertRule[]>(API_ROUTES.ALERT_RULES)
+      const response = await apiClient.get<AlertRule[]>(API_ROUTES.ALERT_RULES(orgId))
       return response.data
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -78,12 +88,13 @@ export function useAlertRules() {
 
 // Acknowledge alert
 export function useAcknowledgeAlert(alertId: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
       const response = await apiClient.post<Alert>(
-        API_ROUTES.ALERT_ACKNOWLEDGE(alertId),
+        API_ROUTES.ALERT_ACKNOWLEDGE(orgId, alertId),
         {}
       )
       return response.data
@@ -98,11 +109,12 @@ export function useAcknowledgeAlert(alertId: string) {
 
 // Bulk acknowledge alerts
 export function useBulkAcknowledgeAlerts() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (alertIds: string[]) => {
-      const response = await apiClient.post('/api/alerts/acknowledge-bulk', {
+      const response = await apiClient.post(API_ROUTES.ALERT_ACKNOWLEDGE_MULTIPLE(orgId), {
         alertIds,
       })
       return response.data
@@ -116,11 +128,12 @@ export function useBulkAcknowledgeAlerts() {
 
 // Create alert rule
 export function useCreateAlertRule() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: Partial<AlertRule>) => {
-      const response = await apiClient.post<AlertRule>(API_ROUTES.ALERT_RULES, data)
+      const response = await apiClient.post<AlertRule>(API_ROUTES.ALERT_RULES(orgId), data)
       return response.data
     },
     onSuccess: () => {
@@ -131,12 +144,13 @@ export function useCreateAlertRule() {
 
 // Update alert rule
 export function useUpdateAlertRule(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: Partial<AlertRule>) => {
       const response = await apiClient.put<AlertRule>(
-        API_ROUTES.ALERT_RULE_DETAIL(id),
+        API_ROUTES.ALERT_RULE_DETAIL(orgId, id),
         data
       )
       return response.data
@@ -149,11 +163,12 @@ export function useUpdateAlertRule(id: string) {
 
 // Delete alert rule
 export function useDeleteAlertRule(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
-      await apiClient.delete(API_ROUTES.ALERT_RULE_DETAIL(id))
+      await apiClient.delete(API_ROUTES.ALERT_RULE_DETAIL(orgId, id))
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: alertKeys.rules })

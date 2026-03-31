@@ -3,6 +3,7 @@ import { apiClient } from '@/lib/api'
 import { Geofence, GeofenceFormData, GeofenceViolation, GeofenceStats } from '@/types/geofence'
 import { PaginatedResponse } from '@/types/api'
 import { API_ROUTES, PAGINATION_DEFAULTS } from '@/lib/constants'
+import { useAuthStore } from '@/stores/authStore'
 
 const geofenceKeys = {
   all: ['geofences'] as const,
@@ -16,6 +17,7 @@ const geofenceKeys = {
 
 // Get geofences list
 export function useGeofences(page = 1, limit = PAGINATION_DEFAULTS.DEFAULT_PAGE_SIZE) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: geofenceKeys.list(page, limit),
     queryFn: async () => {
@@ -24,7 +26,7 @@ export function useGeofences(page = 1, limit = PAGINATION_DEFAULTS.DEFAULT_PAGE_
         limit: limit.toString(),
       })
       const response = await apiClient.get<PaginatedResponse<Geofence>>(
-        `${API_ROUTES.GEOFENCES}?${params}`
+        `${API_ROUTES.GEOFENCES(orgId)}?${params}`
       )
       return response.data
     },
@@ -34,10 +36,11 @@ export function useGeofences(page = 1, limit = PAGINATION_DEFAULTS.DEFAULT_PAGE_
 
 // Get single geofence
 export function useGeofence(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: geofenceKeys.detail(id),
     queryFn: async () => {
-      const response = await apiClient.get<Geofence>(API_ROUTES.GEOFENCE_DETAIL(id))
+      const response = await apiClient.get<Geofence>(API_ROUTES.GEOFENCE_DETAIL(orgId, id))
       return response.data
     },
     enabled: !!id,
@@ -45,14 +48,14 @@ export function useGeofence(id: string) {
 }
 
 // Get geofence violations
+// NOTE: GEOFENCE_VIOLATIONS route has been removed from the backend
+// This functionality is no longer available
 export function useGeofenceViolations(id: string) {
   return useQuery({
     queryKey: geofenceKeys.violations(id),
     queryFn: async () => {
-      const response = await apiClient.get<PaginatedResponse<GeofenceViolation>>(
-        API_ROUTES.GEOFENCE_VIOLATIONS(id)
-      )
-      return response.data
+      // Placeholder - returns empty result until endpoint is restored
+      return { data: [], totalCount: 0 }
     },
     enabled: !!id,
   })
@@ -60,10 +63,11 @@ export function useGeofenceViolations(id: string) {
 
 // Get geofence statistics
 export function useGeofenceStats() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: geofenceKeys.stats,
     queryFn: async () => {
-      const response = await apiClient.get<GeofenceStats>('/api/geofences/stats')
+      const response = await apiClient.get<GeofenceStats>(`${API_ROUTES.GEOFENCES(orgId)}/stats`)
       return response.data
     },
     staleTime: 1000 * 60, // 1 minute
@@ -72,11 +76,12 @@ export function useGeofenceStats() {
 
 // Create geofence
 export function useCreateGeofence() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: GeofenceFormData) => {
-      const response = await apiClient.post<Geofence>(API_ROUTES.GEOFENCES, data)
+      const response = await apiClient.post<Geofence>(API_ROUTES.GEOFENCES(orgId), data)
       return response.data
     },
     onSuccess: () => {
@@ -88,12 +93,13 @@ export function useCreateGeofence() {
 
 // Update geofence
 export function useUpdateGeofence(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (data: Partial<GeofenceFormData>) => {
       const response = await apiClient.put<Geofence>(
-        API_ROUTES.GEOFENCE_DETAIL(id),
+        API_ROUTES.GEOFENCE_DETAIL(orgId, id),
         data
       )
       return response.data
@@ -107,11 +113,12 @@ export function useUpdateGeofence(id: string) {
 
 // Delete geofence
 export function useDeleteGeofence(id: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async () => {
-      await apiClient.delete(API_ROUTES.GEOFENCE_DETAIL(id))
+      await apiClient.delete(API_ROUTES.GEOFENCE_DETAIL(orgId, id))
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: geofenceKeys.lists() })
@@ -122,12 +129,13 @@ export function useDeleteGeofence(id: string) {
 
 // Assign vehicles to geofence
 export function useAssignVehiclesToGeofence(geofenceId: string) {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (vehicleIds: string[]) => {
       const response = await apiClient.post(
-        `${API_ROUTES.GEOFENCE_DETAIL(geofenceId)}/assign-vehicles`,
+        `${API_ROUTES.GEOFENCE_DETAIL(orgId, geofenceId)}/assign-vehicles`,
         { vehicleIds }
       )
       return response.data
