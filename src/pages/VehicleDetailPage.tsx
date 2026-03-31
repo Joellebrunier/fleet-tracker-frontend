@@ -39,7 +39,7 @@ export default function VehicleDetailPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{vehicle.name}</h1>
-          <p className="mt-2 text-gray-600">{vehicle.registrationNumber}</p>
+          <p className="mt-2 text-gray-600">{vehicle.plate}</p>
         </div>
         <Badge variant="default" className="text-base">
           {vehicle.status}
@@ -60,17 +60,17 @@ export default function VehicleDetailPage() {
                 <p className="mt-1 font-mono text-sm text-gray-900">{vehicle.vin}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Registration</p>
-                <p className="mt-1 text-sm text-gray-900">{vehicle.registrationNumber}</p>
+                <p className="text-sm font-medium text-gray-600">Plate</p>
+                <p className="mt-1 text-sm text-gray-900">{vehicle.plate}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-600">Type</p>
-                <p className="mt-1 text-sm text-gray-900 capitalize">{vehicle.type}</p>
+                <p className="mt-1 text-sm text-gray-900 capitalize">{vehicle.type || 'car'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Manufacturer</p>
+                <p className="text-sm font-medium text-gray-600">Brand</p>
                 <p className="mt-1 text-sm text-gray-900">
-                  {vehicle.manufacturer || 'Not specified'}
+                  {vehicle.brand || 'Not specified'}
                 </p>
               </div>
               <div>
@@ -93,36 +93,24 @@ export default function VehicleDetailPage() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-gray-600">Speed</p>
-              <p className="text-2xl font-bold text-gray-900">{formatSpeed(vehicle.speed)}</p>
+              <p className="text-2xl font-bold text-gray-900">{formatSpeed(vehicle.currentSpeed)}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Odometer</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatDistance(vehicle.odometer)}
+              <p className="text-sm text-gray-600">Position</p>
+              <p className="text-lg font-bold text-gray-900">
+                {vehicle.currentLat?.toFixed(5)}, {vehicle.currentLng?.toFixed(5)}
               </p>
             </div>
-            {vehicle.fuelLevel !== undefined && (
-              <div>
-                <p className="text-sm text-gray-600">Fuel Level</p>
-                <div className="mt-1 flex items-center gap-2">
-                  <div className="flex-1 rounded-full bg-gray-200 h-2">
-                    <div
-                      className="bg-green-500 h-2 rounded-full"
-                      style={{ width: `${vehicle.fuelLevel}%` }}
-                    ></div>
-                  </div>
-                  <span className="font-bold text-gray-900">{vehicle.fuelLevel}%</span>
-                </div>
-              </div>
-            )}
             <div>
-              <p className="text-sm text-gray-600">Engine Status</p>
-              <p className="mt-1 font-semibold">
-                {vehicle.engineStatus === 'running' ? (
-                  <span className="text-green-600">Running</span>
-                ) : (
-                  <span className="text-gray-600">Stopped</span>
-                )}
+              <p className="text-sm text-gray-600">IMEI</p>
+              <p className="mt-1 font-mono text-sm text-gray-900">
+                {vehicle.deviceImei || 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Last Communication</p>
+              <p className="mt-1 font-semibold text-gray-900">
+                {vehicle.lastCommunication ? formatDateTime(vehicle.lastCommunication) : 'Never'}
               </p>
             </div>
           </CardContent>

@@ -119,13 +119,13 @@ export default function DashboardPage() {
                   >
                     <div>
                       <p className="font-medium text-gray-900">{vehicle.name}</p>
-                      <p className="text-sm text-gray-500">{vehicle.registrationNumber}</p>
+                      <p className="text-sm text-gray-500">{vehicle.plate}</p>
                     </div>
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
-                        <p className="font-medium text-gray-900">{vehicle.speed.toFixed(0)} km/h</p>
+                        <p className="font-medium text-gray-900">{(vehicle.currentSpeed || 0).toFixed(0)} km/h</p>
                         <p className="text-xs text-gray-500">
-                          {vehicle.odometer.toLocaleString()} km
+                          {vehicle.currentLat?.toFixed(4)}, {vehicle.currentLng?.toFixed(4)}
                         </p>
                       </div>
                       <Badge

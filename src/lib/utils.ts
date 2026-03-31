@@ -37,15 +37,18 @@ export function formatTime(date: Date | string | number): string {
 /**
  * Get relative time (e.g., "5 minutes ago")
  */
-export function formatTimeAgo(date: Date | string | number): string {
+export function formatTimeAgo(date: Date | string | number | null | undefined): string {
+  if (!date) return 'Never'
   const dateObj = typeof date === 'string' ? new Date(date) : date instanceof Date ? date : new Date(date)
+  if (isNaN(dateObj.getTime())) return 'Unknown'
   return formatDistanceToNow(dateObj, { addSuffix: true })
 }
 
 /**
  * Format speed with unit
  */
-export function formatSpeed(speed: number, unit: string = SPEED_UNITS.KMH): string {
+export function formatSpeed(speed: number | null | undefined, unit: string = SPEED_UNITS.KMH): string {
+  if (speed == null) return `0 ${unit}`
   return `${speed.toFixed(1)} ${unit}`
 }
 

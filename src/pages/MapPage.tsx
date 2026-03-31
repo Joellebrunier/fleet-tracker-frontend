@@ -25,9 +25,9 @@ export default function MapPage() {
 
   const vehicles = vehiclesData?.data || []
   const filteredVehicles = vehicles.filter(
-    (v) =>
-      v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    (v: any) =>
+      v.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (v.plate || '').toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   // Initialize map (simplified - requires mapbox-gl setup)
@@ -123,13 +123,13 @@ export default function MapPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="font-medium text-gray-900">{vehicle.name}</p>
-                        <p className="text-xs text-gray-500">{vehicle.registrationNumber}</p>
+                        <p className="text-xs text-gray-500">{vehicle.plate}</p>
                       </div>
                       <Badge variant="secondary">{vehicle.status}</Badge>
                     </div>
                     <div className="mt-2 flex items-center justify-between text-xs text-gray-600">
-                      <span>{formatSpeed(vehicle.speed)}</span>
-                      <span>{formatTimeAgo(vehicle.lastUpdate)}</span>
+                      <span>{formatSpeed(vehicle.currentSpeed)}</span>
+                      <span>{formatTimeAgo(vehicle.lastCommunication)}</span>
                     </div>
                   </button>
                 ))}
@@ -146,19 +146,21 @@ export default function MapPage() {
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Speed:</span>
-                  <span className="font-medium">{formatSpeed(selectedVehicle.speed)}</span>
+                  <span className="font-medium">{formatSpeed(selectedVehicle.currentSpeed)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status:</span>
                   <Badge variant="default">{selectedVehicle.status}</Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Odometer:</span>
-                  <span className="font-medium">{selectedVehicle.odometer.toLocaleString()} km</span>
+                  <span className="text-gray-600">Position:</span>
+                  <span className="font-medium text-xs">
+                    {selectedVehicle.currentLat?.toFixed(4)}, {selectedVehicle.currentLng?.toFixed(4)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Last Update:</span>
-                  <span className="font-medium">{formatTimeAgo(selectedVehicle.lastUpdate)}</span>
+                  <span className="font-medium">{formatTimeAgo(selectedVehicle.lastCommunication)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3">
                   <Button variant="outline" className="w-full" size="sm">

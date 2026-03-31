@@ -26,35 +26,45 @@ export interface VehicleStats {
 
 export interface Vehicle {
   id: string
-  vin: string
-  registrationNumber: string
   name: string
-  type: 'car' | 'truck' | 'bus' | 'motorcycle' | 'van' | 'other'
-  manufacturer?: string
-  model?: string
-  year?: number
-  color?: string
+  plate: string
+  vin?: string | null
+  brand?: string | null
+  model?: string | null
+  year?: number | null
+  type?: string | null
   organizationId: string
-  groupId?: string
-  driverId?: string
+  groupId?: string | null
+  deviceImei?: string | null
   status: VehicleStatus
-  location: VehicleLocation
-  speed: number
-  lastUpdate: Date
-  odometer: number
+  currentLat?: number | null
+  currentLng?: number | null
+  currentSpeed: number
+  currentHeading?: number | null
+  lastCommunication?: string | null
+  metadata?: Record<string, any> | null
+  createdAt: string
+  updatedAt: string
+
+  // Computed/alias getters for backward compatibility
+  /** @deprecated use plate */
+  registrationNumber?: string
+  /** @deprecated use currentSpeed */
+  speed?: number
+  /** @deprecated use lastCommunication */
+  lastUpdate?: string | Date
+  odometer?: number
+  location?: VehicleLocation
   fuelLevel?: number
   batteryLevel?: number
-  temperature?: number
-  engineStatus: 'running' | 'stopped'
-  isGPSActive: boolean
-  features: {
+  engineStatus?: 'running' | 'stopped'
+  isGPSActive?: boolean
+  features?: {
     hasGPS: boolean
     hasFuelSensor: boolean
     hasTemperatureSensor: boolean
     hasCrashSensor: boolean
   }
-  createdAt: Date
-  updatedAt: Date
 }
 
 export interface VehicleGroup {

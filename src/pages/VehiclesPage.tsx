@@ -144,11 +144,11 @@ export default function VehiclesPage() {
                   >
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{vehicle.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {vehicle.registrationNumber}
+                      {vehicle.plate}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600 capitalize">{vehicle.type}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {formatSpeed(vehicle.speed)}
+                      {formatSpeed(vehicle.currentSpeed)}
                     </td>
                     <td className="px-6 py-4">
                       <Badge variant={getStatusBadgeVariant(vehicle.status)}>
@@ -156,7 +156,7 @@ export default function VehiclesPage() {
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {formatTimeAgo(vehicle.lastUpdate)}
+                      {formatTimeAgo(vehicle.lastCommunication)}
                     </td>
                   </tr>
                 ))}
@@ -172,7 +172,7 @@ export default function VehiclesPage() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold text-gray-900">{vehicle.name}</h3>
-                    <p className="text-sm text-gray-500">{vehicle.registrationNumber}</p>
+                    <p className="text-sm text-gray-500">{vehicle.plate}</p>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
@@ -181,11 +181,13 @@ export default function VehiclesPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Speed:</span>
-                      <span className="font-medium">{formatSpeed(vehicle.speed)}</span>
+                      <span className="font-medium">{formatSpeed(vehicle.currentSpeed)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Odometer:</span>
-                      <span className="font-medium">{vehicle.odometer.toLocaleString()} km</span>
+                      <span className="text-gray-600">Position:</span>
+                      <span className="font-medium text-xs">
+                        {vehicle.currentLat?.toFixed(4)}, {vehicle.currentLng?.toFixed(4)}
+                      </span>
                     </div>
                   </div>
                   <div className="border-t border-gray-200 pt-4">
@@ -194,7 +196,7 @@ export default function VehiclesPage() {
                         {vehicle.status}
                       </Badge>
                       <span className="text-xs text-gray-500">
-                        {formatTimeAgo(vehicle.lastUpdate)}
+                        {formatTimeAgo(vehicle.lastCommunication)}
                       </span>
                     </div>
                   </div>
