@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useVehicles } from '@/hooks/useVehicles'
+import { useAlerts } from '@/hooks/useAlerts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import {
   Truck,
   Activity,
@@ -15,12 +17,17 @@ import {
   MapPin,
   Gauge,
   ChevronRight,
+  AlertCircle,
+  FileText,
+  Zap,
+  Plus,
 } from 'lucide-react'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { data: vehiclesData, isLoading } = useVehicles({ limit: 500 })
+  const { data: alertsData } = useAlerts({ limit: 5, status: 'unacknowledged' })
 
   const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData])
 
@@ -99,6 +106,18 @@ export default function DashboardPage() {
     Ubiwan: 'bg-orange-500',
     Autre: 'bg-gray-400',
   }
+
+  // Generate mock hourly fleet activity data
+  const hourlyData = useMemo(() => {
+    return Array.from({ length: 24 }, (_, i) => ({
+      hour: `${i}:00`,
+      moving: Math.floor(Math.random() * stats.moving * 0.3 + stats.moving * 0.5),
+      stopped: Math.floor(Math.random() * stats.stopped * 0.3 + stats.stopped * 0.5),
+    }))
+  }, [stats.moving, stats.stopped])
+
+  // Alerts data
+  const alertsList = useMemo(() => alertsData?.data || [], [alertsData])
 
   if (isLoading) {
     return (
@@ -186,6 +205,161 @@ export default function DashboardPage() {
                 <WifiOff className="text-red-600" size={24} />
               </div>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Fleet Activity Chart */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Activité horaire (24h)</CardTitle>
+          <CardDescription className="text-xs">Véhicules en mouvement vs arrêtés</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={hourlyData}>
+              <defs>
+                <linearGradient id="colorMoving" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1}/>
+                </linearGradient>
+                <linearGradient id="colorStopped" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="hour" stroke="#9ca3af" style={{ fontSize: '12px' }} />
+              <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                }}
+                formatter={(value: any) => [value, '']}
+              />
+              <Area
+                type="monotone"
+                dataKey="moving"
+                stroke="#22c55e"
+                fillOpacity={1}
+                fill="url(#colorMoving)"
+                name="En mouvement"
+              />
+              <Area
+                type="monotone"
+                dataKey="stopped"
+                stroke="#ef4444"
+                fillOpacity={1}
+                fill="url(#colorStopped)"
+                name="Arrêtés"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Quick Actions & Alerts Section */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Actions rapides</CardTitle>
+            <CardDescription className="text-xs">Accès direct aux fonctionnalités principales</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="flex items-center justify-center gap-2 h-auto py-3 flex-col"
+                onClick={() => navigate('/map')}
+              >
+                <MapPin size={18} />
+                <span className="text-xs">Voir Carte</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex items-center justify-center gap-2 h-auto py-3 flex-col"
+                onClick={() => navigate('/reports')}
+              >
+                <FileText size={18} />
+                <span className="text-xs">Générer Rapport</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex items-center justify-center gap-2 h-auto py-3 flex-col"
+                onClick={() => navigate('/geofences')}
+              >
+                <Zap size={18} />
+                <span className="text-xs">Créer Géobarrière</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex items-center justify-center gap-2 h-auto py-3 flex-col"
+                onClick={() => navigate('/alerts/new')}
+              >
+                <Plus size={18} />
+                <span className="text-xs">Règle d'Alerte</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Alert Summary */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Alertes récentes</CardTitle>
+                <CardDescription className="text-xs">Non reconnus</CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs"
+                onClick={() => navigate('/alerts')}
+              >
+                Voir tous
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {alertsList.length > 0 ? (
+              <div className="space-y-2">
+                {alertsList.map((alert: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50"
+                  >
+                    <AlertCircle
+                      size={16}
+                      className={
+                        alert.severity === 'critical'
+                          ? 'text-red-500 flex-shrink-0 mt-0.5'
+                          : 'text-orange-500 flex-shrink-0 mt-0.5'
+                      }
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{alert.title}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2">{alert.message}</p>
+                      <p className="text-xs text-gray-400 mt-1">{formatTimeAgo(alert.createdAt)}</p>
+                    </div>
+                    <Badge
+                      variant={alert.severity === 'critical' ? 'destructive' : 'secondary'}
+                      className="flex-shrink-0 text-xs"
+                    >
+                      {alert.severity}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <AlertCircle size={24} className="text-gray-300 mb-2" />
+                <p className="text-sm text-gray-500">Aucune alerte non reconnue</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

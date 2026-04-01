@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useUnacknowledgedAlertsCount } from '@/hooks/useAlerts'
 import { useUIStore } from '@/stores/uiStore'
-import { Bell, LogOut, User, Moon, Sun, Search } from 'lucide-react'
+import { LogOut, User, Moon, Sun, Search } from 'lucide-react'
 import { getInitials } from '@/lib/utils'
+import NotificationCenter from './NotificationCenter'
 
 export default function Header() {
   const navigate = useNavigate()
@@ -48,17 +49,7 @@ export default function Header() {
         {/* Right side */}
         <div className="flex items-center space-x-6">
           {/* Notifications */}
-          <button
-            onClick={() => navigate('/alerts')}
-            className="relative text-gray-500 hover:text-gray-700"
-          >
-            <Bell size={20} />
-            {alertsCount > 0 && (
-              <span className="absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                {alertsCount > 9 ? '9+' : alertsCount}
-              </span>
-            )}
-          </button>
+          <NotificationCenter />
 
           {/* Theme toggle */}
           <button

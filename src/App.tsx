@@ -14,6 +14,8 @@ import DashboardPage from '@/pages/DashboardPage'
 import MapPage from '@/pages/MapPage'
 import VehiclesPage from '@/pages/VehiclesPage'
 import VehicleDetailPage from '@/pages/VehicleDetailPage'
+import VehicleGroupsPage from '@/pages/VehicleGroupsPage'
+import DriversPage from '@/pages/DriversPage'
 import GeofencesPage from '@/pages/GeofencesPage'
 import AlertsPage from '@/pages/AlertsPage'
 import ReportsPage from '@/pages/ReportsPage'
@@ -55,6 +57,8 @@ function App() {
           path="/vehicles/:id"
           element={<ProtectedRoute><VehicleDetailPage /></ProtectedRoute>}
         />
+        <Route path="/vehicle-groups" element={<ProtectedRoute><VehicleGroupsPage /></ProtectedRoute>} />
+        <Route path="/drivers" element={<ProtectedRoute><DriversPage /></ProtectedRoute>} />
         <Route path="/geofences" element={<ProtectedRoute><GeofencesPage /></ProtectedRoute>} />
         <Route path="/alerts" element={<ProtectedRoute><AlertsPage /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />

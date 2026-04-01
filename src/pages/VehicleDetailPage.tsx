@@ -19,8 +19,10 @@ import {
   Car,
   Compass,
   Play,
+  Download,
 } from 'lucide-react'
 import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer'
+import { GpsDataExport } from '@/components/vehicles/GpsDataExport'
 
 // Fix default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -34,6 +36,7 @@ export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [showReplay, setShowReplay] = useState(false)
+  const [showExport, setShowExport] = useState(false)
   const { data: vehicle, isLoading: vehicleLoading } = useVehicle(id || '')
   const { data: history } = useVehicleHistory(id || '')
 
@@ -95,10 +98,16 @@ export default function VehicleDetailPage() {
             {vehicle.plate} · {provider} · IMEI: {vehicle.deviceImei || 'N/A'}
           </p>
         </div>
-        <Button variant="outline" className="gap-2" onClick={() => setShowReplay(true)}>
-          <Play size={16} />
-          Replay GPS
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => setShowReplay(true)}>
+            <Play size={16} />
+            Replay GPS
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={() => setShowExport(true)}>
+            <Download size={16} />
+            Exporter
+          </Button>
+        </div>
       </div>
 
       {/* GPS Replay Modal */}
@@ -109,6 +118,14 @@ export default function VehicleDetailPage() {
           onClose={() => setShowReplay(false)}
         />
       )}
+
+      {/* GPS Export Modal */}
+      <GpsDataExport
+        vehicleId={id!}
+        vehicleName={vehicle.name}
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+      />
 
       {/* Top row: Mini map + Current Status */}
       <div className="grid gap-6 lg:grid-cols-3">
