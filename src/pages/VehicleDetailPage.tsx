@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet'
 import L from 'leaflet'
@@ -18,7 +18,9 @@ import {
   Cpu,
   Car,
   Compass,
+  Play,
 } from 'lucide-react'
+import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer'
 
 // Fix default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -31,6 +33,7 @@ L.Icon.Default.mergeOptions({
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [showReplay, setShowReplay] = useState(false)
   const { data: vehicle, isLoading: vehicleLoading } = useVehicle(id || '')
   const { data: history } = useVehicleHistory(id || '')
 
@@ -92,7 +95,20 @@ export default function VehicleDetailPage() {
             {vehicle.plate} · {provider} · IMEI: {vehicle.deviceImei || 'N/A'}
           </p>
         </div>
+        <Button variant="outline" className="gap-2" onClick={() => setShowReplay(true)}>
+          <Play size={16} />
+          Replay GPS
+        </Button>
       </div>
+
+      {/* GPS Replay Modal */}
+      {showReplay && (
+        <GpsReplayPlayer
+          vehicleId={id!}
+          vehicleName={vehicle.name}
+          onClose={() => setShowReplay(false)}
+        />
+      )}
 
       {/* Top row: Mini map + Current Status */}
       <div className="grid gap-6 lg:grid-cols-3">

@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input'
 import { useVehicles } from '@/hooks/useVehicles'
 import { useMapStore } from '@/stores/mapStore'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
-import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon } from 'lucide-react'
+import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff } from 'lucide-react'
+import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
+import { useQueryClient } from '@tanstack/react-query'
 
 // Fix default marker icons for Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -90,7 +92,17 @@ export default function MapPage() {
     toggleGeofences,
   } = useMapStore()
 
+  const queryClient = useQueryClient()
   const { data: vehiclesData } = useVehicles({ limit: 500 })
+
+  // Real-time WebSocket for GPS position updates
+  const { isConnected } = useGpsWebSocket({
+    enabled: true,
+    onPositionUpdate: (update) => {
+      // Invalidate vehicle queries to refresh positions
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] })
+    },
+  })
 
   const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData])
 
@@ -206,6 +218,12 @@ export default function MapPage() {
           </div>
           <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium">
             {vehiclesWithGps.length} / {vehicles.length} GPS actif
+          </div>
+          <div className={`rounded-full px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5 ${
+            isConnected ? 'bg-green-50 text-green-700' : 'bg-white text-gray-500'
+          }`}>
+            {isConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
+            {isConnected ? 'Live' : 'Polling'}
           </div>
         </div>
       </div>
