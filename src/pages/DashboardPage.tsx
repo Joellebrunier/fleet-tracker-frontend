@@ -1,195 +1,321 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useVehicles } from '@/hooks/useVehicles'
-import { useAlertStats } from '@/hooks/useAlerts'
-import { useGeofenceStats } from '@/hooks/useGeofences'
-import { Truck, AlertCircle, MapPin, TrendingUp } from 'lucide-react'
-import { VehicleStatus } from '@/types/vehicle'
+import {
+  Truck,
+  Activity,
+  Navigation,
+  Wifi,
+  WifiOff,
+  Clock,
+  MapPin,
+  Gauge,
+  ChevronRight,
+} from 'lucide-react'
+import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 
 export default function DashboardPage() {
-  const { data: vehiclesData, isLoading: vehiclesLoading } = useVehicles({ limit: 100 })
-  const { data: alertStats, isLoading: alertsLoading } = useAlertStats()
-  const { data: geofenceStats, isLoading: geofencesLoading } = useGeofenceStats()
+  const navigate = useNavigate()
+  const { data: vehiclesData, isLoading } = useVehicles({ limit: 500 })
 
-  const vehicles = vehiclesData?.data || []
-  const activeVehicles = vehicles.filter((v) => v.status === VehicleStatus.ACTIVE).length
-  const offlineVehicles = vehicles.filter((v) => v.status === VehicleStatus.OFFLINE).length
+  const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData])
 
-  const StatCard = ({
-    title,
-    value,
-    icon: Icon,
-    subtitle,
-    color = 'fleet-tracker',
-  }: {
-    title: string
-    value: string | number
-    icon: any
-    subtitle?: string
-    color?: string
-  }) => (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center space-x-4">
-          <div className={`rounded-lg bg-${color}-100 p-3`}>
-            <Icon className={`text-${color}-600`} size={24} />
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">{title}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-            {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+  // Compute stats
+  const stats = useMemo(() => {
+    const total = vehicles.length
+    const withGps = vehicles.filter((v: any) => v.currentLat && v.currentLng)
+    const moving = withGps.filter((v: any) => (v.currentSpeed || 0) > 2)
+    const stopped = withGps.filter((v: any) => (v.currentSpeed || 0) <= 2)
+    const noGps = vehicles.filter((v: any) => !v.currentLat || !v.currentLng)
+
+    // Provider breakdown from metadata
+    const providers: Record<string, number> = {}
+    for (const v of vehicles) {
+      const meta = (v as any).metadata || {}
+      if (meta.flespiChannelId) providers['Flespi'] = (providers['Flespi'] || 0) + 1
+      else if (meta.echoesUid) providers['Echoes'] = (providers['Echoes'] || 0) + 1
+      else if (meta.keeptraceId) providers['KeepTrace'] = (providers['KeepTrace'] || 0) + 1
+      else if (meta.ubiwanId) providers['Ubiwan'] = (providers['Ubiwan'] || 0) + 1
+      else providers['Autre'] = (providers['Autre'] || 0) + 1
+    }
+
+    // Top speed
+    const maxSpeed = Math.max(...vehicles.map((v: any) => v.currentSpeed || 0), 0)
+    const avgSpeed =
+      withGps.length > 0
+        ? withGps.reduce((sum: number, v: any) => sum + (v.currentSpeed || 0), 0) / withGps.length
+        : 0
+
+    // Recently active (last 10 minutes)
+    const tenMinAgo = Date.now() - 10 * 60 * 1000
+    const recentlyActive = vehicles.filter(
+      (v: any) => v.lastCommunication && new Date(v.lastCommunication).getTime() > tenMinAgo
+    )
+
+    return {
+      total,
+      withGps: withGps.length,
+      moving: moving.length,
+      stopped: stopped.length,
+      noGps: noGps.length,
+      providers,
+      maxSpeed,
+      avgSpeed,
+      recentlyActive: recentlyActive.length,
+    }
+  }, [vehicles])
+
+  // Sorted vehicles by speed (moving first)
+  const topMoving = useMemo(
+    () =>
+      [...vehicles]
+        .filter((v: any) => v.currentLat && v.currentLng)
+        .sort((a: any, b: any) => (b.currentSpeed || 0) - (a.currentSpeed || 0))
+        .slice(0, 8),
+    [vehicles]
   )
 
+  // Recently updated vehicles
+  const recentlyUpdated = useMemo(
+    () =>
+      [...vehicles]
+        .filter((v: any) => v.lastCommunication)
+        .sort(
+          (a: any, b: any) =>
+            new Date(b.lastCommunication).getTime() - new Date(a.lastCommunication).getTime()
+        )
+        .slice(0, 5),
+    [vehicles]
+  )
+
+  const providerColors: Record<string, string> = {
+    Flespi: 'bg-purple-500',
+    Echoes: 'bg-blue-500',
+    KeepTrace: 'bg-emerald-500',
+    Ubiwan: 'bg-orange-500',
+    Autre: 'bg-gray-400',
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Skeleton className="h-80 lg:col-span-2" />
+          <Skeleton className="h-80" />
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-8">
-      {/* Page header */}
+    <div className="space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-gray-600">Welcome back! Here's your fleet overview.</p>
+        <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
+        <p className="mt-1 text-sm text-gray-600">
+          Vue d'ensemble de votre flotte — {stats.total} véhicules, {stats.withGps} avec GPS actif
+        </p>
       </div>
 
       {/* KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {vehiclesLoading ? (
-          <>
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
-          </>
-        ) : (
-          <>
-            <StatCard
-              title="Total Vehicles"
-              value={vehicles.length}
-              icon={Truck}
-              subtitle={`${activeVehicles} active`}
-            />
-            <StatCard
-              title="Active Vehicles"
-              value={activeVehicles}
-              icon={Truck}
-              subtitle={`${offlineVehicles} offline`}
-              color="green"
-            />
-            <StatCard
-              title="Critical Alerts"
-              value={alertsLoading ? '-' : alertStats?.critical || 0}
-              icon={AlertCircle}
-              color="red"
-            />
-            <StatCard
-              title="Geofences"
-              value={geofencesLoading ? '-' : geofenceStats?.active || 0}
-              icon={MapPin}
-              subtitle="Active"
-              color="blue"
-            />
-          </>
-        )}
+        <Card className="border-l-4 border-l-blue-500">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total véhicules</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                <p className="text-xs text-gray-500 mt-1">{stats.withGps} GPS actif</p>
+              </div>
+              <div className="rounded-xl bg-blue-50 p-3">
+                <Truck className="text-blue-600" size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-green-500">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">En mouvement</p>
+                <p className="text-3xl font-bold text-green-600 mt-1">{stats.moving}</p>
+                <p className="text-xs text-gray-500 mt-1">{stats.stopped} à l'arrêt</p>
+              </div>
+              <div className="rounded-xl bg-green-50 p-3">
+                <Navigation className="text-green-600" size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-amber-500">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Actifs récents</p>
+                <p className="text-3xl font-bold text-amber-600 mt-1">{stats.recentlyActive}</p>
+                <p className="text-xs text-gray-500 mt-1">dernières 10 min</p>
+              </div>
+              <div className="rounded-xl bg-amber-50 p-3">
+                <Activity className="text-amber-600" size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-red-500">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hors ligne</p>
+                <p className="text-3xl font-bold text-red-600 mt-1">{stats.noGps}</p>
+                <p className="text-xs text-gray-500 mt-1">sans position GPS</p>
+              </div>
+              <div className="rounded-xl bg-red-50 p-3">
+                <WifiOff className="text-red-600" size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Main content */}
+      {/* Second row */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent vehicles */}
+        {/* Fleet activity - top moving vehicles */}
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Fleet Status</CardTitle>
-            <CardDescription>Your vehicles at a glance</CardDescription>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Activité de la flotte</CardTitle>
+                <CardDescription className="text-xs">Véhicules avec position GPS, triés par vitesse</CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs"
+                onClick={() => navigate('/map')}
+              >
+                Carte
+                <ChevronRight size={14} />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            {vehiclesLoading ? (
-              <div className="space-y-3">
-                <Skeleton className="h-12" />
-                <Skeleton className="h-12" />
-                <Skeleton className="h-12" />
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {vehicles.slice(0, 5).map((vehicle) => (
+            <div className="space-y-2">
+              {topMoving.map((vehicle: any) => {
+                const isMoving = (vehicle.currentSpeed || 0) > 2
+                return (
                   <div
                     key={vehicle.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
+                    className="flex items-center gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                    onClick={() => navigate(`/vehicles/${vehicle.id}`)}
                   >
-                    <div>
-                      <p className="font-medium text-gray-900">{vehicle.name}</p>
-                      <p className="text-sm text-gray-500">{vehicle.plate}</p>
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
+                        isMoving ? 'bg-green-500' : 'bg-gray-400'
+                      }`}
+                    ></span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{vehicle.name}</p>
+                      <p className="text-xs text-gray-500">{vehicle.plate}</p>
                     </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <p className="font-medium text-gray-900">{(vehicle.currentSpeed || 0).toFixed(0)} km/h</p>
-                        <p className="text-xs text-gray-500">
-                          {vehicle.currentLat?.toFixed(4)}, {vehicle.currentLng?.toFixed(4)}
-                        </p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-bold text-gray-900">
+                        {(vehicle.currentSpeed || 0).toFixed(0)}{' '}
+                        <span className="text-xs font-normal text-gray-500">km/h</span>
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0 min-w-20">
+                      <p className="text-xs text-gray-400">{formatTimeAgo(vehicle.lastCommunication)}</p>
+                    </div>
+                    <ChevronRight size={14} className="text-gray-300" />
+                  </div>
+                )
+              })}
+            </div>
+            <Button
+              variant="outline"
+              className="mt-4 w-full text-sm"
+              onClick={() => navigate('/vehicles')}
+            >
+              Voir tous les véhicules
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Provider breakdown */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Fournisseurs GPS</CardTitle>
+              <CardDescription className="text-xs">Répartition par provider</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {Object.entries(stats.providers)
+                  .sort(([, a], [, b]) => (b as number) - (a as number))
+                  .map(([name, count]) => {
+                    const pct = stats.total > 0 ? ((count as number) / stats.total) * 100 : 0
+                    return (
+                      <div key={name}>
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`h-3 w-3 rounded-full ${providerColors[name] || 'bg-gray-400'}`}
+                            ></span>
+                            <span className="font-medium text-gray-700">{name}</span>
+                          </div>
+                          <span className="text-gray-500 font-medium">{count as number}</span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-gray-100">
+                          <div
+                            className={`h-2 rounded-full ${providerColors[name] || 'bg-gray-400'} transition-all`}
+                            style={{ width: `${pct}%` }}
+                          ></div>
+                        </div>
                       </div>
-                      <Badge
-                        variant={
-                          vehicle.status === VehicleStatus.ACTIVE
-                            ? 'default'
-                            : vehicle.status === VehicleStatus.OFFLINE
-                              ? 'destructive'
-                              : 'secondary'
-                        }
-                      >
-                        {vehicle.status}
-                      </Badge>
-                    </div>
+                    )
+                  })}
+              </div>
+              <div className="mt-4 pt-3 border-t border-gray-100 text-center">
+                <p className="text-xs text-gray-500">
+                  Vitesse max: <span className="font-bold text-gray-700">{stats.maxSpeed.toFixed(0)} km/h</span>
+                  {' · '}
+                  Moyenne: <span className="font-bold text-gray-700">{stats.avgSpeed.toFixed(0)} km/h</span>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recently updated */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Mises à jour récentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2.5">
+                {recentlyUpdated.map((v: any) => (
+                  <div key={v.id} className="flex items-center gap-2 text-xs">
+                    <Clock size={12} className="text-gray-400 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 truncate flex-1">{v.name}</span>
+                    <span className="text-gray-400 flex-shrink-0">{formatTimeAgo(v.lastCommunication)}</span>
                   </div>
                 ))}
               </div>
-            )}
-            <Button variant="outline" className="mt-4 w-full">
-              View All Vehicles
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Alerts summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Alert Summary</CardTitle>
-            <CardDescription>Unresolved alerts</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {alertsLoading ? (
-              <Skeleton className="h-48" />
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Critical</span>
-                  <span className="font-bold text-red-600">{alertStats?.critical || 0}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">High</span>
-                  <span className="font-bold text-orange-600">{alertStats?.high || 0}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Medium</span>
-                  <span className="font-bold text-yellow-600">{alertStats?.medium || 0}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Low</span>
-                  <span className="font-bold text-blue-600">{alertStats?.low || 0}</span>
-                </div>
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex items-center justify-between font-bold">
-                    <span>Total</span>
-                    <span>{alertStats?.unacknowledged || 0}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            <Button variant="outline" className="mt-4 w-full">
-              View All Alerts
-            </Button>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

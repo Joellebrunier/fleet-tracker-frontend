@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useVehicles } from '@/hooks/useVehicles'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +11,7 @@ import { VehicleStatus } from '@/types/vehicle'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 
 export default function VehiclesPage() {
+  const navigate = useNavigate()
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStatus, setSelectedStatus] = useState<string>('')
@@ -141,6 +143,7 @@ export default function VehiclesPage() {
                   <tr
                     key={vehicle.id}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/vehicles/${vehicle.id}`)}
                   >
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{vehicle.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
@@ -167,7 +170,7 @@ export default function VehiclesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {vehicles.map((vehicle) => (
-            <Card key={vehicle.id} className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card key={vehicle.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/vehicles/${vehicle.id}`)}>
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div>
