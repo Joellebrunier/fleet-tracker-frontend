@@ -1,35 +1,41 @@
-import { useEffect, lazy } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/stores/uiStore'
 import { UserRole } from '@/types/user'
 
-// Layout
+// Layout (kept eager — needed immediately)
 import AppLayout from '@/components/layout/AppLayout'
 import ProtectedRoute from '@/components/layout/ProtectedRoute'
 
-// Pages
-import LoginPage from '@/pages/LoginPage'
-import DashboardPage from '@/pages/DashboardPage'
-import MapPage from '@/pages/MapPage'
-import VehiclesPage from '@/pages/VehiclesPage'
-import VehicleDetailPage from '@/pages/VehicleDetailPage'
-import VehicleGroupsPage from '@/pages/VehicleGroupsPage'
-import DriversPage from '@/pages/DriversPage'
-import DevicesPage from '@/pages/DevicesPage'
-import GeofencesPage from '@/pages/GeofencesPage'
-import AlertsPage from '@/pages/AlertsPage'
-import ReportsPage from '@/pages/ReportsPage'
-import SettingsPage from '@/pages/SettingsPage'
-import SuperAdminPage from '@/pages/SuperAdminPage'
-import AuditLogPage from '@/pages/AuditLogPage'
-import HelpPage from '@/pages/HelpPage'
-import RolesPermissionsPage from '@/pages/RolesPermissionsPage'
-
-// Lazy-loaded pages
+// All pages lazy-loaded for code-splitting
+const LoginPage = lazy(() => import('@/pages/LoginPage'))
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
+const MapPage = lazy(() => import('@/pages/MapPage'))
+const VehiclesPage = lazy(() => import('@/pages/VehiclesPage'))
+const VehicleDetailPage = lazy(() => import('@/pages/VehicleDetailPage'))
+const VehicleGroupsPage = lazy(() => import('@/pages/VehicleGroupsPage'))
+const DriversPage = lazy(() => import('@/pages/DriversPage'))
+const DevicesPage = lazy(() => import('@/pages/DevicesPage'))
+const GeofencesPage = lazy(() => import('@/pages/GeofencesPage'))
+const AlertsPage = lazy(() => import('@/pages/AlertsPage'))
+const ReportsPage = lazy(() => import('@/pages/ReportsPage'))
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
+const SuperAdminPage = lazy(() => import('@/pages/SuperAdminPage'))
+const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'))
+const HelpPage = lazy(() => import('@/pages/HelpPage'))
+const RolesPermissionsPage = lazy(() => import('@/pages/RolesPermissionsPage'))
 const ApiDocsPage = lazy(() => import('@/pages/ApiDocsPage'))
 const SdkExamplesPage = lazy(() => import('@/pages/SdkExamplesPage'))
 const TestEnvironmentPage = lazy(() => import('@/pages/TestEnvironmentPage'))
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+    </div>
+  )
+}
 
 function App() {
   const { initAuth, isAuthenticated } = useAuth()
@@ -50,6 +56,7 @@ function App() {
   }, [theme])
 
   return (
+    <Suspense fallback={<PageLoader />}>
     <Routes>
       {/* Public routes */}
       <Route
@@ -103,6 +110,7 @@ function App() {
       {/* 404 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   )
 }
 
