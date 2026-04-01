@@ -1,0 +1,140 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useEffect, useRef, useCallback } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-draw';
+import 'leaflet-draw/dist/leaflet.draw.css';
+export default function GeofenceDrawMap({ initialShape, onShapeChange, center = [43.7, 7.12], zoom = 12, }) {
+    const mapRef = useRef(null);
+    const containerRef = useRef(null);
+    const drawnItemsRef = useRef(new L.FeatureGroup());
+    const drawControlRef = useRef(null);
+    const extractShape = useCallback((layer) => {
+        if (layer instanceof L.Circle) {
+            const latlng = layer.getLatLng();
+            return {
+                type: 'circle',
+                center: { lat: latlng.lat, lng: latlng.lng },
+                radiusMeters: Math.round(layer.getRadius()),
+            };
+        }
+        else if (layer instanceof L.Polygon) {
+            const latlngs = layer.getLatLngs()[0];
+            const points = latlngs.map((ll) => ({ lat: ll.lat, lng: ll.lng }));
+            return {
+                type: 'polygon',
+                points,
+            };
+        }
+        return null;
+    }, []);
+    useEffect(() => {
+        if (!containerRef.current || mapRef.current)
+            return;
+        const map = L.map(containerRef.current).setView(center, zoom);
+        mapRef.current = map;
+        L.tileLayer('MAPBOX_TILE_URL_PLACEHOLDER', {
+            attribution: '&copy; Mapbox &copy; OpenStreetMap',
+            tileSize: 512,
+            zoomOffset: -1,
+        }).addTo(map);
+        const drawnItems = drawnItemsRef.current;
+        map.addLayer(drawnItems);
+        // Add existing shape if editing
+        if (initialShape) {
+            let layer = null;
+            if (initialShape.type === 'circle') {
+                layer = L.circle([initialShape.center.lat, initialShape.center.lng], {
+                    radius: initialShape.radiusMeters,
+                    color: '#3b82f6',
+                    fillColor: '#3b82f6',
+                    fillOpacity: 0.2,
+                });
+                map.setView([initialShape.center.lat, initialShape.center.lng], 14);
+            }
+            else if (initialShape.type === 'polygon') {
+                const latlngs = initialShape.points.map((p) => [p.lat, p.lng]);
+                layer = L.polygon(latlngs, {
+                    color: '#3b82f6',
+                    fillColor: '#3b82f6',
+                    fillOpacity: 0.2,
+                });
+                map.fitBounds(layer.getBounds().pad(0.2));
+            }
+            if (layer) {
+                drawnItems.addLayer(layer);
+            }
+        }
+        // Draw controls
+        const drawControl = new L.Control.Draw({
+            position: 'topright',
+            draw: {
+                polyline: false,
+                marker: false,
+                circlemarker: false,
+                rectangle: {
+                    shapeOptions: {
+                        color: '#3b82f6',
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.2,
+                    },
+                },
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true,
+                    shapeOptions: {
+                        color: '#3b82f6',
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.2,
+                    },
+                },
+                circle: {
+                    shapeOptions: {
+                        color: '#3b82f6',
+                        fillColor: '#3b82f6',
+                        fillOpacity: 0.2,
+                    },
+                    showRadius: true,
+                    metric: true,
+                },
+            },
+            edit: {
+                featureGroup: drawnItems,
+                remove: true,
+            },
+        });
+        drawControlRef.current = drawControl;
+        map.addControl(drawControl);
+        // Handle draw created
+        map.on(L.Draw.Event.CREATED, (e) => {
+            // Clear previous shapes — only one geofence at a time
+            drawnItems.clearLayers();
+            const layer = e.layer;
+            drawnItems.addLayer(layer);
+            const shape = extractShape(layer);
+            onShapeChange(shape);
+        });
+        // Handle edit
+        map.on(L.Draw.Event.EDITED, (e) => {
+            const layers = e.layers;
+            layers.eachLayer((layer) => {
+                const shape = extractShape(layer);
+                onShapeChange(shape);
+            });
+        });
+        // Handle delete
+        map.on(L.Draw.Event.DELETED, () => {
+            if (drawnItems.getLayers().length === 0) {
+                onShapeChange(null);
+            }
+        });
+        // Invalidate size after render
+        setTimeout(() => map.invalidateSize(), 100);
+        return () => {
+            map.remove();
+            mapRef.current = null;
+        };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return (_jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-xs text-gray-500", children: "Use the drawing tools (top-right) to create a circle, polygon, or rectangle on the map." }), _jsx("div", { ref: containerRef, className: "h-[350px] w-full rounded-lg border border-gray-300", style: { zIndex: 0 } })] }));
+}
+//# sourceMappingURL=GeofenceDrawMap.js.map

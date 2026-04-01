@@ -13,6 +13,7 @@ import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff } from 'lucide-react'
 import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
 import { useQueryClient } from '@tanstack/react-query'
+import { MAPBOX_TILE_URL } from '@/lib/constants'
 
 // Fix default marker icons for Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -23,9 +24,17 @@ L.Icon.Default.mergeOptions({
 })
 
 // Vehicle marker icon factory
-function createVehicleIcon(speed: number, heading: number, isSelected: boolean) {
+function createVehicleIcon(speed: number, heading: number, isSelected: boolean, vehicleType?: string) {
   const isMoving = speed > 2
-  const color = isMoving ? '#22c55e' : '#6b7280' // green if moving, gray if stopped
+
+  // Determine color based on vehicle type if moving, gray if stopped
+  let typeColor = '#22c55e' // default green
+  if (vehicleType === 'car') typeColor = '#3b82f6'
+  else if (vehicleType === 'truck') typeColor = '#f97316'
+  else if (vehicleType === 'van') typeColor = '#8b5cf6'
+  else if (vehicleType === 'motorcycle') typeColor = '#ef4444'
+
+  const color = isMoving ? typeColor : '#6b7280' // use type color if moving, gray if stopped
   const borderColor = isSelected ? '#3b82f6' : '#ffffff'
   const size = isSelected ? 18 : 14
   const border = isSelected ? 4 : 2
@@ -62,6 +71,8 @@ function FlyToVehicle({ lat, lng }: { lat: number; lng: number }) {
   return null
 }
 
+// TODO: Implement marker clustering - when zoom < 8 and vehicles are close together, show count badges
+// This would require leaflet.markercluster or custom grouping logic
 // Component to fit bounds to all vehicles
 function FitBounds({ vehicles }: { vehicles: any[] }) {
   const map = useMap()
@@ -84,7 +95,8 @@ function FitBounds({ vehicles }: { vehicles: any[] }) {
 export default function MapPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
-  const [tileLayer, setTileLayer] = useState<'streets' | 'satellite'>('streets')
+  const [tileLayer, setTileLayer] = useState<'streets' | 'satellite' | 'terrain'>('streets')
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const {
     selectedVehicleId,
     selectVehicle,
@@ -128,25 +140,24 @@ export default function MapPage() {
 
   const tileUrl =
     tileLayer === 'satellite'
-      ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+      ? MAPBOX_TILE_URL('satellite-streets-v12')
+      : tileLayer === 'terrain'
+        ? MAPBOX_TILE_URL('outdoors-v12')
+        : MAPBOX_TILE_URL('streets-v12')
 
-  const tileAttribution =
-    tileLayer === 'satellite'
-      ? '&copy; Esri &mdash; Source: Esri, Maxar, Earthstar'
-      : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  const tileAttribution = '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 
   return (
     <div className="flex h-[calc(100vh-80px)] gap-4">
       {/* Map */}
-      <div className="relative flex-1 rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+      <div className={`relative ${isFullscreen ? 'w-full' : 'flex-1'} rounded-lg border border-gray-200 overflow-hidden shadow-sm`}>
         <MapContainer
           center={[43.7, 3.87]}
           zoom={6}
           className="h-full w-full z-0"
           zoomControl={false}
         >
-          <TileLayer url={tileUrl} attribution={tileAttribution} />
+          <TileLayer url={tileUrl} attribution={tileAttribution} tileSize={512} zoomOffset={-1} />
 
           <FitBounds vehicles={vehicles} />
 
@@ -161,7 +172,8 @@ export default function MapPage() {
               icon={createVehicleIcon(
                 vehicle.currentSpeed || 0,
                 vehicle.currentHeading || 0,
-                vehicle.id === selectedVehicleId
+                vehicle.id === selectedVehicleId,
+                vehicle.type
               )}
               eventHandlers={{
                 click: () => selectVehicle(vehicle.id),
@@ -198,11 +210,24 @@ export default function MapPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setTileLayer(tileLayer === 'streets' ? 'satellite' : 'streets')}
+            onClick={() => {
+              if (tileLayer === 'streets') setTileLayer('satellite')
+              else if (tileLayer === 'satellite') setTileLayer('terrain')
+              else setTileLayer('streets')
+            }}
             className="gap-2 bg-white shadow-md"
           >
-            {tileLayer === 'streets' ? <Satellite size={16} /> : <MapIcon size={16} />}
-            {tileLayer === 'streets' ? 'Satellite' : 'Plan'}
+            {tileLayer === 'streets' ? <Satellite size={16} /> : tileLayer === 'satellite' ? <MapIcon size={16} /> : <Layers size={16} />}
+            {tileLayer === 'streets' ? 'Satellite' : tileLayer === 'satellite' ? 'Terrain' : 'Plan'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="gap-2 bg-white shadow-md"
+          >
+            <Navigation size={16} />
+            {isFullscreen ? 'Quitter plein écran' : 'Plein écran'}
           </Button>
         </div>
 
@@ -229,7 +254,7 @@ export default function MapPage() {
       </div>
 
       {/* Sidebar */}
-      <div className="w-80 flex flex-col gap-4 overflow-hidden">
+      {!isFullscreen && (<div className="w-80 flex flex-col gap-4 overflow-hidden">
         {/* Search */}
         <Card>
           <CardContent className="pt-4 pb-4">
@@ -335,6 +360,7 @@ export default function MapPage() {
           </Card>
         )}
       </div>
+      )}
     </div>
   )
 }

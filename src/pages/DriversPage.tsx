@@ -60,11 +60,19 @@ export default function DriversPage() {
     licenseExpiry: '',
   })
 
-  // Mock performance scores
-  const performanceScores: Record<string, PerformanceScore> = {
-    safety: { safety: 85, efficiency: 72, punctuality: 91 },
-    efficiency: { safety: 78, efficiency: 88, punctuality: 79 },
-    punctuality: { safety: 92, efficiency: 75, punctuality: 94 },
+  // Generate deterministic performance scores based on driver ID
+  const getPerformanceScore = (driverId: string): PerformanceScore => {
+    let hash = 0
+    for (let i = 0; i < driverId.length; i++) {
+      hash = ((hash << 5) - hash) + driverId.charCodeAt(i)
+      hash |= 0
+    }
+    const abs = Math.abs(hash)
+    return {
+      safety: 60 + (abs % 35),
+      efficiency: 55 + ((abs >> 4) % 40),
+      punctuality: 65 + ((abs >> 8) % 30),
+    }
   }
 
   // Mock driver statuses
@@ -172,7 +180,7 @@ export default function DriversPage() {
   }
 
   const handleDelete = async (driverId: string) => {
-    if (confirm('Are you sure you want to delete this driver?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce conducteur ?')) {
       await deleteMutation.mutateAsync(driverId)
     }
   }
@@ -209,11 +217,11 @@ export default function DriversPage() {
   const getStatusLabel = (status: DriverStatus): string => {
     switch (status) {
       case 'active':
-        return 'Active'
+        return 'Actif'
       case 'inactive':
-        return 'Inactive'
+        return 'Inactif'
       case 'on_leave':
-        return 'On Leave'
+        return 'En congé'
       default:
         return 'Unknown'
     }
@@ -224,9 +232,9 @@ export default function DriversPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Drivers</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Conducteurs</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Manage your fleet drivers and their performance metrics
+            Gérez les conducteurs de votre flotte et leurs performances
           </p>
         </div>
         <Button
@@ -234,7 +242,7 @@ export default function DriversPage() {
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          Add Driver
+          Ajouter un conducteur
         </Button>
       </div>
 
@@ -243,7 +251,7 @@ export default function DriversPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
           <Input
-            placeholder="Search by name, email, or phone..."
+            placeholder="Rechercher par nom, email ou téléphone..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -259,11 +267,45 @@ export default function DriversPage() {
                 onClick={() => setStatusFilter(status)}
                 className="capitalize"
               >
-                {status === 'all' ? 'All' : getStatusLabel(status as DriverStatus)}
+                {status === 'all' ? 'Tous' : getStatusLabel(status as DriverStatus)}
               </Button>
             )
           )}
         </div>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid gap-4 sm:grid-cols-4">
+        <Card>
+          <CardContent className="pt-5 pb-4 text-center">
+            <p className="text-2xl font-bold text-gray-900">{drivers.length}</p>
+            <p className="text-xs text-gray-500">Total conducteurs</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4 text-center">
+            <p className="text-2xl font-bold text-green-600">
+              {drivers.filter(d => (driverStatuses[d.id] || 'active') === 'active').length}
+            </p>
+            <p className="text-xs text-gray-500">Actifs</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4 text-center">
+            <p className="text-2xl font-bold text-yellow-600">
+              {drivers.filter(d => new Date(d.licenseExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
+            </p>
+            <p className="text-xs text-gray-500">Permis expirant bientôt</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4 text-center">
+            <p className="text-2xl font-bold text-blue-600">
+              {drivers.filter(d => d.assignedVehicleId).length}
+            </p>
+            <p className="text-xs text-gray-500">Véhicule assigné</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Drivers Grid */}
@@ -284,7 +326,7 @@ export default function DriversPage() {
       ) : error ? (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
-            <p className="text-red-800">Failed to load drivers</p>
+            <p className="text-red-800">Erreur de chargement des conducteurs</p>
           </CardContent>
         </Card>
       ) : filteredDrivers.length === 0 ? (
@@ -293,8 +335,8 @@ export default function DriversPage() {
             <UserCircle className="mb-4 h-12 w-12 text-slate-300" />
             <p className="text-slate-600">
               {searchQuery || statusFilter !== 'all'
-                ? 'No drivers match your search or filter'
-                : 'No drivers yet. Create one to get started.'}
+                ? 'Aucun conducteur ne correspond à votre recherche'
+                : 'Aucun conducteur. Créez-en un pour commencer.'}
             </p>
           </CardContent>
         </Card>
@@ -302,9 +344,12 @@ export default function DriversPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredDrivers.map((driver) => {
             const status = driverStatuses[driver.id] || 'active'
-            const performance = performanceScores.safety
-            const licenseExpired =
-              new Date(driver.licenseExpiry) < new Date()
+            const performance = getPerformanceScore(driver.id)
+            const licenseDate = new Date(driver.licenseExpiry)
+            const now = new Date()
+            const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+            const licenseExpired = licenseDate < now
+            const licenseExpiringSoon = licenseDate < thirtyDaysFromNow && licenseDate >= now
 
             return (
               <Card
@@ -347,15 +392,15 @@ export default function DriversPage() {
                   <div className="border-t border-slate-200 pt-3">
                     <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-700">
                       <Shield className="h-4 w-4" />
-                      License
+                      Permis
                     </div>
                     <div className="space-y-1 text-sm text-slate-600">
                       <div>
-                        <span className="font-medium">Number:</span>{' '}
+                        <span className="font-medium">Numéro :</span>{' '}
                         {driver.licenseNumber}
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">Expires:</span>
+                        <span className="font-medium">Expire :</span>
                         <span
                           className={
                             licenseExpired
@@ -365,6 +410,16 @@ export default function DriversPage() {
                         >
                           {new Date(driver.licenseExpiry).toLocaleDateString()}
                         </span>
+                        {licenseExpired && (
+                          <Badge variant="destructive" className="text-xs">
+                            Expiré
+                          </Badge>
+                        )}
+                        {licenseExpiringSoon && (
+                          <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+                            Expire bientôt
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -374,7 +429,7 @@ export default function DriversPage() {
                     <div className="border-t border-slate-200 pt-3">
                       <div className="flex items-center gap-2 text-sm text-slate-600">
                         <Car className="h-4 w-4 flex-shrink-0" />
-                        <span>Vehicle assigned</span>
+                        <span>Véhicule assigné</span>
                       </div>
                     </div>
                   )}
@@ -387,7 +442,7 @@ export default function DriversPage() {
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-600">Safety</span>
+                        <span className="text-xs text-slate-600">Sécurité</span>
                         <span className="font-semibold text-slate-900">
                           {performance.safety}%
                         </span>
@@ -401,7 +456,7 @@ export default function DriversPage() {
 
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-slate-600">
-                          Efficiency
+                          Efficacité
                         </span>
                         <span className="font-semibold text-slate-900">
                           {performance.efficiency}%
@@ -416,7 +471,7 @@ export default function DriversPage() {
 
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-slate-600">
-                          Punctuality
+                          Ponctualité
                         </span>
                         <span className="font-semibold text-slate-900">
                           {performance.punctuality}%
@@ -441,7 +496,7 @@ export default function DriversPage() {
                     onClick={() => handleOpenModal(driver)}
                   >
                     <Edit2 className="h-4 w-4 mr-1" />
-                    Edit
+                    Modifier
                   </Button>
                   <Button
                     variant="outline"
@@ -451,7 +506,7 @@ export default function DriversPage() {
                     disabled={deleteMutation.isPending}
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
+                    Supprimer
                   </Button>
                 </div>
               </Card>
@@ -465,12 +520,12 @@ export default function DriversPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingDriver ? 'Edit Driver' : 'Create New Driver'}
+              {editingDriver ? 'Modifier le conducteur' : 'Nouveau conducteur'}
             </DialogTitle>
             <DialogDescription>
               {editingDriver
-                ? 'Update driver information and details'
-                : 'Add a new driver to your fleet'}
+                ? 'Mettre à jour les informations du conducteur'
+                : 'Ajouter un nouveau conducteur à votre flotte'}
             </DialogDescription>
           </DialogHeader>
 
@@ -478,26 +533,26 @@ export default function DriversPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">
-                  First Name
+                  Prénom
                 </label>
                 <Input
                   value={formData.firstName}
                   onChange={(e) =>
                     handleFormChange('firstName', e.target.value)
                   }
-                  placeholder="John"
+                  placeholder="Jean"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">
-                  Last Name
+                  Nom
                 </label>
                 <Input
                   value={formData.lastName}
                   onChange={(e) =>
                     handleFormChange('lastName', e.target.value)
                   }
-                  placeholder="Doe"
+                  placeholder="Dupont"
                 />
               </div>
             </div>
@@ -516,19 +571,19 @@ export default function DriversPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">
-                Phone
+                Téléphone
               </label>
               <Input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => handleFormChange('phone', e.target.value)}
-                placeholder="+1 (555) 000-0000"
+                placeholder="+33 (1) 23 45 67 89"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">
-                License Number
+                N° de permis
               </label>
               <Input
                 value={formData.licenseNumber}
@@ -541,7 +596,7 @@ export default function DriversPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">
-                License Expiry
+                Date d'expiration
               </label>
               <Input
                 type="date"
@@ -559,17 +614,17 @@ export default function DriversPage() {
               onClick={handleCloseModal}
               disabled={upsertMutation.isPending}
             >
-              Cancel
+              Annuler
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={upsertMutation.isPending}
             >
               {upsertMutation.isPending
-                ? 'Saving...'
+                ? 'Enregistrement...'
                 : editingDriver
-                  ? 'Update Driver'
-                  : 'Create Driver'}
+                  ? 'Mettre à jour'
+                  : 'Créer'}
             </Button>
           </DialogFooter>
         </DialogContent>

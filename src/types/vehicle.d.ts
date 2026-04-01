@@ -48,6 +48,7 @@ export interface Vehicle {
     speed?: number;
     /** @deprecated use lastCommunication */
     lastUpdate?: string | Date;
+    totalDistance?: number;
     odometer?: number;
     location?: VehicleLocation;
     fuelLevel?: number;

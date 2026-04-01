@@ -28,10 +28,10 @@ export default function SettingsPage() {
 
   // Map Defaults state
   const [mapDefaults, setMapDefaults] = useState({
-    centerLat: '48.8566',
-    centerLng: '2.3522',
+    centerLat: '43.7',
+    centerLng: '7.12',
     zoom: '12',
-    tileLayer: 'openstreetmap',
+    tileLayer: 'streets',
   })
 
   const handleProviderToggle = (provider: string) => {
@@ -65,8 +65,8 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="mt-2 text-gray-600">Manage your profile and preferences</p>
+        <h1 className="text-3xl font-bold text-gray-900">Paramètres</h1>
+        <p className="mt-2 text-gray-600">Gérez votre profil et vos préférences</p>
       </div>
 
       {/* Profile section */}
@@ -74,13 +74,13 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User size={20} />
-            Profile
+            Profil
           </CardTitle>
-          <CardDescription>Manage your account information</CardDescription>
+          <CardDescription>Gérez les informations de votre compte</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">First Name</label>
+            <label className="block text-sm font-medium text-gray-700">Prénom</label>
             <Input
               type="text"
               value={user?.firstName || ''}
@@ -89,7 +89,7 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Last Name</label>
+            <label className="block text-sm font-medium text-gray-700">Nom</label>
             <Input
               type="text"
               value={user?.lastName || ''}
@@ -102,7 +102,7 @@ export default function SettingsPage() {
             <Input type="email" value={user?.email || ''} disabled className="mt-1" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Role</label>
+            <label className="block text-sm font-medium text-gray-700">Rôle</label>
             <Input type="text" value={user?.role || ''} disabled className="mt-1" />
           </div>
           <Button
@@ -110,7 +110,7 @@ export default function SettingsPage() {
             className="w-full"
             variant={isEditing ? 'default' : 'outline'}
           >
-            {isEditing ? 'Save Changes' : 'Edit Profile'}
+            {isEditing ? 'Enregistrer' : 'Modifier le profil'}
           </Button>
         </CardContent>
       </Card>
@@ -120,13 +120,13 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette size={20} />
-            Preferences
+            Préférences
           </CardTitle>
-          <CardDescription>Customize your experience</CardDescription>
+          <CardDescription>Personnalisez votre expérience</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Theme</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Thème</label>
             <div className="flex gap-4">
               {['light', 'dark'].map((t) => (
                 <button
@@ -138,14 +138,14 @@ export default function SettingsPage() {
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                  {t === 'light' ? 'Clair' : 'Sombre'}
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Language</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Langue</label>
             <select
               value={locale}
               onChange={(e) => setLocale(e.target.value)}
@@ -159,18 +159,18 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Speed Unit</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Unité de vitesse</label>
             <select className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              <option value="kmh">Kilometers per hour (km/h)</option>
-              <option value="mph">Miles per hour (mph)</option>
-              <option value="kn">Knots (kn)</option>
+              <option value="kmh">Kilomètres par heure (km/h)</option>
+              <option value="mph">Miles par heure (mph)</option>
+              <option value="kn">Nœuds (kn)</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Distance Unit</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Unité de distance</label>
             <select className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              <option value="km">Kilometers (km)</option>
+              <option value="km">Kilomètres (km)</option>
               <option value="mi">Miles (mi)</option>
             </select>
           </div>
@@ -184,20 +184,20 @@ export default function SettingsPage() {
             <Bell size={20} />
             Notifications
           </CardTitle>
-          <CardDescription>Control how you receive alerts</CardDescription>
+          <CardDescription>Contrôlez la réception de vos alertes</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {[
-            { label: 'Email Notifications', key: 'email' },
-            { label: 'Push Notifications', key: 'push' },
-            { label: 'SMS Notifications', key: 'sms' },
+            { label: 'Notifications par email', key: 'email' },
+            { label: 'Notifications push', key: 'push' },
+            { label: 'Notifications SMS', key: 'sms' },
           ].map((item) => (
             <div key={item.key} className="flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">{item.label}</label>
               <input type="checkbox" defaultChecked className="h-4 w-4" />
             </div>
           ))}
-          <Button className="w-full mt-4">Save Preferences</Button>
+          <Button className="w-full mt-4">Enregistrer les préférences</Button>
         </CardContent>
       </Card>
 
@@ -206,15 +206,18 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wifi size={20} />
-            GPS Providers
+            Fournisseurs GPS
           </CardTitle>
-          <CardDescription>Configure and enable GPS tracking providers</CardDescription>
+          <CardDescription>Configurez et activez les fournisseurs de suivi GPS</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Flespi */}
           <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
             <div className="flex items-center justify-between">
-              <label className="font-medium text-gray-900">Flespi</label>
+              <div className="flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.flespi.enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
+                <label className="font-medium text-gray-900">Flespi</label>
+              </div>
               <input
                 type="checkbox"
                 checked={providers.flespi.enabled}
@@ -225,19 +228,19 @@ export default function SettingsPage() {
             {providers.flespi.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">API Token</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Token API</label>
                   <Input
                     type="password"
-                    placeholder="Enter Flespi API token"
+                    placeholder="Entrer le token API Flespi"
                     value={providers.flespi.token}
                     onChange={(e) => handleProviderChange('flespi', 'token', e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Channel ID</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ID du canal</label>
                   <Input
                     type="text"
-                    placeholder="Enter Channel ID"
+                    placeholder="Entrer l'ID du canal"
                     value={providers.flespi.channelId}
                     onChange={(e) => handleProviderChange('flespi', 'channelId', e.target.value)}
                   />
@@ -249,7 +252,10 @@ export default function SettingsPage() {
           {/* Echoes */}
           <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
             <div className="flex items-center justify-between">
-              <label className="font-medium text-gray-900">Echoes</label>
+              <div className="flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.echoes.enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
+                <label className="font-medium text-gray-900">Echoes</label>
+              </div>
               <input
                 type="checkbox"
                 checked={providers.echoes.enabled}
@@ -260,7 +266,7 @@ export default function SettingsPage() {
             {providers.echoes.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">API URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">URL API</label>
                   <Input
                     type="text"
                     placeholder="https://api.echoes.com"
@@ -269,10 +275,10 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Privacy Key</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Clé de confidentialité</label>
                   <Input
                     type="password"
-                    placeholder="Enter Privacy Key"
+                    placeholder="Entrer la clé de confidentialité"
                     value={providers.echoes.privacyKey}
                     onChange={(e) => handleProviderChange('echoes', 'privacyKey', e.target.value)}
                   />
@@ -284,7 +290,10 @@ export default function SettingsPage() {
           {/* KeepTrace */}
           <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
             <div className="flex items-center justify-between">
-              <label className="font-medium text-gray-900">KeepTrace</label>
+              <div className="flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.keeptrace.enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
+                <label className="font-medium text-gray-900">KeepTrace</label>
+              </div>
               <input
                 type="checkbox"
                 checked={providers.keeptrace.enabled}
@@ -294,10 +303,10 @@ export default function SettingsPage() {
             </div>
             {providers.keeptrace.enabled && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Clé API</label>
                 <Input
                   type="password"
-                  placeholder="Enter KeepTrace API Key"
+                  placeholder="Entrer la clé API KeepTrace"
                   value={providers.keeptrace.apiKey}
                   onChange={(e) => handleProviderChange('keeptrace', 'apiKey', e.target.value)}
                 />
@@ -308,7 +317,10 @@ export default function SettingsPage() {
           {/* Ubiwan */}
           <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
             <div className="flex items-center justify-between">
-              <label className="font-medium text-gray-900">Ubiwan</label>
+              <div className="flex items-center gap-2">
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.ubiwan.enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
+                <label className="font-medium text-gray-900">Ubiwan</label>
+              </div>
               <input
                 type="checkbox"
                 checked={providers.ubiwan.enabled}
@@ -319,7 +331,7 @@ export default function SettingsPage() {
             {providers.ubiwan.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Endpoint URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">URL du point d'accès</label>
                   <Input
                     type="text"
                     placeholder="https://api.ubiwan.com"
@@ -328,10 +340,10 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Credentials</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Identifiants</label>
                   <Input
                     type="password"
-                    placeholder="Enter credentials"
+                    placeholder="Entrer les identifiants"
                     value={providers.ubiwan.credentials}
                     onChange={(e) => handleProviderChange('ubiwan', 'credentials', e.target.value)}
                   />
@@ -347,13 +359,13 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key size={20} />
-            API Keys
+            Clés API
           </CardTitle>
-          <CardDescription>Manage your API credentials</CardDescription>
+          <CardDescription>Gérez vos identifiants API</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Your API Key</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Votre clé API</label>
             <div className="flex gap-2">
               <Input
                 type={showApiKey ? 'text' : 'password'}
@@ -378,7 +390,7 @@ export default function SettingsPage() {
                 <Copy size={16} />
               </Button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">Keep your API key secure. Never share it with others.</p>
+            <p className="text-xs text-gray-500 mt-2">Gardez votre clé API en sécurité. Ne la partagez jamais.</p>
           </div>
           <Button
             variant="destructive"
@@ -386,7 +398,7 @@ export default function SettingsPage() {
             onClick={regenerateApiKey}
           >
             <RefreshCw size={16} className="mr-2" />
-            Regenerate API Key
+            Régénérer la clé API
           </Button>
         </CardContent>
       </Card>
@@ -396,29 +408,29 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database size={20} />
-            Data Retention
+            Conservation des données
           </CardTitle>
-          <CardDescription>Control how long GPS history is stored</CardDescription>
+          <CardDescription>Contrôlez la durée de conservation de l'historique GPS</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">GPS History Retention Period</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Période de conservation de l'historique GPS</label>
             <select
               value={dataRetention}
               onChange={(e) => setDataRetention(e.target.value)}
               className="rounded-md border border-gray-300 bg-white px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              <option value="30">30 days</option>
-              <option value="60">60 days</option>
-              <option value="90">90 days</option>
-              <option value="180">180 days</option>
-              <option value="365">1 year</option>
+              <option value="30">30 jours</option>
+              <option value="60">60 jours</option>
+              <option value="90">90 jours</option>
+              <option value="180">180 jours</option>
+              <option value="365">1 an</option>
             </select>
             <p className="text-xs text-gray-500 mt-2">
-              Data older than the selected period will be automatically deleted to save storage space.
+              Les données plus anciennes que la période sélectionnée seront automatiquement supprimées.
             </p>
           </div>
-          <Button className="w-full">Save Retention Policy</Button>
+          <Button className="w-full">Enregistrer la politique de conservation</Button>
         </CardContent>
       </Card>
 
@@ -427,33 +439,33 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin size={20} />
-            Map Defaults
+            Paramètres de carte
           </CardTitle>
-          <CardDescription>Configure default map settings</CardDescription>
+          <CardDescription>Configurez les paramètres de carte par défaut</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Center Latitude</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Latitude du centre</label>
               <Input
                 type="text"
                 value={mapDefaults.centerLat}
                 onChange={(e) => handleMapDefaultChange('centerLat', e.target.value)}
-                placeholder="48.8566"
+                placeholder="43.7"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Center Longitude</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Longitude du centre</label>
               <Input
                 type="text"
                 value={mapDefaults.centerLng}
                 onChange={(e) => handleMapDefaultChange('centerLng', e.target.value)}
-                placeholder="2.3522"
+                placeholder="7.12"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Default Zoom Level</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Niveau de zoom par défaut</label>
             <Input
               type="text"
               value={mapDefaults.zoom}
@@ -462,31 +474,31 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tile Layer</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Couche de tuiles</label>
             <select
               value={mapDefaults.tileLayer}
               onChange={(e) => handleMapDefaultChange('tileLayer', e.target.value)}
               className="rounded-md border border-gray-300 bg-white px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              <option value="openstreetmap">OpenStreetMap</option>
-              <option value="satellite">Satellite</option>
-              <option value="terrain">Terrain</option>
-              <option value="dark">Dark Mode</option>
+              <option value="streets">Mapbox Plan (streets-v12)</option>
+              <option value="satellite">Mapbox Satellite (satellite-streets-v12)</option>
+              <option value="terrain">Mapbox Terrain (outdoors-v12)</option>
+              <option value="dark">Mapbox Sombre (dark-v11)</option>
             </select>
           </div>
-          <Button className="w-full">Save Map Settings</Button>
+          <Button className="w-full">Enregistrer les paramètres de carte</Button>
         </CardContent>
       </Card>
 
       {/* Danger zone */}
       <Card className="border-red-200">
         <CardHeader>
-          <CardTitle className="text-red-600">Danger Zone</CardTitle>
+          <CardTitle className="text-red-600">Zone dangereuse</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600">Once you delete your account, there is no going back. Please be certain.</p>
+          <p className="text-sm text-gray-600">La suppression de votre compte est irréversible. Soyez certain de votre choix.</p>
           <Button variant="destructive" className="w-full">
-            Delete Account
+            Supprimer le compte
           </Button>
         </CardContent>
       </Card>

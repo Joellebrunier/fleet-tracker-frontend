@@ -6,7 +6,21 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useVehicles } from '@/hooks/useVehicles'
 import { useAlerts } from '@/hooks/useAlerts'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  Legend,
+} from 'recharts'
 import {
   Truck,
   Activity,
@@ -21,6 +35,7 @@ import {
   FileText,
   Zap,
   Plus,
+  Route,
 } from 'lucide-react'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 
@@ -119,6 +134,37 @@ export default function DashboardPage() {
   // Alerts data
   const alertsList = useMemo(() => alertsData?.data || [], [alertsData])
 
+  // Vehicle status distribution for pie chart
+  const vehicleStatusData = useMemo(() => {
+    const active = vehicles.filter((v: any) => (v.currentSpeed || 0) > 2).length
+    const idle = vehicles.filter((v: any) => (v.currentSpeed || 0) <= 2 && v.currentLat && v.currentLng).length
+    const offline = vehicles.filter((v: any) => !v.currentLat || !v.currentLng).length
+    const maintenance = Math.floor(vehicles.length * 0.05) // Mock maintenance count (5% of fleet)
+
+    return [
+      { name: 'En mouvement', value: active, color: '#22c55e' },
+      { name: 'Arrêtés', value: idle, color: '#eab308' },
+      { name: 'Hors ligne', value: offline, color: '#9ca3af' },
+      { name: 'Maintenance', value: maintenance, color: '#f97316' },
+    ].filter((item) => item.value > 0)
+  }, [vehicles])
+
+  // Alert distribution by type
+  const alertDistributionData = useMemo(() => {
+    // Mock data for alert distribution by type
+    const counts = {
+      'Vitesse excessive': 12,
+      'Géobarrière': 8,
+      'Batterie faible': 5,
+      'Maintenance': 3,
+      'Diagnostic': 2,
+    }
+    return Object.entries(counts).map(([type, count]) => ({
+      type: type,
+      count: count,
+    }))
+  }, [])
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -207,112 +253,188 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="border-l-4 border-l-indigo-500">
+          <CardContent className="pt-5 pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Km du jour</p>
+                <p className="text-3xl font-bold text-indigo-600 mt-1">1,247</p>
+                <p className="text-xs text-gray-500 mt-1">distance totale</p>
+              </div>
+              <div className="rounded-xl bg-indigo-50 p-3">
+                <Route className="text-indigo-600" size={24} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Fleet Activity Chart */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Activité horaire (24h)</CardTitle>
-          <CardDescription className="text-xs">Véhicules en mouvement vs arrêtés</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={hourlyData}>
-              <defs>
-                <linearGradient id="colorMoving" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1}/>
-                </linearGradient>
-                <linearGradient id="colorStopped" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="hour" stroke="#9ca3af" style={{ fontSize: '12px' }} />
-              <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px',
-                }}
-                formatter={(value: any) => [value, '']}
-              />
-              <Area
-                type="monotone"
-                dataKey="moving"
-                stroke="#22c55e"
-                fillOpacity={1}
-                fill="url(#colorMoving)"
-                name="En mouvement"
-              />
-              <Area
-                type="monotone"
-                dataKey="stopped"
-                stroke="#ef4444"
-                fillOpacity={1}
-                fill="url(#colorStopped)"
-                name="Arrêtés"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions & Alerts Section */}
+      {/* Fleet Activity Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Hourly Activity Chart */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Activité horaire (24h)</CardTitle>
+            <CardDescription className="text-xs">Véhicules en mouvement vs arrêtés</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={hourlyData}>
+                <defs>
+                  <linearGradient id="colorMoving" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1}/>
+                  </linearGradient>
+                  <linearGradient id="colorStopped" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="hour" stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: any) => [value, '']}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="moving"
+                  stroke="#22c55e"
+                  fillOpacity={1}
+                  fill="url(#colorMoving)"
+                  name="En mouvement"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="stopped"
+                  stroke="#ef4444"
+                  fillOpacity={1}
+                  fill="url(#colorStopped)"
+                  name="Arrêtés"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Fleet Utilization Pie Chart */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">État de la flotte</CardTitle>
+            <CardDescription className="text-xs">Distribution par statut véhicule</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={vehicleStatusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={100}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {vehicleStatusData.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: any) => `${value} véhicules`} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Alert Distribution & Quick Actions */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Alert Distribution Bar Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Distribution des alertes</CardTitle>
+            <CardDescription className="text-xs">Nombre d'alertes par type (dernières 24h)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={alertDistributionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="type" stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: any) => [`${value} alertes`, 'Nombre']}
+                />
+                <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
         {/* Quick Actions */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Actions rapides</CardTitle>
-            <CardDescription className="text-xs">Accès direct aux fonctionnalités principales</CardDescription>
+            <CardDescription className="text-xs">Accès direct aux fonctionnalités</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-2.5">
               <Button
                 variant="outline"
-                className="flex items-center justify-center gap-2 h-auto py-3 flex-col"
+                className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row"
                 onClick={() => navigate('/map')}
               >
-                <MapPin size={18} />
+                <MapPin size={16} />
                 <span className="text-xs">Voir Carte</span>
               </Button>
               <Button
                 variant="outline"
-                className="flex items-center justify-center gap-2 h-auto py-3 flex-col"
+                className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row"
                 onClick={() => navigate('/reports')}
               >
-                <FileText size={18} />
-                <span className="text-xs">Générer Rapport</span>
+                <FileText size={16} />
+                <span className="text-xs">Rapport</span>
               </Button>
               <Button
                 variant="outline"
-                className="flex items-center justify-center gap-2 h-auto py-3 flex-col"
+                className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row"
                 onClick={() => navigate('/geofences')}
               >
-                <Zap size={18} />
-                <span className="text-xs">Créer Géobarrière</span>
+                <Zap size={16} />
+                <span className="text-xs">Géobarrière</span>
               </Button>
               <Button
                 variant="outline"
-                className="flex items-center justify-center gap-2 h-auto py-3 flex-col"
+                className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row"
                 onClick={() => navigate('/alerts/new')}
               >
-                <Plus size={18} />
-                <span className="text-xs">Règle d'Alerte</span>
+                <Plus size={16} />
+                <span className="text-xs">Alerte</span>
               </Button>
             </div>
           </CardContent>
         </Card>
+      </div>
 
-        {/* Alert Summary */}
+      {/* Activity Feed & Alerts Section */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Activity Feed */}
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Alertes récentes</CardTitle>
-                <CardDescription className="text-xs">Non reconnus</CardDescription>
+                <CardTitle className="text-base">Fil d'activité récente</CardTitle>
+                <CardDescription className="text-xs">Alertes et changements de statut</CardDescription>
               </div>
               <Button
                 variant="ghost"
@@ -326,11 +448,11 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {alertsList.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {alertsList.map((alert: any, idx: number) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50"
+                    className="flex items-start gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                   >
                     <AlertCircle
                       size={16}
@@ -341,25 +463,65 @@ export default function DashboardPage() {
                       }
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{alert.title}</p>
-                      <p className="text-xs text-gray-500 line-clamp-2">{alert.message}</p>
-                      <p className="text-xs text-gray-400 mt-1">{formatTimeAgo(alert.createdAt)}</p>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">{alert.title}</p>
+                        <Badge
+                          variant={alert.severity === 'critical' ? 'destructive' : 'secondary'}
+                          className="flex-shrink-0 text-xs"
+                        >
+                          {alert.severity}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-1">{alert.message}</p>
+                      <p className="text-xs text-gray-400 mt-2">{formatTimeAgo(alert.createdAt)}</p>
                     </div>
-                    <Badge
-                      variant={alert.severity === 'critical' ? 'destructive' : 'secondary'}
-                      className="flex-shrink-0 text-xs"
-                    >
-                      {alert.severity}
-                    </Badge>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <AlertCircle size={24} className="text-gray-300 mb-2" />
-                <p className="text-sm text-gray-500">Aucune alerte non reconnue</p>
+                <p className="text-sm text-gray-500">Aucune alerte récente</p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Status Summary */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Résumé des statuts</CardTitle>
+            <CardDescription className="text-xs">Dernières mises à jour véhicule</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentlyUpdated.slice(0, 8).map((v: any) => {
+                const isMoving = (v.currentSpeed || 0) > 2
+                return (
+                  <div
+                    key={v.id}
+                    className="flex items-center gap-3 rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => navigate(`/vehicles/${v.id}`)}
+                  >
+                    <span
+                      className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                        isMoving ? 'bg-green-500' : 'bg-yellow-500'
+                      }`}
+                    ></span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{v.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {isMoving ? 'En mouvement' : 'Arrêté'} · {formatTimeAgo(v.lastCommunication)}
+                      </p>
+                    </div>
+                    <span className="text-xs font-semibold text-gray-900 flex-shrink-0">
+                      {(v.currentSpeed || 0).toFixed(0)}
+                      <span className="text-gray-500 font-normal"> km/h</span>
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </CardContent>
         </Card>
       </div>

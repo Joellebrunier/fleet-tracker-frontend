@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet'
 import L from 'leaflet'
@@ -20,9 +20,15 @@ import {
   Compass,
   Play,
   Download,
+  Power,
+  Battery,
+  Route,
+  Zap,
 } from 'lucide-react'
 import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer'
 import { GpsDataExport } from '@/components/vehicles/GpsDataExport'
+import { reverseGeocode } from '@/lib/geocoding'
+import { MAPBOX_TILE_URL } from '@/lib/constants'
 
 // Fix default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -37,6 +43,7 @@ export default function VehicleDetailPage() {
   const navigate = useNavigate()
   const [showReplay, setShowReplay] = useState(false)
   const [showExport, setShowExport] = useState(false)
+  const [currentAddress, setCurrentAddress] = useState<string | null>(null)
   const { data: vehicle, isLoading: vehicleLoading } = useVehicle(id || '')
   const { data: history } = useVehicleHistory(id || '')
 
@@ -45,6 +52,15 @@ export default function VehicleDetailPage() {
     const items = Array.isArray(history) ? history : history.data || history.positions || []
     return items.slice(0, 50)
   }, [history])
+
+  // Reverse geocode current position when lat/lng changes
+  useEffect(() => {
+    if (vehicle?.currentLat && vehicle?.currentLng) {
+      reverseGeocode(vehicle.currentLat, vehicle.currentLng)
+        .then(address => setCurrentAddress(address || null))
+        .catch(() => setCurrentAddress(null))
+    }
+  }, [vehicle?.currentLat, vehicle?.currentLng])
 
   if (vehicleLoading) {
     return (
@@ -143,7 +159,11 @@ export default function VehicleDetailPage() {
                   className="h-full w-full"
                   zoomControl={false}
                 >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <TileLayer
+                    url={MAPBOX_TILE_URL('streets-v12')}
+                    tileSize={512}
+                    zoomOffset={-1}
+                  />
                   <Marker position={[vehicle.currentLat!, vehicle.currentLng!]}>
                     <Popup>
                       <strong>{vehicle.name}</strong>
@@ -195,6 +215,20 @@ export default function VehicleDetailPage() {
 
             <div className="space-y-3 text-sm">
               <div className="flex items-center gap-2">
+                <Power size={14} className={((vehicle as any).ignition ? 'text-green-500' : 'text-gray-400')} />
+                <span className="text-gray-600 flex-1">Contact</span>
+                <span className={`font-medium text-xs ${(vehicle as any).ignition ? 'text-green-600' : 'text-gray-500'}`}>
+                  {(vehicle as any).ignition ? 'ON' : 'OFF'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Battery size={14} className="text-gray-400" />
+                <span className="text-gray-600 flex-1">Batterie</span>
+                <span className={`font-medium text-xs ${((vehicle as any).batteryVoltage || meta.batteryVoltage || 0) < 11 ? 'text-red-600' : ((vehicle as any).batteryVoltage || meta.batteryVoltage || 0) < 12 ? 'text-yellow-600' : 'text-gray-900'}`}>
+                  {((vehicle as any).batteryVoltage || meta.batteryVoltage || 0).toFixed(1)} V
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
                 <Compass size={14} className="text-gray-400" />
                 <span className="text-gray-600 flex-1">Cap</span>
                 <span className="font-medium">{(vehicle.currentHeading || 0).toFixed(0)}°</span>
@@ -206,6 +240,15 @@ export default function VehicleDetailPage() {
                   {vehicle.currentLat?.toFixed(5)}, {vehicle.currentLng?.toFixed(5)}
                 </span>
               </div>
+              {currentAddress && (
+                <div className="flex items-start gap-2">
+                  <MapPin size={14} className="text-gray-400 mt-0.5" />
+                  <div className="flex-1">
+                    <span className="text-gray-600 text-xs block">Adresse</span>
+                    <span className="text-gray-900 text-xs leading-tight">{currentAddress}</span>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Clock size={14} className="text-gray-400" />
                 <span className="text-gray-600 flex-1">Dernière com.</span>
@@ -254,6 +297,31 @@ export default function VehicleDetailPage() {
             <p className="text-xs text-gray-500">Créé le</p>
             <p className="font-semibold text-gray-900 mt-0.5 text-sm">
               {vehicle.createdAt ? formatDateTime(vehicle.createdAt) : '—'}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <Route size={18} className="text-gray-400 mb-2" />
+            <p className="text-xs text-gray-500">Odomètre</p>
+            <p className="font-semibold text-gray-900 mt-0.5">
+              {((vehicle as any).odometer || vehicle.totalDistance || 0).toLocaleString('fr-FR')} km
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <Zap size={18} className="text-gray-400 mb-2" />
+            <p className="text-xs text-gray-500">VIN</p>
+            <p className="font-mono text-xs text-gray-900 mt-0.5">{(vehicle as any).vin || vehicle.vin || '—'}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <Car size={18} className="text-gray-400 mb-2" />
+            <p className="text-xs text-gray-500">Type</p>
+            <p className="font-semibold text-gray-900 mt-0.5">
+              {(vehicle as any).vehicleType || vehicle.type || '—'}
             </p>
           </CardContent>
         </Card>

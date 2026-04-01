@@ -153,11 +153,14 @@ export default function AlertsPage() {
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<'unacknowledged' | 'acknowledged' | undefined>('unacknowledged')
   const [search, setSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [selectedAlerts, setSelectedAlerts] = useState<string[]>([])
   const [showRuleModal, setShowRuleModal] = useState(false)
   const [ruleForm, setRuleForm] = useState<RuleFormState>(defaultRuleForm)
   const [ruleStep, setRuleStep] = useState(0)
   const [formError, setFormError] = useState('')
+  const [disabledRules, setDisabledRules] = useState<Set<string>>(new Set())
 
   const { data: alertsData, isLoading } = useAlerts({ page, limit: 20, status })
   const { data: stats } = useAlertStats()
@@ -168,13 +171,23 @@ export default function AlertsPage() {
   const alerts = alertsData?.data || []
   const totalPages = alertsData?.totalPages || 1
 
-  const filteredAlerts = search
-    ? alerts.filter(
-        (a) =>
-          a.title.toLowerCase().includes(search.toLowerCase()) ||
-          a.message.toLowerCase().includes(search.toLowerCase())
-      )
-    : alerts
+  const filteredAlerts = alerts.filter((a) => {
+    // Keyword search filter
+    if (search && !a.title.toLowerCase().includes(search.toLowerCase()) && !a.message.toLowerCase().includes(search.toLowerCase())) {
+      return false
+    }
+    // Date range filter
+    if (dateFrom || dateTo) {
+      const alertDate = new Date(a.createdAt)
+      if (dateFrom && alertDate < new Date(dateFrom)) return false
+      if (dateTo) {
+        const endOfDay = new Date(dateTo)
+        endOfDay.setHours(23, 59, 59, 999)
+        if (alertDate > endOfDay) return false
+      }
+    }
+    return true
+  })
 
   const handleSelectAlert = (id: string) => {
     setSelectedAlerts((prev) =>
@@ -250,19 +263,19 @@ export default function AlertsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Alerts</h1>
-          <p className="mt-1 text-gray-600">Monitor and manage fleet alerts and rules</p>
+          <h1 className="text-3xl font-bold text-gray-900">Alertes</h1>
+          <p className="mt-1 text-gray-600">Surveiller et gérer les alertes et les règles de la flotte</p>
         </div>
         <div className="flex gap-2">
           {selectedAlerts.length > 0 && (
             <Button variant="outline" className="gap-2" onClick={handleBulkAcknowledge}>
               <Check size={16} />
-              Acknowledge ({selectedAlerts.length})
+              Reconnaître ({selectedAlerts.length})
             </Button>
           )}
           <Button className="gap-2" onClick={openRuleCreator}>
             <Plus size={16} />
-            Create Rule
+            Créer une règle
           </Button>
         </div>
       </div>
@@ -285,7 +298,7 @@ export default function AlertsPage() {
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500">Unacknowledged</p>
+                  <p className="text-xs text-gray-500">Non reconnus</p>
                   <p className="text-xl font-bold text-amber-600">{stats.unacknowledged}</p>
                 </div>
                 <AlertCircle size={18} className="text-amber-400" />
@@ -349,7 +362,7 @@ export default function AlertsPage() {
             tab === 'alerts' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          Alerts ({stats?.total || 0})
+          Alertes ({stats?.total || 0})
         </button>
         <button
           onClick={() => setTab('rules')}
@@ -357,7 +370,7 @@ export default function AlertsPage() {
             tab === 'rules' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          Rules ({(rules as any)?.length || 0})
+          Règles ({(rules as any)?.length || 0})
         </button>
       </div>
 
@@ -365,33 +378,76 @@ export default function AlertsPage() {
       {tab === 'alerts' && (
         <>
           {/* Filters */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <Input
-                placeholder="Search alerts..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  placeholder="Rechercher les alertes..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <div className="flex gap-2">
+                {(['all', 'unacknowledged', 'acknowledged'] as const).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      setStatus(s === 'all' ? undefined : s)
+                      setPage(1)
+                    }}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                      (s === 'all' && !status) || status === s
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {s === 'all' ? 'Tout' : s === 'unacknowledged' ? 'Actif' : 'Reconnu'}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-2">
-              {(['all', 'unacknowledged', 'acknowledged'] as const).map((s) => (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setStatus(s === 'all' ? undefined : s)
+
+            {/* Date Range Filter */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">De</label>
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => {
+                    setDateFrom(e.target.value)
                     setPage(1)
                   }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                    (s === 'all' && !status) || status === s
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">À</label>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => {
+                    setDateTo(e.target.value)
+                    setPage(1)
+                  }}
+                  className="w-full"
+                />
+              </div>
+              {(dateFrom || dateTo) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDateFrom('')
+                    setDateTo('')
+                    setPage(1)
+                  }}
                 >
-                  {s === 'all' ? 'All' : s === 'unacknowledged' ? 'Active' : 'Acknowledged'}
-                </button>
-              ))}
+                  Réinitialiser
+                </Button>
+              )}
             </div>
           </div>
 
@@ -406,9 +462,9 @@ export default function AlertsPage() {
             <Card className="text-center">
               <CardContent className="py-12">
                 <Bell className="mx-auto mb-4 text-gray-400" size={48} />
-                <h3 className="text-lg font-medium text-gray-700">No alerts found</h3>
+                <h3 className="text-lg font-medium text-gray-700">Aucune alerte trouvée</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {search ? 'Try a different search term' : 'All clear! No active alerts.'}
+                  {search ? 'Essayez un terme de recherche différent' : 'Tout clair ! Aucune alerte active.'}
                 </p>
               </CardContent>
             </Card>
@@ -451,7 +507,7 @@ export default function AlertsPage() {
                             {alert.isAcknowledged ? (
                               <Badge variant="secondary" className="text-xs">
                                 <Check size={12} className="mr-1" />
-                                Ack
+                                Reconnu
                               </Badge>
                             ) : (
                               <Button
@@ -461,7 +517,7 @@ export default function AlertsPage() {
                                 onClick={() => bulkAcknowledge([alert.id])}
                               >
                                 <Check size={12} />
-                                Acknowledge
+                                Reconnaître
                               </Button>
                             )}
                           </div>
@@ -479,7 +535,7 @@ export default function AlertsPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Page {page} of {totalPages}
+                Page {page} sur {totalPages}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -488,7 +544,7 @@ export default function AlertsPage() {
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
                 >
-                  Previous
+                  Précédent
                 </Button>
                 <Button
                   variant="outline"
@@ -496,7 +552,7 @@ export default function AlertsPage() {
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
                 >
-                  Next
+                  Suivant
                 </Button>
               </div>
             </div>
@@ -517,13 +573,13 @@ export default function AlertsPage() {
             <Card className="text-center">
               <CardContent className="py-12">
                 <Settings className="mx-auto mb-4 text-gray-400" size={48} />
-                <h3 className="text-lg font-medium text-gray-700">No alert rules configured</h3>
+                <h3 className="text-lg font-medium text-gray-700">Aucune règle d'alerte configurée</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Create rules to automatically generate alerts based on vehicle conditions.
+                  Créez des règles pour générer automatiquement des alertes en fonction des conditions des véhicules.
                 </p>
                 <Button className="mt-4 gap-2" onClick={openRuleCreator}>
                   <Plus size={16} />
-                  Create Your First Rule
+                  Créer votre première règle
                 </Button>
               </CardContent>
             </Card>
@@ -545,8 +601,8 @@ export default function AlertsPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <h3 className="font-medium text-gray-900">{rule.name}</h3>
-                            <Badge variant={rule.enabled ? 'default' : 'secondary'}>
-                              {rule.enabled ? 'Active' : 'Disabled'}
+                            <Badge variant={!disabledRules.has(rule.id) && rule.enabled ? 'default' : 'secondary'}>
+                              {!disabledRules.has(rule.id) && rule.enabled ? 'Actif' : 'Désactivé'}
                             </Badge>
                             <span
                               className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${getSeverityBadgeClass(
@@ -560,7 +616,25 @@ export default function AlertsPage() {
                             {rule.description || typeConf?.description || rule.type}
                           </p>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 items-center">
+                          <button
+                            onClick={() => {
+                              setDisabledRules((prev) => {
+                                const next = new Set(prev)
+                                if (next.has(rule.id)) {
+                                  next.delete(rule.id)
+                                } else {
+                                  next.add(rule.id)
+                                }
+                                return next
+                              })
+                            }}
+                            className={`h-8 w-12 rounded-full transition-colors ${
+                              disabledRules.has(rule.id)
+                                ? 'bg-gray-300'
+                                : 'bg-blue-500'
+                            }`}
+                          />
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <Settings size={14} />
                           </Button>
@@ -582,13 +656,13 @@ export default function AlertsPage() {
       <Dialog open={showRuleModal} onOpenChange={() => setShowRuleModal(false)}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Alert Rule</DialogTitle>
+            <DialogTitle>Créer une règle d'alerte</DialogTitle>
             <DialogDescription>
               {ruleStep === 0
-                ? 'Step 1: Choose an alert type'
+                ? 'Étape 1 : Choisir un type d\'alerte'
                 : ruleStep === 1
-                  ? 'Step 2: Configure the rule'
-                  : 'Step 3: Set notification actions'}
+                  ? 'Étape 2 : Configurer la règle'
+                  : 'Étape 3 : Définir les actions de notification'}
             </DialogDescription>
           </DialogHeader>
 
@@ -648,11 +722,11 @@ export default function AlertsPage() {
           {ruleStep === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Rule Name *</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Nom de la règle *</label>
                 <Input
                   value={ruleForm.name}
                   onChange={(e) => setRuleForm((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g. Highway Speed Alert"
+                  placeholder="Ex. Alerte de vitesse sur autoroute"
                 />
               </div>
 
@@ -661,12 +735,12 @@ export default function AlertsPage() {
                 <Input
                   value={ruleForm.description}
                   onChange={(e) => setRuleForm((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Optional description..."
+                  placeholder="Description facultative..."
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Severity</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Gravité</label>
                 <div className="flex flex-wrap gap-2">
                   {severityOptions.map((opt) => (
                     <button
@@ -687,7 +761,7 @@ export default function AlertsPage() {
               {/* Condition Value */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Threshold Value
+                  Valeur de seuil
                 </label>
                 <div className="flex gap-2">
                   <Input
@@ -698,12 +772,12 @@ export default function AlertsPage() {
                     }
                     placeholder={
                       ruleForm.type === AlertType.OVERSPEED
-                        ? 'Speed limit (km/h)'
+                        ? 'Limite de vitesse (km/h)'
                         : ruleForm.type === AlertType.IDLE_TIMEOUT
                           ? 'Minutes'
                           : ruleForm.type === AlertType.LOW_BATTERY
-                            ? 'Battery %'
-                            : 'Value'
+                            ? 'Batterie %'
+                            : 'Valeur'
                     }
                     className="flex-1"
                   />
@@ -713,12 +787,12 @@ export default function AlertsPage() {
                     onChange={(e) =>
                       setRuleForm((prev) => ({ ...prev, conditionDuration: e.target.value }))
                     }
-                    placeholder="Duration (seconds)"
+                    placeholder="Durée (secondes)"
                     className="flex-1"
                   />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">
-                  Duration: how long the condition must be met before triggering
+                  Durée : combien de temps la condition doit être respectée avant le déclenchement
                 </p>
               </div>
 
@@ -729,7 +803,7 @@ export default function AlertsPage() {
                   onChange={(e) => setRuleForm((prev) => ({ ...prev, enabled: e.target.checked }))}
                   className="rounded border-gray-300"
                 />
-                Enable rule immediately
+                Activer la règle immédiatement
               </label>
             </div>
           )}
@@ -738,7 +812,7 @@ export default function AlertsPage() {
           {ruleStep === 2 && (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                Choose how to be notified when this rule triggers:
+                Choisissez comment être averti lorsque cette règle se déclenche :
               </p>
 
               {['push', 'email', 'sms', 'webhook'].map((actionType) => {
@@ -767,15 +841,23 @@ export default function AlertsPage() {
                       className="rounded border-gray-300"
                     />
                     <div>
-                      <p className="font-medium text-sm capitalize">{actionType} Notification</p>
+                      <p className="font-medium text-sm capitalize">
+                        {actionType === 'push'
+                          ? 'Notification Push'
+                          : actionType === 'email'
+                            ? 'Notification Email'
+                            : actionType === 'sms'
+                              ? 'Notification SMS'
+                              : 'Webhook'}
+                      </p>
                       <p className="text-xs text-gray-500">
                         {actionType === 'push'
-                          ? 'In-app notification for all team members'
+                          ? 'Notification in-app pour tous les membres de l\'équipe'
                           : actionType === 'email'
-                            ? 'Send email to configured recipients'
+                            ? 'Envoyer un email aux destinataires configurés'
                             : actionType === 'sms'
-                              ? 'Send SMS to configured phone numbers'
-                              : 'Call external webhook URL'}
+                              ? 'Envoyer un SMS aux numéros de téléphone configurés'
+                              : 'Appeler l\'URL webhook externe'}
                       </p>
                     </div>
                   </label>
@@ -793,26 +875,26 @@ export default function AlertsPage() {
           <DialogFooter>
             {ruleStep > 0 && (
               <Button variant="outline" onClick={() => setRuleStep((s) => s - 1)}>
-                Back
+                Retour
               </Button>
             )}
             {ruleStep < 2 ? (
               <Button
                 onClick={() => {
                   if (ruleStep === 0 && !ruleForm.type) {
-                    setFormError('Please select an alert type')
+                    setFormError('Veuillez sélectionner un type d\'alerte')
                     return
                   }
                   setFormError('')
                   setRuleStep((s) => s + 1)
                 }}
               >
-                Next
+                Suivant
                 <ChevronRight size={16} className="ml-1" />
               </Button>
             ) : (
               <Button onClick={handleCreateRule} disabled={createRuleMutation.isPending}>
-                {createRuleMutation.isPending ? 'Creating...' : 'Create Rule'}
+                {createRuleMutation.isPending ? 'Création...' : 'Créer une règle'}
               </Button>
             )}
           </DialogFooter>

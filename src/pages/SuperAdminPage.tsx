@@ -87,6 +87,8 @@ export default function SuperAdminPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [searchOrg, setSearchOrg] = useState('')
   const [searchUser, setSearchUser] = useState('')
+  const [orgStatusFilter, setOrgStatusFilter] = useState<'all' | 'active' | 'paused' | 'suspended'>('all')
+  const [userRoleFilter, setUserRoleFilter] = useState<string>('all')
 
   // Fetch system health
   const { data: health, isLoading: healthLoading, refetch: refetchHealth } = useQuery({
@@ -127,15 +129,21 @@ export default function SuperAdminPage() {
   })
 
   const filteredOrganizations = organizations.filter(
-    org =>
-      org.name.toLowerCase().includes(searchOrg.toLowerCase()) ||
-      org.id.toLowerCase().includes(searchOrg.toLowerCase())
+    org => {
+      const matchesSearch = org.name.toLowerCase().includes(searchOrg.toLowerCase()) ||
+        org.id.toLowerCase().includes(searchOrg.toLowerCase())
+      const matchesStatus = orgStatusFilter === 'all' || org.status === orgStatusFilter
+      return matchesSearch && matchesStatus
+    }
   )
 
   const filteredUsers = users.filter(
-    user =>
-      user.email.toLowerCase().includes(searchUser.toLowerCase()) ||
-      user.name.toLowerCase().includes(searchUser.toLowerCase())
+    user => {
+      const matchesSearch = user.email.toLowerCase().includes(searchUser.toLowerCase()) ||
+        user.name.toLowerCase().includes(searchUser.toLowerCase())
+      const matchesRole = userRoleFilter === 'all' || user.role === userRoleFilter
+      return matchesSearch && matchesRole
+    }
   )
 
   const handleRefreshAll = () => {
@@ -201,8 +209,8 @@ export default function SuperAdminPage() {
       {/* Header */}
       <div className="flex items-start justify-between rounded-lg border-l-4 border-red-500 bg-red-50 p-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">System Administration</h1>
-          <p className="mt-2 text-gray-600">Super admin only - manage all organizations and users</p>
+          <h1 className="text-3xl font-bold text-gray-900">Administration système</h1>
+          <p className="mt-2 text-gray-600">Super admin uniquement — gestion de toutes les organisations et utilisateurs</p>
         </div>
         <Button
           variant="outline"
@@ -211,7 +219,7 @@ export default function SuperAdminPage() {
           className="gap-2"
         >
           <RefreshCw className="h-4 w-4" />
-          Refresh
+          Actualiser
         </Button>
       </div>
 
@@ -227,10 +235,10 @@ export default function SuperAdminPage() {
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
-            {tab === 'overview' && 'Overview'}
-            {tab === 'organizations' && 'Organizations'}
-            {tab === 'users' && 'Users'}
-            {tab === 'config' && 'System Config'}
+            {tab === 'overview' && 'Vue d\'ensemble'}
+            {tab === 'organizations' && 'Organisations'}
+            {tab === 'users' && 'Utilisateurs'}
+            {tab === 'config' && 'Configuration'}
           </button>
         ))}
       </div>
@@ -251,7 +259,7 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Total Users</p>
+                        <p className="text-sm text-gray-600">Utilisateurs totaux</p>
                         <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.totalUsers || 0}</p>
                       </div>
                       <Users className="h-8 w-8 text-blue-600 opacity-20" />
@@ -272,7 +280,7 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Organizations</p>
+                        <p className="text-sm text-gray-600">Organisations</p>
                         <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.totalOrganizations || 0}</p>
                       </div>
                       <Building2 className="h-8 w-8 text-green-600 opacity-20" />
@@ -293,7 +301,7 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Total Vehicles</p>
+                        <p className="text-sm text-gray-600">Véhicules totaux</p>
                         <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.totalVehicles || 0}</p>
                       </div>
                       <BarChart3 className="h-8 w-8 text-purple-600 opacity-20" />
@@ -314,7 +322,7 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Active Trackers</p>
+                        <p className="text-sm text-gray-600">Traceurs actifs</p>
                         <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.activeTrackers || 0}</p>
                       </div>
                       <Activity className="h-8 w-8 text-orange-600 opacity-20" />
@@ -335,7 +343,7 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Active Alerts</p>
+                        <p className="text-sm text-gray-600">Alertes actives</p>
                         <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.activeAlerts || 0}</p>
                       </div>
                       <AlertTriangle className="h-8 w-8 text-red-600 opacity-20" />
@@ -351,9 +359,9 @@ export default function SuperAdminPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                System Health
+                Santé du système
               </CardTitle>
-              <CardDescription>Real-time status of critical system components</CardDescription>
+              <CardDescription>État en temps réel des composants critiques</CardDescription>
             </CardHeader>
             <CardContent>
               {healthLoading ? (
@@ -369,7 +377,7 @@ export default function SuperAdminPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <Server className="h-5 w-5" />
                       <p className={`text-sm font-medium ${getStatusTextColor(health?.api.status || 'down')}`}>
-                        API Server
+                        Serveur API
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -380,10 +388,10 @@ export default function SuperAdminPage() {
                         </span>
                       </div>
                       <p className="text-xs text-gray-600">
-                        Response: {health?.api.responseTime}ms
+                        Réponse : {health?.api.responseTime}ms
                       </p>
                       <p className="text-xs text-gray-600">
-                        Last check: {health?.api.lastCheck ? formatTimeAgo(new Date(health.api.lastCheck)) : 'N/A'}
+                        Dernière vérif. : {health?.api.lastCheck ? formatTimeAgo(new Date(health.api.lastCheck)) : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -393,7 +401,7 @@ export default function SuperAdminPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <Database className="h-5 w-5" />
                       <p className={`text-sm font-medium ${getStatusTextColor(health?.database.status || 'down')}`}>
-                        Database
+                        Base de données
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -404,10 +412,10 @@ export default function SuperAdminPage() {
                         </span>
                       </div>
                       <p className="text-xs text-gray-600">
-                        Response: {health?.database.responseTime}ms
+                        Réponse : {health?.database.responseTime}ms
                       </p>
                       <p className="text-xs text-gray-600">
-                        Connections: {health?.database.connections || 0}
+                        Connexions : {health?.database.connections || 0}
                       </p>
                     </div>
                   </div>
@@ -417,7 +425,7 @@ export default function SuperAdminPage() {
                     <div className="flex items-center gap-2 mb-3">
                       <Wifi className="h-5 w-5" />
                       <p className={`text-sm font-medium ${getStatusTextColor(health?.gpsProviders.status || 'down')}`}>
-                        GPS Providers
+                        Fournisseurs GPS
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -428,10 +436,10 @@ export default function SuperAdminPage() {
                         </span>
                       </div>
                       <p className="text-xs text-gray-600">
-                        Active: {health?.gpsProviders.activeTrackers || 0}
+                        Actifs : {health?.gpsProviders.activeTrackers || 0}
                       </p>
                       <p className="text-xs text-gray-600">
-                        Updated: {health?.gpsProviders.lastUpdate ? formatTimeAgo(new Date(health.gpsProviders.lastUpdate)) : 'N/A'}
+                        Mis à jour : {health?.gpsProviders.lastUpdate ? formatTimeAgo(new Date(health.gpsProviders.lastUpdate)) : 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -458,19 +466,19 @@ export default function SuperAdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
-                  System Performance
+                  Performance système
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="rounded-lg border border-gray-200 p-4">
-                    <p className="text-sm text-gray-600">Uptime</p>
+                    <p className="text-sm text-gray-600">Disponibilité</p>
                     <p className="mt-2 text-xl font-semibold text-gray-900">
                       {stats?.uptime ? `${(stats.uptime * 100).toFixed(2)}%` : 'N/A'}
                     </p>
                   </div>
                   <div className="rounded-lg border border-gray-200 p-4">
-                    <p className="text-sm text-gray-600">Requests per Second</p>
+                    <p className="text-sm text-gray-600">Requêtes par seconde</p>
                     <p className="mt-2 text-xl font-semibold text-gray-900">
                       {stats?.requestsPerSecond || 0} RPS
                     </p>
@@ -488,15 +496,28 @@ export default function SuperAdminPage() {
           <div className="flex items-center gap-2">
             <Search className="h-5 w-5 text-gray-400" />
             <Input
-              placeholder="Search by name or ID..."
+              placeholder="Rechercher par nom ou ID..."
               value={searchOrg}
               onChange={e => setSearchOrg(e.target.value)}
               className="flex-1"
             />
             <Button variant="outline" size="sm" className="gap-2">
               <Plus className="h-4 w-4" />
-              New Organization
+              Nouvelle organisation
             </Button>
+          </div>
+
+          <div className="flex gap-2">
+            {(['all', 'active', 'paused', 'suspended'] as const).map(status => (
+              <Button
+                key={status}
+                variant={orgStatusFilter === status ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setOrgStatusFilter(status)}
+              >
+                {status === 'all' ? 'Tous' : status === 'active' ? 'Actif' : status === 'paused' ? 'En pause' : 'Suspendu'}
+              </Button>
+            ))}
           </div>
 
           {orgsLoading ? (
@@ -508,13 +529,13 @@ export default function SuperAdminPage() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Organizations ({filteredOrganizations.length})</CardTitle>
-                <CardDescription>Manage all organizations in the system</CardDescription>
+                <CardTitle>Organisations ({filteredOrganizations.length})</CardTitle>
+                <CardDescription>Gérer toutes les organisations du système</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {filteredOrganizations.length === 0 ? (
-                    <p className="text-center text-gray-600 py-8">No organizations found</p>
+                    <p className="text-center text-gray-600 py-8">Aucune organisation trouvée</p>
                   ) : (
                     filteredOrganizations.map(org => (
                       <div
@@ -524,10 +545,10 @@ export default function SuperAdminPage() {
                         <div>
                           <p className="font-medium text-gray-900">{org.name}</p>
                           <p className="text-sm text-gray-600">
-                            {org.plan} Plan • {org.users} users • {org.vehicles} vehicles
+                            Plan {org.plan} • {org.users} utilisateurs • {org.vehicles} véhicules
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            Created {formatTimeAgo(new Date(org.createdAt))} • Last activity{' '}
+                            Créé {formatTimeAgo(new Date(org.createdAt))} • Dernière activité{' '}
                             {formatTimeAgo(new Date(org.lastActivity))}
                           </p>
                         </div>
@@ -540,7 +561,7 @@ export default function SuperAdminPage() {
                           </Badge>
                           <Button variant="outline" size="sm" className="gap-1">
                             <Eye className="h-4 w-4" />
-                            Manage
+                            Gérer
                           </Button>
                         </div>
                       </div>
@@ -559,11 +580,24 @@ export default function SuperAdminPage() {
           <div className="flex items-center gap-2">
             <Search className="h-5 w-5 text-gray-400" />
             <Input
-              placeholder="Search by email or name..."
+              placeholder="Rechercher par email ou nom..."
               value={searchUser}
               onChange={e => setSearchUser(e.target.value)}
               className="flex-1"
             />
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            {(['all', 'super_admin', 'admin', 'manager', 'operator', 'driver'] as const).map(role => (
+              <Button
+                key={role}
+                variant={userRoleFilter === role ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setUserRoleFilter(role)}
+              >
+                {role === 'all' ? 'Tous' : role === 'super_admin' ? 'Super Admin' : role === 'admin' ? 'Admin' : role === 'manager' ? 'Manager' : role === 'operator' ? 'Opérateur' : 'Conducteur'}
+              </Button>
+            ))}
           </div>
 
           {usersLoading ? (
@@ -575,13 +609,13 @@ export default function SuperAdminPage() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Users ({filteredUsers.length})</CardTitle>
-                <CardDescription>All system users and their details</CardDescription>
+                <CardTitle>Utilisateurs ({filteredUsers.length})</CardTitle>
+                <CardDescription>Tous les utilisateurs et leurs détails</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {filteredUsers.length === 0 ? (
-                    <p className="text-center text-gray-600 py-8">No users found</p>
+                    <p className="text-center text-gray-600 py-8">Aucun utilisateur trouvé</p>
                   ) : (
                     filteredUsers.map(user => (
                       <div
@@ -592,7 +626,7 @@ export default function SuperAdminPage() {
                           <p className="font-medium text-gray-900">{user.name}</p>
                           <p className="text-sm text-gray-600">{user.email}</p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {user.organizationName} • {user.role} • Joined{' '}
+                            {user.organizationName} • {user.role} • Inscrit{' '}
                             {formatTimeAgo(new Date(user.createdAt))}
                           </p>
                         </div>
@@ -605,7 +639,7 @@ export default function SuperAdminPage() {
                           </Badge>
                           <Button variant="outline" size="sm" className="gap-1">
                             <Eye className="h-4 w-4" />
-                            View
+                            Voir
                           </Button>
                         </div>
                       </div>
@@ -625,67 +659,67 @@ export default function SuperAdminPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                System Configuration
+                Configuration système
               </CardTitle>
-              <CardDescription>Configure global system settings and preferences</CardDescription>
+              <CardDescription>Configurez les paramètres système globaux</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Max GPS Update Interval
+                      Intervalle max. de mise à jour GPS
                     </label>
                     <Input type="number" placeholder="30" defaultValue="30" />
-                    <p className="text-xs text-gray-600 mt-1">in seconds</p>
+                    <p className="text-xs text-gray-600 mt-1">en secondes</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Alert Retention Period
+                      Période de conservation des alertes
                     </label>
                     <Input type="number" placeholder="30" defaultValue="30" />
-                    <p className="text-xs text-gray-600 mt-1">in days</p>
+                    <p className="text-xs text-gray-600 mt-1">en jours</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Max Concurrent Connections
+                      Connexions simultanées max.
                     </label>
                     <Input type="number" placeholder="1000" defaultValue="1000" />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Email Notification Frequency
+                      Fréquence des notifications email
                     </label>
                     <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                      <option>Immediate</option>
-                      <option>Hourly Digest</option>
-                      <option>Daily Digest</option>
-                      <option>Disabled</option>
+                      <option>Immédiat</option>
+                      <option>Résumé horaire</option>
+                      <option>Résumé quotidien</option>
+                      <option>Désactivé</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="rounded-lg bg-gray-50 p-4">
-                  <h4 className="font-medium text-gray-900 mb-3">Feature Flags</h4>
+                  <h4 className="font-medium text-gray-900 mb-3">Fonctionnalités</h4>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2">
                       <input type="checkbox" className="rounded" defaultChecked />
-                      <span className="text-sm text-gray-700">Real-time GPS tracking</span>
+                      <span className="text-sm text-gray-700">Suivi GPS en temps réel</span>
                     </label>
                     <label className="flex items-center gap-2">
                       <input type="checkbox" className="rounded" defaultChecked />
-                      <span className="text-sm text-gray-700">Automated alerts</span>
+                      <span className="text-sm text-gray-700">Alertes automatisées</span>
                     </label>
                     <label className="flex items-center gap-2">
                       <input type="checkbox" className="rounded" defaultChecked />
-                      <span className="text-sm text-gray-700">Advanced analytics</span>
+                      <span className="text-sm text-gray-700">Analyses avancées</span>
                     </label>
                     <label className="flex items-center gap-2">
                       <input type="checkbox" className="rounded" />
-                      <span className="text-sm text-gray-700">Maintenance mode</span>
+                      <span className="text-sm text-gray-700">Mode maintenance</span>
                     </label>
                   </div>
                 </div>
@@ -693,9 +727,9 @@ export default function SuperAdminPage() {
                 <div className="flex gap-2 pt-4">
                   <Button className="gap-2">
                     <Settings className="h-4 w-4" />
-                    Save Configuration
+                    Enregistrer la configuration
                   </Button>
-                  <Button variant="outline">Reset to Defaults</Button>
+                  <Button variant="outline">Réinitialiser</Button>
                 </div>
               </div>
             </CardContent>
@@ -703,22 +737,22 @@ export default function SuperAdminPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>System Maintenance</CardTitle>
-              <CardDescription>Perform system maintenance tasks</CardDescription>
+              <CardTitle>Maintenance système</CardTitle>
+              <CardDescription>Effectuer des tâches de maintenance système</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <Button variant="outline" className="w-full justify-start">
-                  Clear Cache
+                  Vider le cache
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
-                  Rebuild Search Index
+                  Reconstruire l'index de recherche
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
-                  Archive Old Data
+                  Archiver les anciennes données
                 </Button>
                 <Button variant="outline" className="w-full justify-start text-red-600 hover:bg-red-50">
-                  Restart Services
+                  Redémarrer les services
                 </Button>
               </div>
             </CardContent>

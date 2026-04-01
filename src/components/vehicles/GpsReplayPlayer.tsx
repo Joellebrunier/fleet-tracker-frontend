@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { MAPBOX_TILE_URL } from '@/lib/constants'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,7 +16,10 @@ import {
   MapPin,
   Route,
   Navigation,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
+import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 import { apiClient } from '@/lib/api'
 import { API_ROUTES } from '@/lib/constants'
 import { useAuthStore } from '@/stores/authStore'
@@ -76,6 +80,24 @@ const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c
 }
 
+// Helper function to find index closest to a given time (in seconds offset from current)
+const findIndexByTimeOffset = (positions: GpsPosition[], currentTime: Date, offsetSeconds: number): number => {
+  const targetTime = currentTime.getTime() + offsetSeconds * 1000
+  let closestIndex = 0
+  let minDiff = Math.abs(new Date(positions[0].timestamp).getTime() - targetTime)
+
+  for (let i = 1; i < positions.length; i++) {
+    const posTime = new Date(positions[i].timestamp).getTime()
+    const diff = Math.abs(posTime - targetTime)
+    if (diff < minDiff) {
+      minDiff = diff
+      closestIndex = i
+    }
+  }
+
+  return closestIndex
+}
+
 // Map view controller component
 const MapViewController = ({
   positions,
@@ -114,6 +136,8 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>(1)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [stats, setStats] = useState<ReplayStats>({
     totalDistance: 0,
     totalDuration: 0,
@@ -207,6 +231,36 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
       numStops: stopCount,
     })
   }
+
+  // Handle date preset buttons
+  const handleDatePreset = useCallback((preset: 'today' | 'yesterday' | '7days' | '30days') => {
+    const now = new Date()
+    let start: Date
+    let end: Date
+
+    switch (preset) {
+      case 'today':
+        start = startOfDay(now)
+        end = now
+        break
+      case 'yesterday':
+        const yesterday = subDays(now, 1)
+        start = startOfDay(yesterday)
+        end = endOfDay(yesterday)
+        break
+      case '7days':
+        start = subDays(now, 7)
+        end = now
+        break
+      case '30days':
+        start = subDays(now, 30)
+        end = now
+        break
+    }
+
+    setStartDate(format(start, 'yyyy-MM-dd'))
+    setEndDate(format(end, 'yyyy-MM-dd'))
+  }, [])
 
   // Find stops (speed = 0 for > 30 seconds)
   const stops = useMemo(() => {
@@ -396,8 +450,10 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
               className="z-0"
             >
               <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; OpenStreetMap contributors'
+                url={MAPBOX_TILE_URL('streets-v12')}
+                attribution='&copy; Mapbox &copy; OpenStreetMap'
+                tileSize={512}
+                zoomOffset={-1}
               />
 
               <MapViewController positions={positions} currentPosition={currentPosition} />
@@ -580,6 +636,67 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             </div>
           </div>
 
+          {/* Date filter section */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground">Date Filter:</span>
+              <div className="flex gap-1 flex-wrap">
+                <Button
+                  variant={startDate === format(new Date(), 'yyyy-MM-dd') && endDate === format(new Date(), 'yyyy-MM-dd') ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleDatePreset('today')}
+                  className="text-xs h-7 px-2"
+                >
+                  Aujourd'hui
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDatePreset('yesterday')}
+                  className="text-xs h-7 px-2"
+                >
+                  Hier
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDatePreset('7days')}
+                  className="text-xs h-7 px-2"
+                >
+                  7 derniers jours
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDatePreset('30days')}
+                  className="text-xs h-7 px-2"
+                >
+                  30 derniers jours
+                </Button>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">Start Date</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full px-2 py-1 text-xs border rounded bg-background"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">End Date</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full px-2 py-1 text-xs border rounded bg-background"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Playback controls */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -590,6 +707,22 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                 disabled={currentIndex === 0}
               >
                 <SkipBack className="h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (currentPosition) {
+                    const newIndex = findIndexByTimeOffset(positions, new Date(currentPosition.timestamp), -300)
+                    setCurrentIndex(Math.max(0, newIndex))
+                  }
+                }}
+                disabled={currentIndex === 0}
+                title="Go back 5 minutes"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                <span className="text-xs">-5 min</span>
               </Button>
 
               <Button
@@ -608,6 +741,22 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                     Play
                   </>
                 )}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (currentPosition) {
+                    const newIndex = findIndexByTimeOffset(positions, new Date(currentPosition.timestamp), 300)
+                    setCurrentIndex(Math.min(positions.length - 1, newIndex))
+                  }
+                }}
+                disabled={currentIndex === positions.length - 1}
+                title="Go forward 5 minutes"
+              >
+                <span className="text-xs">+5 min</span>
+                <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
 
               <Button
