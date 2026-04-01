@@ -170,35 +170,69 @@ export default function SuperAdminPage() {
     const { data: health, isLoading: healthLoading, refetch: refetchHealth } = useQuery({
         queryKey: ['super-admin-health'],
         queryFn: async () => {
-            const response = await apiClient.get(API_ROUTES.SUPER_ADMIN_HEALTH || '/api/super-admin/health');
-            return response.data;
+            try {
+                const response = await apiClient.get(API_ROUTES.SUPER_ADMIN_HEALTH || '/api/super-admin/health');
+                return (response.data || null);
+            }
+            catch {
+                return null;
+            }
         },
-        refetchInterval: 30000, // Refetch every 30 seconds
+        refetchInterval: 30000,
+        retry: false,
     });
     // Fetch system stats
     const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
         queryKey: ['super-admin-stats'],
         queryFn: async () => {
-            const response = await apiClient.get(API_ROUTES.SUPER_ADMIN_STATS || '/api/super-admin/stats');
-            return response.data;
+            try {
+                const response = await apiClient.get(API_ROUTES.SUPER_ADMIN_STATS || '/api/super-admin/stats');
+                return (response.data || null);
+            }
+            catch {
+                return null;
+            }
         },
-        refetchInterval: 60000, // Refetch every 60 seconds
+        refetchInterval: 60000,
+        retry: false,
     });
     // Fetch organizations
     const { data: organizations = [], isLoading: orgsLoading, refetch: refetchOrgs } = useQuery({
         queryKey: ['organizations'],
         queryFn: async () => {
-            const response = await apiClient.get(API_ROUTES.ORGANIZATIONS || '/api/organizations');
-            return response.data;
+            try {
+                const response = await apiClient.get(API_ROUTES.ORGANIZATIONS || '/api/organizations');
+                const raw = response.data;
+                if (Array.isArray(raw))
+                    return raw;
+                if (raw && Array.isArray(raw.data))
+                    return raw.data;
+                return [];
+            }
+            catch {
+                return [];
+            }
         },
+        retry: false,
     });
     // Fetch users
     const { data: users = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery({
         queryKey: ['super-admin-users'],
         queryFn: async () => {
-            const response = await apiClient.get('/api/super-admin/users');
-            return response.data;
+            try {
+                const response = await apiClient.get('/api/super-admin/users');
+                const raw = response.data;
+                if (Array.isArray(raw))
+                    return raw;
+                if (raw && Array.isArray(raw.data))
+                    return raw.data;
+                return [];
+            }
+            catch {
+                return [];
+            }
         },
+        retry: false,
     });
     const filteredOrganizations = organizations.filter(org => {
         const matchesSearch = org.name.toLowerCase().includes(searchOrg.toLowerCase()) ||
@@ -329,7 +363,7 @@ export default function SuperAdminPage() {
                                                     backgroundColor: '#fff',
                                                     border: '1px solid #e5e7eb',
                                                     borderRadius: '6px',
-                                                }, formatter: (value) => `€${value.toLocaleString()}` }), _jsx(Area, { type: "monotone", dataKey: "revenue", stroke: "#3b82f6", fillOpacity: 1, fill: "url(#colorRevenue)" })] }) }) })] }), _jsxs("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-4", children: [_jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-sm text-gray-600", children: "Revenu annuel (ARR)" }), _jsx("p", { className: "text-3xl font-bold text-gray-900", children: "\u20AC342.2K" }), _jsx("p", { className: "text-xs text-green-600 font-medium", children: "+12% vs ann\u00E9e pr\u00E9c\u00E9dente" })] }) }) }), _jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-sm text-gray-600", children: "Revenu mensuel r\u00E9current" }), _jsx("p", { className: "text-3xl font-bold text-gray-900", children: "\u20AC28.5K" }), _jsx("p", { className: "text-xs text-green-600 font-medium", children: "+18% vs mois dernier" })] }) }) }), _jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-sm text-gray-600", children: "Taux de croissance" }), _jsx("p", { className: "text-3xl font-bold text-gray-900", children: "+3.2%" }), _jsx("p", { className: "text-xs text-gray-600 font-medium", children: "Croissance mensuelle" })] }) }) }), _jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-sm text-gray-600", children: "Organisations actives" }), _jsx("p", { className: "text-3xl font-bold text-gray-900", children: organizations.length }), _jsx("p", { className: "text-xs text-gray-600 font-medium", children: "Avec facturation active" })] }) }) })] }), _jsxs(Card, { children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: "Revenu par organisation" }), _jsx(CardDescription, { children: "D\u00E9tail du revenu et du plan par organisation" })] }), _jsx(CardContent, { children: _jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "w-full text-sm", children: [_jsx("thead", { children: _jsxs("tr", { className: "border-b border-gray-200", children: [_jsx("th", { className: "text-left py-3 px-4 font-medium text-gray-700", children: "Organisation" }), _jsx("th", { className: "text-left py-3 px-4 font-medium text-gray-700", children: "Plan" }), _jsx("th", { className: "text-left py-3 px-4 font-medium text-gray-700", children: "Revenu mensuel" }), _jsx("th", { className: "text-left py-3 px-4 font-medium text-gray-700", children: "\u00C9tat" })] }) }), _jsx("tbody", { children: organizations.slice(0, 5).map(org => {
+                                                }, formatter: (value) => `€${Number(value).toLocaleString()}` }), _jsx(Area, { type: "monotone", dataKey: "revenue", stroke: "#3b82f6", fillOpacity: 1, fill: "url(#colorRevenue)" })] }) }) })] }), _jsxs("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-4", children: [_jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-sm text-gray-600", children: "Revenu annuel (ARR)" }), _jsx("p", { className: "text-3xl font-bold text-gray-900", children: "\u20AC342.2K" }), _jsx("p", { className: "text-xs text-green-600 font-medium", children: "+12% vs ann\u00E9e pr\u00E9c\u00E9dente" })] }) }) }), _jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-sm text-gray-600", children: "Revenu mensuel r\u00E9current" }), _jsx("p", { className: "text-3xl font-bold text-gray-900", children: "\u20AC28.5K" }), _jsx("p", { className: "text-xs text-green-600 font-medium", children: "+18% vs mois dernier" })] }) }) }), _jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-sm text-gray-600", children: "Taux de croissance" }), _jsx("p", { className: "text-3xl font-bold text-gray-900", children: "+3.2%" }), _jsx("p", { className: "text-xs text-gray-600 font-medium", children: "Croissance mensuelle" })] }) }) }), _jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "space-y-2", children: [_jsx("p", { className: "text-sm text-gray-600", children: "Organisations actives" }), _jsx("p", { className: "text-3xl font-bold text-gray-900", children: organizations.length }), _jsx("p", { className: "text-xs text-gray-600 font-medium", children: "Avec facturation active" })] }) }) })] }), _jsxs(Card, { children: [_jsxs(CardHeader, { children: [_jsx(CardTitle, { children: "Revenu par organisation" }), _jsx(CardDescription, { children: "D\u00E9tail du revenu et du plan par organisation" })] }), _jsx(CardContent, { children: _jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "w-full text-sm", children: [_jsx("thead", { children: _jsxs("tr", { className: "border-b border-gray-200", children: [_jsx("th", { className: "text-left py-3 px-4 font-medium text-gray-700", children: "Organisation" }), _jsx("th", { className: "text-left py-3 px-4 font-medium text-gray-700", children: "Plan" }), _jsx("th", { className: "text-left py-3 px-4 font-medium text-gray-700", children: "Revenu mensuel" }), _jsx("th", { className: "text-left py-3 px-4 font-medium text-gray-700", children: "\u00C9tat" })] }) }), _jsx("tbody", { children: organizations.slice(0, 5).map(org => {
                                                     const monthlyRevenue = org.plan === 'Enterprise' ? 1299 : org.plan === 'Pro' ? 299 : 99;
                                                     return (_jsxs("tr", { className: "border-b border-gray-100 hover:bg-gray-50", children: [_jsx("td", { className: "py-3 px-4", children: org.name }), _jsx("td", { className: "py-3 px-4", children: _jsx(Badge, { variant: "outline", children: org.plan }) }), _jsxs("td", { className: "py-3 px-4 font-medium", children: ["\u20AC", monthlyRevenue] }), _jsx("td", { className: "py-3 px-4", children: _jsx(Badge, { variant: org.status === 'active' ? 'default' : 'secondary', className: "capitalize", children: org.status === 'active' ? 'Actif' : org.status === 'paused' ? 'En pause' : 'Suspendu' }) })] }, org.id));
                                                 }) })] }) }) })] })] })), activeTab === 'support' && (_jsxs("div", { className: "space-y-6", children: [_jsx("div", { className: "flex gap-2", children: ['all', 'ouvert', 'en cours', 'résolu'].map(status => (_jsx(Button, { variant: ticketStatusFilter === status ? 'default' : 'outline', size: "sm", onClick: () => setTicketStatusFilter(status), children: status === 'all' ? 'Tous' : status === 'ouvert' ? 'Ouvert' : status === 'en cours' ? 'En cours' : 'Résolu' }, status))) }), _jsxs("div", { className: "grid gap-6 lg:grid-cols-3", children: [_jsx("div", { className: "lg:col-span-1", children: _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsxs(CardTitle, { className: "flex items-center gap-2", children: [_jsx(Headphones, { className: "h-5 w-5" }), "Tickets (", mockSupportTickets.length, ")"] }) }), _jsx(CardContent, { children: _jsx("div", { className: "space-y-2", children: mockSupportTickets

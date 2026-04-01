@@ -51,12 +51,19 @@ export default function DevicesPage() {
     queryKey: ['devices', organizationId],
     queryFn: async () => {
       if (!organizationId) return []
-      const response = await apiClient.get(
-        `/api/organizations/${organizationId}/devices`
-      )
-      return response.data as Device[]
+      try {
+        const response = await apiClient.get(
+          `/api/organizations/${organizationId}/devices`
+        )
+        const raw = response.data
+        if (Array.isArray(raw)) return raw as Device[]
+        if (raw && Array.isArray(raw.data)) return raw.data as Device[]
+        if (raw && Array.isArray(raw.devices)) return raw.devices as Device[]
+        return [] as Device[]
+      } catch { return [] as Device[] }
     },
     enabled: !!organizationId,
+    retry: false,
   })
 
   // Fetch vehicles for assignment
@@ -64,10 +71,16 @@ export default function DevicesPage() {
     queryKey: ['vehicles', organizationId],
     queryFn: async () => {
       if (!organizationId) return []
-      const response = await apiClient.get(
-        `/api/organizations/${organizationId}/vehicles`
-      )
-      return response.data as Vehicle[]
+      try {
+        const response = await apiClient.get(
+          `/api/organizations/${organizationId}/vehicles`
+        )
+        const raw = response.data
+        if (Array.isArray(raw)) return raw as Vehicle[]
+        if (raw && Array.isArray(raw.data)) return raw.data as Vehicle[]
+        if (raw && Array.isArray(raw.vehicles)) return raw.vehicles as Vehicle[]
+        return [] as Vehicle[]
+      } catch { return [] as Vehicle[] }
     },
     enabled: !!organizationId,
   })

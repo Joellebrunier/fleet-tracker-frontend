@@ -23,10 +23,23 @@ export default function DevicesPage() {
         queryFn: async () => {
             if (!organizationId)
                 return [];
-            const response = await apiClient.get(`/api/organizations/${organizationId}/devices`);
-            return response.data;
+            try {
+                const response = await apiClient.get(`/api/organizations/${organizationId}/devices`);
+                const raw = response.data;
+                if (Array.isArray(raw))
+                    return raw;
+                if (raw && Array.isArray(raw.data))
+                    return raw.data;
+                if (raw && Array.isArray(raw.devices))
+                    return raw.devices;
+                return [];
+            }
+            catch {
+                return [];
+            }
         },
         enabled: !!organizationId,
+        retry: false,
     });
     // Fetch vehicles for assignment
     const { data: vehicles = [] } = useQuery({
@@ -34,8 +47,20 @@ export default function DevicesPage() {
         queryFn: async () => {
             if (!organizationId)
                 return [];
-            const response = await apiClient.get(`/api/organizations/${organizationId}/vehicles`);
-            return response.data;
+            try {
+                const response = await apiClient.get(`/api/organizations/${organizationId}/vehicles`);
+                const raw = response.data;
+                if (Array.isArray(raw))
+                    return raw;
+                if (raw && Array.isArray(raw.data))
+                    return raw.data;
+                if (raw && Array.isArray(raw.vehicles))
+                    return raw.vehicles;
+                return [];
+            }
+            catch {
+                return [];
+            }
         },
         enabled: !!organizationId,
     });

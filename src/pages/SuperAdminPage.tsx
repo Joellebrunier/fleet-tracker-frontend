@@ -299,38 +299,56 @@ export default function SuperAdminPage() {
   const { data: health, isLoading: healthLoading, refetch: refetchHealth } = useQuery({
     queryKey: ['super-admin-health'],
     queryFn: async () => {
-      const response = await apiClient.get(API_ROUTES.SUPER_ADMIN_HEALTH || '/api/super-admin/health')
-      return response.data as SystemHealth
+      try {
+        const response = await apiClient.get(API_ROUTES.SUPER_ADMIN_HEALTH || '/api/super-admin/health')
+        return (response.data || null) as SystemHealth | null
+      } catch { return null }
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
+    retry: false,
   })
 
   // Fetch system stats
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
     queryKey: ['super-admin-stats'],
     queryFn: async () => {
-      const response = await apiClient.get(API_ROUTES.SUPER_ADMIN_STATS || '/api/super-admin/stats')
-      return response.data as SystemStats
+      try {
+        const response = await apiClient.get(API_ROUTES.SUPER_ADMIN_STATS || '/api/super-admin/stats')
+        return (response.data || null) as SystemStats | null
+      } catch { return null }
     },
-    refetchInterval: 60000, // Refetch every 60 seconds
+    refetchInterval: 60000,
+    retry: false,
   })
 
   // Fetch organizations
   const { data: organizations = [], isLoading: orgsLoading, refetch: refetchOrgs } = useQuery({
     queryKey: ['organizations'],
     queryFn: async () => {
-      const response = await apiClient.get(API_ROUTES.ORGANIZATIONS || '/api/organizations')
-      return response.data as Organization[]
+      try {
+        const response = await apiClient.get(API_ROUTES.ORGANIZATIONS || '/api/organizations')
+        const raw = response.data
+        if (Array.isArray(raw)) return raw as Organization[]
+        if (raw && Array.isArray(raw.data)) return raw.data as Organization[]
+        return [] as Organization[]
+      } catch { return [] as Organization[] }
     },
+    retry: false,
   })
 
   // Fetch users
   const { data: users = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ['super-admin-users'],
     queryFn: async () => {
-      const response = await apiClient.get('/api/super-admin/users')
-      return response.data as User[]
+      try {
+        const response = await apiClient.get('/api/super-admin/users')
+        const raw = response.data
+        if (Array.isArray(raw)) return raw as User[]
+        if (raw && Array.isArray(raw.data)) return raw.data as User[]
+        return [] as User[]
+      } catch { return [] as User[] }
     },
+    retry: false,
   })
 
   const filteredOrganizations = organizations.filter(

@@ -395,7 +395,7 @@ export default function GeofencesPage() {
                         color: geofence.metadata?.color || '#3b82f6',
                       }}
                     >
-                      {getShapeIcon(geofence.shape.type)}
+                      {getShapeIcon(geofence.shape?.type)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-base">{geofence.name}</CardTitle>
@@ -413,7 +413,7 @@ export default function GeofencesPage() {
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
                     <p className="text-gray-500">Type</p>
-                    <p className="font-medium capitalize">{geofence.shape.type}</p>
+                    <p className="font-medium capitalize">{geofence.shape?.type || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Déclencheur</p>
@@ -421,7 +421,7 @@ export default function GeofencesPage() {
                   </div>
                   <div>
                     <p className="text-gray-500">Détails</p>
-                    <p className="font-medium text-xs">{getShapeLabel(geofence.shape)}</p>
+                    <p className="font-medium text-xs">{geofence.shape ? getShapeLabel(geofence.shape) : 'N/A'}</p>
                   </div>
                 </div>
 
