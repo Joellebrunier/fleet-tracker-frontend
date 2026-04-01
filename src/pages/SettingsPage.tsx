@@ -34,6 +34,11 @@ export default function SettingsPage() {
     tileLayer: 'streets',
   })
 
+  // Quiet Hours state
+  const [quietHoursEnabled, setQuietHoursEnabled] = useState(false)
+  const [quietHoursStart, setQuietHoursStart] = useState('22:00')
+  const [quietHoursEnd, setQuietHoursEnd] = useState('07:00')
+
   const handleProviderToggle = (provider: string) => {
     setProviders(prev => ({
       ...prev,
@@ -237,6 +242,67 @@ export default function SettingsPage() {
               <input type="checkbox" defaultChecked className="h-4 w-4" />
             </div>
           ))}
+
+          {/* WhatsApp Channel */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">WhatsApp</label>
+                <p className="text-xs text-gray-500">Bientôt disponible</p>
+              </div>
+              <input type="checkbox" disabled className="h-4 w-4" />
+            </div>
+          </div>
+
+          {/* Push Mobile Channel */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Push mobile</label>
+                <p className="text-xs text-gray-500">Configurez l'app mobile</p>
+              </div>
+              <input type="checkbox" disabled className="h-4 w-4" />
+            </div>
+          </div>
+
+          {/* Quiet Hours Section */}
+          <div className="pt-4 border-t border-gray-100 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">Heures silencieuses</label>
+              <input
+                type="checkbox"
+                checked={quietHoursEnabled}
+                onChange={(e) => setQuietHoursEnabled(e.target.checked)}
+                className="h-4 w-4"
+              />
+            </div>
+            {quietHoursEnabled && (
+              <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-600">Aucune notification ne sera envoyée pendant ces heures</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">De</label>
+                    <input
+                      type="time"
+                      value={quietHoursStart}
+                      onChange={(e) => setQuietHoursStart(e.target.value)}
+                      className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">À</label>
+                    <input
+                      type="time"
+                      value={quietHoursEnd}
+                      onChange={(e) => setQuietHoursEnd(e.target.value)}
+                      className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <Button className="w-full mt-4">Enregistrer les préférences</Button>
         </CardContent>
       </Card>

@@ -24,6 +24,12 @@ import SettingsPage from '@/pages/SettingsPage'
 import SuperAdminPage from '@/pages/SuperAdminPage'
 import AuditLogPage from '@/pages/AuditLogPage'
 import HelpPage from '@/pages/HelpPage'
+import RolesPermissionsPage from '@/pages/RolesPermissionsPage'
+
+// Lazy-loaded pages
+const ApiDocsPage = lazy(() => import('@/pages/ApiDocsPage'))
+const SdkExamplesPage = lazy(() => import('@/pages/SdkExamplesPage'))
+const TestEnvironmentPage = lazy(() => import('@/pages/TestEnvironmentPage'))
 
 function App() {
   const { initAuth, isAuthenticated } = useAuth()
@@ -73,8 +79,24 @@ function App() {
           element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><AuditLogPage /></ProtectedRoute>}
         />
         <Route
+          path="/roles"
+          element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><RolesPermissionsPage /></ProtectedRoute>}
+        />
+        <Route
           path="/admin"
           element={<ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}><SuperAdminPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/api-docs"
+          element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><ApiDocsPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/sdk-examples"
+          element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><SdkExamplesPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/test-environment"
+          element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><TestEnvironmentPage /></ProtectedRoute>}
         />
       </Route>
 

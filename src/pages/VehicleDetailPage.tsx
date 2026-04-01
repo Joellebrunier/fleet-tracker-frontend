@@ -26,7 +26,11 @@ import {
   Zap,
   Signal,
   Activity,
+  Camera,
+  Plus,
+  X,
 } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer'
 import { GpsDataExport } from '@/components/vehicles/GpsDataExport'
 import { reverseGeocode } from '@/lib/geocoding'
@@ -46,6 +50,11 @@ export default function VehicleDetailPage() {
   const [showReplay, setShowReplay] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [currentAddress, setCurrentAddress] = useState<string | null>(null)
+  const [vehicleNotes, setVehicleNotes] = useState('')
+  const [customFields, setCustomFields] = useState<Array<{ key: string; value: string }>>([])
+  const [showAddField, setShowAddField] = useState(false)
+  const [newFieldForm, setNewFieldForm] = useState({ key: '', value: '' })
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
   const { data: vehicle, isLoading: vehicleLoading } = useVehicle(id || '')
   const { data: history } = useVehicleHistory(id || '')
 
@@ -54,6 +63,19 @@ export default function VehicleDetailPage() {
     const items = Array.isArray(history) ? history : history.data || history.positions || []
     return items.slice(0, 50)
   }, [history])
+
+  // Initialize vehicle notes and custom fields from vehicle data
+  useEffect(() => {
+    if (vehicle) {
+      setVehicleNotes((vehicle as any).notes || '')
+      if ((vehicle as any).customFields) {
+        const fieldsArray = Array.isArray((vehicle as any).customFields)
+          ? (vehicle as any).customFields
+          : Object.entries((vehicle as any).customFields).map(([key, value]) => ({ key, value: String(value) }))
+        setCustomFields(fieldsArray)
+      }
+    }
+  }, [vehicle])
 
   // Reverse geocode current position when lat/lng changes
   useEffect(() => {
@@ -440,6 +462,145 @@ export default function VehicleDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Vehicle Notes */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Notes</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            placeholder="Ajouter des notes sur ce véhicule..."
+            value={vehicleNotes}
+            onChange={(e) => setVehicleNotes(e.target.value)}
+            className="min-h-24 text-sm"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              alert('Notes enregistrées')
+            }}
+          >
+            Enregistrer
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Custom Fields */}
+      <Card>
+        <CardHeader className="pb-3 flex items-center justify-between">
+          <CardTitle className="text-base">Champs personnalisés</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => setShowAddField(!showAddField)}
+          >
+            <Plus size={14} />
+            Ajouter un champ
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {showAddField && (
+            <div className="border rounded-lg p-3 space-y-2 bg-gray-50">
+              <input
+                type="text"
+                placeholder="Nom du champ"
+                value={newFieldForm.key}
+                onChange={(e) => setNewFieldForm({ ...newFieldForm, key: e.target.value })}
+                className="w-full px-2 py-1.5 border rounded text-sm"
+              />
+              <input
+                type="text"
+                placeholder="Valeur"
+                value={newFieldForm.value}
+                onChange={(e) => setNewFieldForm({ ...newFieldForm, value: e.target.value })}
+                className="w-full px-2 py-1.5 border rounded text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (newFieldForm.key && newFieldForm.value) {
+                      setCustomFields([...customFields, { key: newFieldForm.key, value: newFieldForm.value }])
+                      setNewFieldForm({ key: '', value: '' })
+                      setShowAddField(false)
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  Ajouter
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowAddField(false)}
+                  className="flex-1"
+                >
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          )}
+          <div className="space-y-2">
+            {customFields.length > 0 ? (
+              customFields.map((field, idx) => (
+                <div key={idx} className="border rounded-lg p-2.5 flex items-center justify-between text-sm bg-gray-50">
+                  <div>
+                    <p className="font-medium text-gray-700">{field.key}</p>
+                    <p className="text-xs text-gray-500">{field.value}</p>
+                  </div>
+                  <button
+                    onClick={() => setCustomFields(customFields.filter((_, i) => i !== idx))}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-500">Aucun champ personnalisé</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Vehicle Photos */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Images du véhicule</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="border-2 border-dashed rounded-lg p-8 text-center">
+            <Camera size={32} className="mx-auto text-gray-400 mb-2" />
+            <p className="text-sm text-gray-600 mb-4">Aucune image. Glissez-déposez ou cliquez pour ajouter.</p>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  setSelectedPhoto(e.target.files[0].name)
+                }
+              }}
+              className="hidden"
+              id="photo-input"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById('photo-input')?.click()}
+            >
+              Sélectionner une image
+            </Button>
+            {selectedPhoto && (
+              <p className="text-xs text-gray-600 mt-3">
+                Fichier sélectionné: <span className="font-medium">{selectedPhoto}</span>
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

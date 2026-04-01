@@ -312,6 +312,23 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
     return segments
   }, [positions])
 
+  // Detect harsh braking events (speed change > 30 km/h)
+  const brakingEvents = useMemo(() => {
+    const events: Array<{ position: GpsPosition; index: number }> = []
+
+    for (let i = 1; i < positions.length; i++) {
+      const current = positions[i]
+      const prev = positions[i - 1]
+      const speedDelta = Math.abs(current.speed - prev.speed)
+
+      if (speedDelta > 30) {
+        events.push({ position: current, index: i })
+      }
+    }
+
+    return events
+  }, [positions])
+
   // Current position
   const currentPosition = useMemo(() => {
     if (positions.length === 0) return null
@@ -482,11 +499,37 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                 >
                   <Popup>
                     <div className="text-sm">
-                      <p className="font-semibold">Stop</p>
+                      <p className="font-semibold">Arrêt</p>
                       <p>{formatDateTime(new Date(stop.timestamp))}</p>
                     </div>
                   </Popup>
                 </CircleMarker>
+              ))}
+
+              {/* Harsh braking markers (yellow triangles) */}
+              {brakingEvents.map((event, idx) => (
+                <Marker
+                  key={`braking-${idx}`}
+                  position={[event.position.lat, event.position.lng]}
+                  icon={L.divIcon({
+                    html: `<div style="
+                      width: 0; height: 0;
+                      border-left: 8px solid transparent; border-right: 8px solid transparent;
+                      border-bottom: 14px solid #eab308;
+                      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+                    "></div>`,
+                    className: 'braking-marker',
+                    iconSize: [16, 14],
+                    iconAnchor: [8, 14],
+                  })}
+                >
+                  <Popup>
+                    <div className="text-sm">
+                      <p className="font-semibold">Freinage brusque</p>
+                      <p className="text-xs text-gray-600">{formatDateTime(new Date(event.position.timestamp))}</p>
+                    </div>
+                  </Popup>
+                </Marker>
               ))}
 
               {/* Current position marker */}

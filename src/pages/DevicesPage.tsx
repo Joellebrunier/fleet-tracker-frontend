@@ -4,10 +4,18 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog'
 import { useAuthStore } from '@/stores/authStore'
 import { apiClient } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Wifi, Zap, Clock } from 'lucide-react'
+import { Search, Wifi, Zap, Clock, Locate, RotateCw, AlertCircle, Link as LinkIcon } from 'lucide-react'
 import { formatTimeAgo } from '@/lib/utils'
 
 interface Device {
@@ -25,9 +33,18 @@ interface Device {
   vehicleName?: string
 }
 
+interface Vehicle {
+  id: string
+  name: string
+  licensePlate: string
+}
+
 export default function DevicesPage() {
   const organizationId = useAuthStore((s) => s.user?.organizationId) || ''
   const [searchTerm, setSearchTerm] = useState('')
+  const [assignmentDialog, setAssignmentDialog] = useState(false)
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null)
+  const [selectedVehicleId, setSelectedVehicleId] = useState('')
 
   // Fetch devices
   const { data: devices = [], isLoading, error } = useQuery({
@@ -38,6 +55,19 @@ export default function DevicesPage() {
         `/api/organizations/${organizationId}/devices`
       )
       return response.data as Device[]
+    },
+    enabled: !!organizationId,
+  })
+
+  // Fetch vehicles for assignment
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ['vehicles', organizationId],
+    queryFn: async () => {
+      if (!organizationId) return []
+      const response = await apiClient.get(
+        `/api/organizations/${organizationId}/vehicles`
+      )
+      return response.data as Vehicle[]
     },
     enabled: !!organizationId,
   })
@@ -91,6 +121,37 @@ export default function DevicesPage() {
       (device.vehicleName?.toLowerCase().includes(searchTerm.toLowerCase()) || false)
     return matchesSearch
   })
+
+  const openAssignmentDialog = (device: Device) => {
+    setSelectedDevice(device)
+    setSelectedVehicleId(device.vehicleId || '')
+    setAssignmentDialog(true)
+  }
+
+  const handleAssignVehicle = async () => {
+    if (!selectedDevice || !selectedVehicleId) return
+    try {
+      await apiClient.put(`/api/devices/${selectedDevice.id}`, {
+        vehicleId: selectedVehicleId,
+      })
+      setAssignmentDialog(false)
+      setSelectedDevice(null)
+      // In a real app, would invalidate query cache here
+    } catch (error) {
+      console.error('Erreur lors de l\'assignation:', error)
+    }
+  }
+
+  const sendDeviceCommand = async (deviceId: string, command: string) => {
+    try {
+      await apiClient.post(`/api/devices/${deviceId}/command`, {
+        command,
+      })
+      // Show success notification
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de la commande:', error)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -149,13 +210,13 @@ export default function DevicesPage() {
                 <tr className="border-b border-gray-200">
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">IMEI</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Modèle</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Fournisseur</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Firmware</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Statut</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">SIM</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Batterie</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Signal</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Véhicule</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Dernière comm.</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Dernière pos.</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -163,13 +224,14 @@ export default function DevicesPage() {
                   <tr key={device.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{device.imei}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{device.model}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{device.provider}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {device.firmwareVersion || '-'}
+                    </td>
                     <td className="px-6 py-4">
                       <Badge variant={getStatusColor(device.status)}>
                         {getStatusLabel(device.status)}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{device.simNumber || '-'}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="h-6 w-16 bg-gray-200 rounded overflow-hidden">
@@ -198,10 +260,46 @@ export default function DevicesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {device.vehicleName || '-'}
+                      {device.vehicleName ? (
+                        <Badge variant="secondary">{device.vehicleName}</Badge>
+                      ) : (
+                        <span className="text-gray-400">Non assigné</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {formatTimeAgo(device.lastSeen)}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => openAssignmentDialog(device)}
+                          className="p-1.5 hover:bg-blue-100 rounded text-blue-600"
+                          title="Assigner à un véhicule"
+                        >
+                          <LinkIcon size={16} />
+                        </button>
+                        <button
+                          onClick={() => sendDeviceCommand(device.id, 'locate')}
+                          className="p-1.5 hover:bg-green-100 rounded text-green-600"
+                          title="Localiser"
+                        >
+                          <Locate size={16} />
+                        </button>
+                        <button
+                          onClick={() => sendDeviceCommand(device.id, 'restart')}
+                          className="p-1.5 hover:bg-amber-100 rounded text-amber-600"
+                          title="Redémarrer"
+                        >
+                          <RotateCw size={16} />
+                        </button>
+                        <button
+                          onClick={() => sendDeviceCommand(device.id, 'diagnostic')}
+                          className="p-1.5 hover:bg-purple-100 rounded text-purple-600"
+                          title="Diagnostic"
+                        >
+                          <AlertCircle size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -210,6 +308,63 @@ export default function DevicesPage() {
           </div>
         </Card>
       )}
+
+      {/* Assignment Dialog */}
+      <Dialog open={assignmentDialog} onOpenChange={setAssignmentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assigner un véhicule</DialogTitle>
+            <DialogDescription>
+              Sélectionnez un véhicule pour assigner le tracker IMEI:{' '}
+              <strong>{selectedDevice?.imei}</strong>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {vehicles.length === 0 ? (
+              <p className="text-gray-600 text-sm">
+                Aucun véhicule disponible. Créez d'abord un véhicule.
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {vehicles.map((vehicle) => (
+                  <label
+                    key={vehicle.id}
+                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      name="vehicle"
+                      value={vehicle.id}
+                      checked={selectedVehicleId === vehicle.id}
+                      onChange={(e) => setSelectedVehicleId(e.target.value)}
+                    />
+                    <div>
+                      <p className="font-medium text-gray-900">{vehicle.name}</p>
+                      <p className="text-sm text-gray-600">{vehicle.licensePlate}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setAssignmentDialog(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleAssignVehicle}
+              disabled={!selectedVehicleId}
+            >
+              Assigner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

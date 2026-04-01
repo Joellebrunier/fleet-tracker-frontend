@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { useVehicles } from '@/hooks/useVehicles'
 import { useMapStore } from '@/stores/mapStore'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
-import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind } from 'lucide-react'
+import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin } from 'lucide-react'
 import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
 import { useQueryClient } from '@tanstack/react-query'
 import { MAPBOX_TILE_URL, MAPBOX_TOKEN } from '@/lib/constants'
@@ -166,6 +166,10 @@ export default function MapPage() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showTraffic, setShowTraffic] = useState(false)
   const [showHelpPopover, setShowHelpPopover] = useState(false)
+  const [showMiniMap, setShowMiniMap] = useState(true)
+  const [showManualGps, setShowManualGps] = useState(false)
+  const [manualGpsForm, setManualGpsForm] = useState({ lat: '', lng: '', name: '' })
+  const [manualMarkers, setManualMarkers] = useState<Array<{ lat: number; lng: number; name: string }>>([])
   const {
     selectedVehicleId,
     selectVehicle,
@@ -304,6 +308,33 @@ export default function MapPage() {
               </Popup>
             </Marker>
           ))}
+
+          {/* Manual GPS markers */}
+          {manualMarkers.map((marker, idx) => (
+            <Marker
+              key={`manual-${idx}`}
+              position={[marker.lat, marker.lng]}
+              icon={L.divIcon({
+                html: `<div style="
+                  width: 20px; height: 20px;
+                  background: #f97316;
+                  border: 2px solid #ffffff;
+                  border-radius: 50%;
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                "></div>`,
+                className: 'manual-marker',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10],
+              })}
+            >
+              <Popup>
+                <div className="text-sm">
+                  <p className="font-bold">{marker.name}</p>
+                  <p className="text-xs text-gray-500">{marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}</p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
         </MapContainer>
 
         {/* Map overlay controls */}
@@ -339,9 +370,27 @@ export default function MapPage() {
             <Navigation size={16} />
             {isFullscreen ? 'Quitter plein écran' : 'Plein écran'}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowManualGps(!showManualGps)}
+            className="gap-2 bg-white shadow-md"
+          >
+            <MapPin size={16} />
+            Saisie manuelle
+          </Button>
         </div>
 
         {/* Stats overlay */}
+        <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
+          {/* Provider failover indicator */}
+          <div className="rounded-lg bg-white px-3 py-1.5 shadow-md text-xs font-medium flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-green-500 inline-block"></span>
+            Fournisseur principal: Flespi
+          </div>
+        </div>
+
+        {/* Fleet stats overlay */}
         <div className="absolute bottom-4 left-4 z-[1000] flex flex-wrap gap-2 max-w-xs">
           <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-green-500 inline-block"></span>
@@ -368,6 +417,99 @@ export default function MapPage() {
             {isConnected ? 'Live' : 'Polling'}
           </div>
         </div>
+
+        {/* Mini-map overview */}
+        {showMiniMap && (
+          <div className="absolute bottom-4 left-56 z-[1000]">
+            <Card className="w-40 shadow-lg">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-gray-700">Vue d'ensemble</p>
+                  <button
+                    onClick={() => setShowMiniMap(false)}
+                    className="text-gray-400 hover:text-gray-600 text-sm"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <p className="font-medium">{vehiclesWithGps.length} véhicules</p>
+                  <p className="text-gray-500">Zone: Nice/Côte d'Azur</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Manual GPS entry form */}
+        {showManualGps && (
+          <div className="absolute top-20 right-4 z-[1000]">
+            <Card className="w-64 shadow-lg">
+              <CardHeader className="pb-2 pt-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm">Saisie manuelle GPS</CardTitle>
+                  <button
+                    onClick={() => setShowManualGps(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    ×
+                  </button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <label className="text-xs text-gray-600 block mb-1">Latitude</label>
+                  <Input
+                    type="number"
+                    step="0.00001"
+                    placeholder="43.7"
+                    value={manualGpsForm.lat}
+                    onChange={(e) => setManualGpsForm({ ...manualGpsForm, lat: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600 block mb-1">Longitude</label>
+                  <Input
+                    type="number"
+                    step="0.00001"
+                    placeholder="3.87"
+                    value={manualGpsForm.lng}
+                    onChange={(e) => setManualGpsForm({ ...manualGpsForm, lng: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-600 block mb-1">Nom du traceur</label>
+                  <Input
+                    type="text"
+                    placeholder="Traceur manuel"
+                    value={manualGpsForm.name}
+                    onChange={(e) => setManualGpsForm({ ...manualGpsForm, name: e.target.value })}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (manualGpsForm.lat && manualGpsForm.lng) {
+                      const newMarker = {
+                        lat: parseFloat(manualGpsForm.lat),
+                        lng: parseFloat(manualGpsForm.lng),
+                        name: manualGpsForm.name || 'Traceur manuel',
+                      }
+                      setManualMarkers([...manualMarkers, newMarker])
+                      setManualGpsForm({ lat: '', lng: '', name: '' })
+                    }
+                  }}
+                  className="w-full text-xs h-8"
+                >
+                  Ajouter
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Help button bottom right */}
         <div className="absolute bottom-4 right-4 z-[1000]">

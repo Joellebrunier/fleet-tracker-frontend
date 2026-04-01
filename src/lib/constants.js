@@ -1,3 +1,6 @@
+// Mapbox configuration
+export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+export const MAPBOX_TILE_URL = (style = 'streets-v12') => `https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`;
 // Helper to build org-scoped routes
 const org = (orgId) => `/api/organizations/${orgId}`;
 // API Routes

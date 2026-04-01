@@ -43,6 +43,10 @@ interface GeofenceFormState {
   alertOnExit: boolean
   notifyUsers: string[]
   color: string
+  activeDays: boolean[]
+  activeHours: { from: string; to: string } | null
+  isTemporary: boolean
+  temporaryUntil?: string
 }
 
 const defaultForm: GeofenceFormState = {
@@ -54,6 +58,10 @@ const defaultForm: GeofenceFormState = {
   alertOnExit: true,
   notifyUsers: [],
   color: '#3b82f6',
+  activeDays: [true, true, true, true, true, false, false],
+  activeHours: null,
+  isTemporary: false,
+  temporaryUntil: undefined,
 }
 
 const triggerOptions = [
@@ -89,6 +97,22 @@ function getShapeLabel(shape: GeofenceShape): string {
     return `Polygon (${shape.points.length} points)`
   }
   return shape.type
+}
+
+function getDayLabel(activeDays: boolean[]): string {
+  const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+  const indices = activeDays.map((d, i) => (d ? days[i] : null)).filter(Boolean)
+
+  if (indices.length === 0) return 'Aucun jour'
+  if (indices.length === 7) return 'Tous les jours'
+  if (indices.length === 5 && activeDays[0] && activeDays[1] && activeDays[2] && activeDays[3] && activeDays[4]) {
+    return 'Jours ouvrables'
+  }
+  if (indices.length === 2 && activeDays[5] && activeDays[6]) {
+    return 'Week-end'
+  }
+
+  return indices.join('/')
 }
 
 export default function GeofencesPage() {
@@ -145,6 +169,10 @@ export default function GeofencesPage() {
       alertOnExit: geofence.alertOnExit,
       notifyUsers: geofence.notifyUsers,
       color: geofence.metadata?.color || '#3b82f6',
+      activeDays: (geofence as any).activeDays || [true, true, true, true, true, false, false],
+      activeHours: (geofence as any).activeHours || null,
+      isTemporary: (geofence as any).isTemporary || false,
+      temporaryUntil: (geofence as any).temporaryUntil,
     })
     setFormError('')
     setSelectedGeofence(geofence)
@@ -397,18 +425,62 @@ export default function GeofencesPage() {
                   </div>
                 </div>
 
-                {((geofence as any).timeRules || (geofence as any).vehicleCount) && (
-                  <div className="flex flex-wrap gap-2">
-                    {(geofence as any).timeRules && (
-                      <Badge variant="outline" className="gap-1 text-xs">
-                        <Clock size={12} />
-                        Règles temporelles actives
-                      </Badge>
+                {/* Day/Time based rules and status badges */}
+                <div className="flex flex-wrap gap-2">
+                  {(geofence as any).isTemporary && (
+                    <Badge className="gap-1 bg-orange-500 text-white text-xs">
+                      Temporaire
+                    </Badge>
+                  )}
+                  {!(geofence as any).isTemporary && (
+                    <Badge className="gap-1 bg-blue-500 text-white text-xs">
+                      Permanente
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="text-xs">
+                    {getDayLabel((geofence as any).activeDays || [true, true, true, true, true, false, false])}
+                  </Badge>
+                  {(geofence as any).activeHours && (
+                    <Badge variant="outline" className="gap-1 text-xs">
+                      <Clock size={12} />
+                      {(geofence as any).activeHours.from} - {(geofence as any).activeHours.to}
+                    </Badge>
+                  )}
+                  {!(geofence as any).activeHours && (
+                    <Badge variant="outline" className="text-xs">
+                      24h/24
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Violations badge */}
+                {((geofence as any).violationCount ?? 0) > 0 && (
+                  <div className="rounded-lg bg-red-50 px-3 py-2 text-sm">
+                    <p className="text-red-700">
+                      <span className="font-semibold">{(geofence as any).violationCount}</span> violation{(geofence as any).violationCount > 1 ? 's' : ''}
+                    </p>
+                  </div>
+                )}
+
+                {/* Vehicle groups */}
+                {((geofence as any).groupCount ?? 0) > 0 && (
+                  <div className="text-xs text-gray-600">
+                    <span className="font-medium">{(geofence as any).groupCount}</span> groupe{(geofence as any).groupCount > 1 ? 's' : ''} assigné{(geofence as any).groupCount > 1 ? 's' : ''}
+                  </div>
+                )}
+
+                {/* Time spent stats */}
+                {((geofence as any).avgTimeInside || (geofence as any).lastEntry) && (
+                  <div className="space-y-1 border-t border-gray-100 pt-3 text-xs">
+                    {(geofence as any).avgTimeInside && (
+                      <p className="text-gray-600">
+                        Temps moyen: <span className="font-medium">{(geofence as any).avgTimeInside}</span>
+                      </p>
                     )}
-                    {(geofence as any).vehicleCount && (
-                      <Badge variant="outline" className="text-xs">
-                        {(geofence as any).vehicleCount} véhicules
-                      </Badge>
+                    {(geofence as any).lastEntry && (
+                      <p className="text-gray-600">
+                        Dernière entrée: <span className="font-medium">{(geofence as any).lastEntry}</span>
+                      </p>
                     )}
                   </div>
                 )}
@@ -572,6 +644,127 @@ export default function GeofencesPage() {
                     Alerte à la sortie
                   </label>
                 </div>
+              </div>
+
+              {/* Jours actifs */}
+              <div className="sm:col-span-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">Jours actifs</label>
+                <div className="flex gap-2">
+                  {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        const newDays = [...form.activeDays]
+                        newDays[idx] = !newDays[idx]
+                        setForm((prev) => ({ ...prev, activeDays: newDays }))
+                      }}
+                      className={`h-9 w-9 rounded-md border-2 text-xs font-medium transition-colors ${
+                        form.activeDays[idx]
+                          ? 'border-blue-500 bg-blue-500 text-white'
+                          : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1 text-xs text-gray-500">{getDayLabel(form.activeDays)}</p>
+              </div>
+
+              {/* Heures actives */}
+              <div className="sm:col-span-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">Heures actives</label>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={!!form.activeHours}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setForm((prev) => ({
+                            ...prev,
+                            activeHours: { from: '08:00', to: '18:00' },
+                          }))
+                        } else {
+                          setForm((prev) => ({ ...prev, activeHours: null }))
+                        }
+                      }}
+                      className="rounded border-gray-300"
+                    />
+                    Configurer une plage horaire
+                  </label>
+                </div>
+                {form.activeHours && (
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      type="time"
+                      value={form.activeHours.from}
+                      onChange={(e) => {
+                        setForm((prev) => ({
+                          ...prev,
+                          activeHours: {
+                            ...(prev.activeHours || { from: '', to: '' }),
+                            from: e.target.value,
+                          },
+                        }))
+                      }}
+                      className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                    />
+                    <span className="text-sm text-gray-600">à</span>
+                    <input
+                      type="time"
+                      value={form.activeHours.to}
+                      onChange={(e) => {
+                        setForm((prev) => ({
+                          ...prev,
+                          activeHours: {
+                            ...(prev.activeHours || { from: '', to: '' }),
+                            to: e.target.value,
+                          },
+                        }))
+                      }}
+                      className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Temporaire vs Permanente */}
+              <div className="sm:col-span-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">Type de géoclôture</label>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      checked={!form.isTemporary}
+                      onChange={() =>
+                        setForm((prev) => ({ ...prev, isTemporary: false, temporaryUntil: undefined }))
+                      }
+                      className="rounded-full border-gray-300"
+                    />
+                    Permanente
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      checked={form.isTemporary}
+                      onChange={() => setForm((prev) => ({ ...prev, isTemporary: true }))}
+                      className="rounded-full border-gray-300"
+                    />
+                    Temporaire
+                  </label>
+                </div>
+                {form.isTemporary && (
+                  <div className="mt-2">
+                    <label className="mb-1 block text-xs font-medium text-gray-700">Valide jusqu'à</label>
+                    <input
+                      type="datetime-local"
+                      value={form.temporaryUntil || ''}
+                      onChange={(e) => setForm((prev) => ({ ...prev, temporaryUntil: e.target.value }))}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

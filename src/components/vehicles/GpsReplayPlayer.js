@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { MAPBOX_TILE_URL } from '@/lib/constants';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, SkipBack, SkipForward, X, Gauge, Clock, MapPin, Route, ChevronLeft, ChevronRight, } from 'lucide-react';
@@ -232,6 +233,19 @@ export const GpsReplayPlayer = ({ vehicleId, vehicleName, onClose, }) => {
         }
         return segments;
     }, [positions]);
+    // Detect harsh braking events (speed change > 30 km/h)
+    const brakingEvents = useMemo(() => {
+        const events = [];
+        for (let i = 1; i < positions.length; i++) {
+            const current = positions[i];
+            const prev = positions[i - 1];
+            const speedDelta = Math.abs(current.speed - prev.speed);
+            if (speedDelta > 30) {
+                events.push({ position: current, index: i });
+            }
+        }
+        return events;
+    }, [positions]);
     // Current position
     const currentPosition = useMemo(() => {
         if (positions.length === 0)
@@ -289,7 +303,17 @@ export const GpsReplayPlayer = ({ vehicleId, vehicleName, onClose, }) => {
     if (positions.length === 0) {
         return (_jsx("div", { className: "fixed inset-0 bg-black/50 flex items-center justify-center z-50", children: _jsx(Card, { className: "w-96", children: _jsx(CardContent, { className: "py-6", children: _jsxs("div", { className: "flex items-start gap-4", children: [_jsxs("div", { className: "flex-1", children: [_jsx("h3", { className: "font-semibold mb-2", children: "No GPS History" }), _jsxs("p", { className: "text-sm text-muted-foreground", children: ["No GPS history available for ", vehicleName] })] }), _jsx(Button, { variant: "ghost", size: "sm", onClick: onClose, children: _jsx(X, { className: "h-4 w-4" }) })] }) }) }) }));
     }
-    return (_jsx("div", { className: "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4", children: _jsxs(Card, { className: "w-full h-full max-w-6xl max-h-screen flex flex-col", children: [_jsxs("div", { className: "flex items-center justify-between p-4 border-b", children: [_jsxs("div", { className: "flex-1", children: [_jsxs("h2", { className: "text-xl font-semibold", children: [vehicleName, " - GPS History Replay"] }), _jsxs("p", { className: "text-sm text-muted-foreground", children: [positions[0].timestamp, " to ", positions[positions.length - 1].timestamp] })] }), _jsx(Button, { variant: "ghost", size: "sm", onClick: onClose, children: _jsx(X, { className: "h-5 w-5" }) })] }), _jsxs(CardContent, { className: "flex-1 p-4 overflow-hidden flex flex-col gap-4", children: [_jsx("div", { className: "flex-1 rounded-lg overflow-hidden border", children: _jsxs(MapContainer, { center: [positions[0].lat, positions[0].lng], zoom: 13, style: { width: '100%', height: '100%' }, className: "z-0", children: [_jsx(TileLayer, { url: "MAPBOX_TILE_URL_PLACEHOLDER", attribution: '\u00A9 Mapbox \u00A9 OpenStreetMap', tileSize: 512, zoomOffset: -1 }), _jsx(MapViewController, { positions: positions, currentPosition: currentPosition }), polylineSegments.map((segment, idx) => (_jsx(Polyline, { positions: segment.positions, color: segment.color, weight: 3, opacity: 0.7 }, `route-${idx}`))), stops.map((stop, idx) => (_jsx(CircleMarker, { center: [stop.lat, stop.lng], radius: 6, fillColor: "#ef4444", fillOpacity: 0.8, color: "#dc2626", weight: 2, children: _jsx(Popup, { children: _jsxs("div", { className: "text-sm", children: [_jsx("p", { className: "font-semibold", children: "Stop" }), _jsx("p", { children: formatDateTime(new Date(stop.timestamp)) })] }) }) }, `stop-${idx}`))), currentPosition && (_jsx(Marker, { position: [currentPosition.lat, currentPosition.lng], icon: L.divIcon({
+    return (_jsx("div", { className: "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4", children: _jsxs(Card, { className: "w-full h-full max-w-6xl max-h-screen flex flex-col", children: [_jsxs("div", { className: "flex items-center justify-between p-4 border-b", children: [_jsxs("div", { className: "flex-1", children: [_jsxs("h2", { className: "text-xl font-semibold", children: [vehicleName, " - GPS History Replay"] }), _jsxs("p", { className: "text-sm text-muted-foreground", children: [positions[0].timestamp, " to ", positions[positions.length - 1].timestamp] })] }), _jsx(Button, { variant: "ghost", size: "sm", onClick: onClose, children: _jsx(X, { className: "h-5 w-5" }) })] }), _jsxs(CardContent, { className: "flex-1 p-4 overflow-hidden flex flex-col gap-4", children: [_jsx("div", { className: "flex-1 rounded-lg overflow-hidden border", children: _jsxs(MapContainer, { center: [positions[0].lat, positions[0].lng], zoom: 13, style: { width: '100%', height: '100%' }, className: "z-0", children: [_jsx(TileLayer, { url: MAPBOX_TILE_URL('streets-v12'), attribution: '\u00A9 Mapbox \u00A9 OpenStreetMap', tileSize: 512, zoomOffset: -1 }), _jsx(MapViewController, { positions: positions, currentPosition: currentPosition }), polylineSegments.map((segment, idx) => (_jsx(Polyline, { positions: segment.positions, color: segment.color, weight: 3, opacity: 0.7 }, `route-${idx}`))), stops.map((stop, idx) => (_jsx(CircleMarker, { center: [stop.lat, stop.lng], radius: 6, fillColor: "#ef4444", fillOpacity: 0.8, color: "#dc2626", weight: 2, children: _jsx(Popup, { children: _jsxs("div", { className: "text-sm", children: [_jsx("p", { className: "font-semibold", children: "Arr\u00EAt" }), _jsx("p", { children: formatDateTime(new Date(stop.timestamp)) })] }) }) }, `stop-${idx}`))), brakingEvents.map((event, idx) => (_jsx(Marker, { position: [event.position.lat, event.position.lng], icon: L.divIcon({
+                                            html: `<div style="
+                      width: 0; height: 0;
+                      border-left: 8px solid transparent; border-right: 8px solid transparent;
+                      border-bottom: 14px solid #eab308;
+                      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+                    "></div>`,
+                                            className: 'braking-marker',
+                                            iconSize: [16, 14],
+                                            iconAnchor: [8, 14],
+                                        }), children: _jsx(Popup, { children: _jsxs("div", { className: "text-sm", children: [_jsx("p", { className: "font-semibold", children: "Freinage brusque" }), _jsx("p", { className: "text-xs text-gray-600", children: formatDateTime(new Date(event.position.timestamp)) })] }) }) }, `braking-${idx}`))), currentPosition && (_jsx(Marker, { position: [currentPosition.lat, currentPosition.lng], icon: L.divIcon({
                                             html: `
                       <div style="
                         width: 24px;

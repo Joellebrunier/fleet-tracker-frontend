@@ -1,3 +1,5 @@
+export declare const MAPBOX_TOKEN: any;
+export declare const MAPBOX_TILE_URL: (style?: string) => string;
 export declare const API_ROUTES: {
     readonly AUTH_LOGIN: "/api/auth/login";
     readonly AUTH_REGISTER: "/api/auth/register";

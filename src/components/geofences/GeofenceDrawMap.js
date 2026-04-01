@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
+import { MAPBOX_TILE_URL } from '@/lib/constants';
 export default function GeofenceDrawMap({ initialShape, onShapeChange, center = [43.7, 7.12], zoom = 12, }) {
     const mapRef = useRef(null);
     const containerRef = useRef(null);
@@ -33,7 +34,7 @@ export default function GeofenceDrawMap({ initialShape, onShapeChange, center = 
             return;
         const map = L.map(containerRef.current).setView(center, zoom);
         mapRef.current = map;
-        L.tileLayer('MAPBOX_TILE_URL_PLACEHOLDER', {
+        L.tileLayer(MAPBOX_TILE_URL('streets-v12'), {
             attribution: '&copy; Mapbox &copy; OpenStreetMap',
             tileSize: 512,
             zoomOffset: -1,

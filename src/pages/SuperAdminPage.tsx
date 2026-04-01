@@ -30,12 +30,23 @@ import {
   HardDrive,
   AlertCircle,
   Info,
+  TrendingUp,
+  DollarSign,
+  Headphones,
+  Palette,
+  Radio,
+  Send,
+  Circle,
+  AlertOctagon,
+  MessageSquare,
+  Zap,
 } from 'lucide-react'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { apiClient } from '@/lib/api'
 import { API_ROUTES } from '@/lib/constants'
 import { formatDateTime, formatTimeAgo } from '@/lib/utils'
 
-type TabType = 'overview' | 'organizations' | 'users' | 'config'
+type TabType = 'overview' | 'organizations' | 'users' | 'config' | 'revenue' | 'support' | 'billing' | 'whitelabel' | 'echoes'
 
 interface SystemHealth {
   status: 'healthy' | 'degraded' | 'offline'
@@ -89,6 +100,40 @@ interface User {
   createdAt: string
 }
 
+interface SupportTicket {
+  id: string
+  organizationId: string
+  organizationName: string
+  subject: string
+  status: 'ouvert' | 'en cours' | 'résolu'
+  priority: 'basse' | 'normale' | 'haute' | 'critique'
+  createdAt: string
+  assignedTo?: string
+  lastUpdate: string
+}
+
+interface Tracker {
+  id: string
+  name: string
+  status: 'online' | 'offline' | 'maintenance'
+  lastCommunication: string
+  organizationId: string
+  organizationName: string
+}
+
+interface BillingRecord {
+  id: string
+  date: string
+  amount: number
+  status: 'payée' | 'en attente' | 'échouée'
+  description: string
+}
+
+interface RevenueStat {
+  month: string
+  revenue: number
+}
+
 // Mock error logs data
 const mockErrors = [
   { time: '14:32', level: 'error', message: 'Connexion GPS perdue — Flespi channel #4521', count: 3 },
@@ -105,6 +150,137 @@ const gpsProviderHealth = [
   { name: 'Ubiwan', status: 'disconnected', latency: null },
 ]
 
+// Mock revenue data
+const mockRevenueData: RevenueStat[] = [
+  { month: 'Jan', revenue: 12500 },
+  { month: 'Fév', revenue: 15800 },
+  { month: 'Mar', revenue: 18200 },
+  { month: 'Avr', revenue: 21500 },
+  { month: 'Mai', revenue: 19800 },
+  { month: 'Juin', revenue: 24300 },
+  { month: 'Juil', revenue: 28500 },
+  { month: 'Aoû', revenue: 31200 },
+  { month: 'Sep', revenue: 29800 },
+  { month: 'Oct', revenue: 35600 },
+  { month: 'Nov', revenue: 38900 },
+  { month: 'Déc', revenue: 42100 },
+]
+
+// Mock support tickets
+const mockSupportTickets: SupportTicket[] = [
+  {
+    id: 'TK-001',
+    organizationId: 'org-1',
+    organizationName: 'TechCorp Solutions',
+    subject: 'Intégration GPS Flespi ne fonctionne pas',
+    status: 'ouvert',
+    priority: 'haute',
+    createdAt: '2026-04-01T10:30:00Z',
+    lastUpdate: '2026-04-01T10:30:00Z',
+  },
+  {
+    id: 'TK-002',
+    organizationId: 'org-2',
+    organizationName: 'GlobalTech Inc',
+    subject: 'Demande d\'accès API pour développement',
+    status: 'en cours',
+    priority: 'normale',
+    createdAt: '2026-03-31T14:15:00Z',
+    assignedTo: 'support@trackzone.com',
+    lastUpdate: '2026-03-31T16:45:00Z',
+  },
+  {
+    id: 'TK-003',
+    organizationId: 'org-3',
+    organizationName: 'MobileFleet Tracking',
+    subject: 'Mise à jour du plan facturation',
+    status: 'résolu',
+    priority: 'normale',
+    createdAt: '2026-03-28T09:00:00Z',
+    assignedTo: 'billing@trackzone.com',
+    lastUpdate: '2026-03-30T12:00:00Z',
+  },
+  {
+    id: 'TK-004',
+    organizationId: 'org-4',
+    organizationName: 'CityLogistics Ltd',
+    subject: 'Alertes géofence ne se déclenchent pas',
+    status: 'en cours',
+    priority: 'critique',
+    createdAt: '2026-04-01T08:20:00Z',
+    assignedTo: 'support@trackzone.com',
+    lastUpdate: '2026-04-01T11:15:00Z',
+  },
+]
+
+// Mock trackers
+const mockTrackers: Tracker[] = [
+  {
+    id: 'ECH-001',
+    name: 'Tracker #12345',
+    status: 'online',
+    lastCommunication: '2026-04-01T12:15:00Z',
+    organizationId: 'org-1',
+    organizationName: 'TechCorp Solutions',
+  },
+  {
+    id: 'ECH-002',
+    name: 'Tracker #12346',
+    status: 'online',
+    lastCommunication: '2026-04-01T12:10:00Z',
+    organizationId: 'org-1',
+    organizationName: 'TechCorp Solutions',
+  },
+  {
+    id: 'ECH-003',
+    name: 'Tracker #12347',
+    status: 'offline',
+    lastCommunication: '2026-04-01T08:30:00Z',
+    organizationId: 'org-2',
+    organizationName: 'GlobalTech Inc',
+  },
+  {
+    id: 'ECH-004',
+    name: 'Tracker #12348',
+    status: 'maintenance',
+    lastCommunication: '2026-03-31T16:45:00Z',
+    organizationId: 'org-3',
+    organizationName: 'MobileFleet Tracking',
+  },
+]
+
+// Mock billing records
+const mockBillingRecords: BillingRecord[] = [
+  {
+    id: 'BIL-001',
+    date: '2026-04-01',
+    amount: 299,
+    status: 'payée',
+    description: 'Plan Pro - Avril 2026',
+  },
+  {
+    id: 'BIL-002',
+    date: '2026-03-01',
+    amount: 299,
+    status: 'payée',
+    description: 'Plan Pro - Mars 2026',
+  },
+  {
+    id: 'BIL-003',
+    date: '2026-02-01',
+    amount: 199,
+    status: 'payée',
+    description: 'Plan Starter - Février 2026',
+  },
+  {
+    id: 'BIL-004',
+    date: '2026-01-01',
+    amount: 199,
+    status: 'payée',
+    description: 'Plan Starter - Janvier 2026',
+  },
+]
+
 export default function SuperAdminPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [searchOrg, setSearchOrg] = useState('')
@@ -112,6 +288,12 @@ export default function SuperAdminPage() {
   const [orgStatusFilter, setOrgStatusFilter] = useState<'all' | 'active' | 'paused' | 'suspended'>('all')
   const [userRoleFilter, setUserRoleFilter] = useState<string>('all')
   const [suspendedOrgs, setSuspendedOrgs] = useState<Set<string>>(new Set())
+  const [ticketStatusFilter, setTicketStatusFilter] = useState<'all' | 'ouvert' | 'en cours' | 'résolu'>('all')
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null)
+  const [ticketReply, setTicketReply] = useState('')
+  const [selectedOrgForBilling, setSelectedOrgForBilling] = useState<string>('org-1')
+  const [whitelabelOrg, setWhitelabelOrg] = useState<string>('org-1')
+  const [trackerStatusFilter, setTrackerStatusFilter] = useState<'all' | 'online' | 'offline' | 'maintenance'>('all')
 
   // Fetch system health
   const { data: health, isLoading: healthLoading, refetch: refetchHealth } = useQuery({
@@ -309,12 +491,12 @@ export default function SuperAdminPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-200">
-        {(['overview', 'organizations', 'users', 'config'] as const).map(tab => (
+      <div className="flex gap-2 border-b border-gray-200 overflow-x-auto">
+        {(['overview', 'organizations', 'users', 'revenue', 'support', 'billing', 'whitelabel', 'echoes', 'config'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab
                 ? 'border-blue-600 text-blue-600'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -323,6 +505,11 @@ export default function SuperAdminPage() {
             {tab === 'overview' && 'Vue d\'ensemble'}
             {tab === 'organizations' && 'Organisations'}
             {tab === 'users' && 'Utilisateurs'}
+            {tab === 'revenue' && 'Revenus'}
+            {tab === 'support' && 'Support'}
+            {tab === 'billing' && 'Facturation'}
+            {tab === 'whitelabel' && 'White Label'}
+            {tab === 'echoes' && 'Echoes'}
             {tab === 'config' && 'Configuration'}
           </button>
         ))}
@@ -1070,6 +1257,767 @@ export default function SuperAdminPage() {
                 <Button variant="outline" className="w-full justify-start text-red-600 hover:bg-red-50">
                   Redémarrer les services
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* REVENUE TAB */}
+      {activeTab === 'revenue' && (
+        <div className="space-y-6">
+          {/* Revenue Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Revenus mensuels
+              </CardTitle>
+              <CardDescription>Tendance des revenus sur les 12 derniers mois</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={mockRevenueData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="month" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#fff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '6px',
+                    }}
+                    formatter={(value) => `€${Number(value).toLocaleString()}`}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#3b82f6"
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* KPI Cards */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Revenu annuel (ARR)</p>
+                  <p className="text-3xl font-bold text-gray-900">€342.2K</p>
+                  <p className="text-xs text-green-600 font-medium">+12% vs année précédente</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Revenu mensuel récurrent</p>
+                  <p className="text-3xl font-bold text-gray-900">€28.5K</p>
+                  <p className="text-xs text-green-600 font-medium">+18% vs mois dernier</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Taux de croissance</p>
+                  <p className="text-3xl font-bold text-gray-900">+3.2%</p>
+                  <p className="text-xs text-gray-600 font-medium">Croissance mensuelle</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Organisations actives</p>
+                  <p className="text-3xl font-bold text-gray-900">{organizations.length}</p>
+                  <p className="text-xs text-gray-600 font-medium">Avec facturation active</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Revenue per Organization Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenu par organisation</CardTitle>
+              <CardDescription>Détail du revenu et du plan par organisation</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Organisation</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Plan</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Revenu mensuel</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">État</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {organizations.slice(0, 5).map(org => {
+                      const monthlyRevenue = org.plan === 'Enterprise' ? 1299 : org.plan === 'Pro' ? 299 : 99
+                      return (
+                        <tr key={org.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-4">{org.name}</td>
+                          <td className="py-3 px-4">
+                            <Badge variant="outline">{org.plan}</Badge>
+                          </td>
+                          <td className="py-3 px-4 font-medium">€{monthlyRevenue}</td>
+                          <td className="py-3 px-4">
+                            <Badge
+                              variant={org.status === 'active' ? 'default' : 'secondary'}
+                              className="capitalize"
+                            >
+                              {org.status === 'active' ? 'Actif' : org.status === 'paused' ? 'En pause' : 'Suspendu'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* SUPPORT TICKETS TAB */}
+      {activeTab === 'support' && (
+        <div className="space-y-6">
+          {/* Ticket Status Filters */}
+          <div className="flex gap-2">
+            {(['all', 'ouvert', 'en cours', 'résolu'] as const).map(status => (
+              <Button
+                key={status}
+                variant={ticketStatusFilter === status ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTicketStatusFilter(status)}
+              >
+                {status === 'all' ? 'Tous' : status === 'ouvert' ? 'Ouvert' : status === 'en cours' ? 'En cours' : 'Résolu'}
+              </Button>
+            ))}
+          </div>
+
+          {/* Tickets List and Detail */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Tickets List */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Headphones className="h-5 w-5" />
+                    Tickets ({mockSupportTickets.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {mockSupportTickets
+                      .filter(t => ticketStatusFilter === 'all' || t.status === ticketStatusFilter)
+                      .map(ticket => (
+                        <button
+                          key={ticket.id}
+                          onClick={() => setSelectedTicket(ticket)}
+                          className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                            selectedTicket?.id === ticket.id
+                              ? 'border-blue-500 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-medium text-gray-600">{ticket.id}</p>
+                              <p className="text-sm font-medium text-gray-900 truncate">{ticket.subject}</p>
+                              <p className="text-xs text-gray-600 mt-1">{ticket.organizationName}</p>
+                            </div>
+                            <Badge
+                              variant={
+                                ticket.priority === 'critique'
+                                  ? 'destructive'
+                                  : ticket.priority === 'haute'
+                                  ? 'secondary'
+                                  : 'outline'
+                              }
+                              className="shrink-0"
+                            >
+                              {ticket.priority === 'basse' ? 'Basse' : ticket.priority === 'normale' ? 'Normale' : ticket.priority === 'haute' ? 'Haute' : 'Critique'}
+                            </Badge>
+                          </div>
+                        </button>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Ticket Detail */}
+            <div className="lg:col-span-2">
+              {selectedTicket ? (
+                <Card>
+                  <CardHeader>
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle>{selectedTicket.subject}</CardTitle>
+                          <CardDescription>{selectedTicket.id}</CardDescription>
+                        </div>
+                        <Badge
+                          variant={
+                            selectedTicket.status === 'ouvert'
+                              ? 'destructive'
+                              : selectedTicket.status === 'en cours'
+                              ? 'secondary'
+                              : 'outline'
+                          }
+                        >
+                          {selectedTicket.status === 'ouvert' ? 'Ouvert' : selectedTicket.status === 'en cours' ? 'En cours' : 'Résolu'}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600">Organisation</p>
+                          <p className="font-medium">{selectedTicket.organizationName}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Créé</p>
+                          <p className="font-medium">{formatTimeAgo(new Date(selectedTicket.createdAt))}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Assigné à</p>
+                          <p className="font-medium">{selectedTicket.assignedTo || 'Non assigné'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Dernière mise à jour</p>
+                          <p className="font-medium">{formatTimeAgo(new Date(selectedTicket.lastUpdate))}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Réponses</p>
+                        <div className="space-y-3 max-h-48 overflow-y-auto">
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-xs text-gray-600 mb-1">Client - 2026-04-01 10:30</p>
+                            <p className="text-sm text-gray-900">Nous avons un problème urgent avec l'intégration GPS.</p>
+                          </div>
+                          <div className="bg-blue-50 rounded-lg p-3">
+                            <p className="text-xs text-gray-600 mb-1">Support - 2026-04-01 11:00</p>
+                            <p className="text-sm text-gray-900">Merci de nous signaler ce problème. Nous enquêtons.</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-2">Ajouter une réponse</p>
+                        <textarea
+                          value={ticketReply}
+                          onChange={e => setTicketReply(e.target.value)}
+                          placeholder="Tapez votre réponse..."
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          rows={3}
+                        />
+                        <Button className="mt-2 gap-2">
+                          <Send className="h-4 w-4" />
+                          Envoyer la réponse
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="flex items-center justify-center h-96">
+                  <p className="text-gray-500">Sélectionnez un ticket pour voir les détails</p>
+                </Card>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BILLING TAB */}
+      {activeTab === 'billing' && (
+        <div className="space-y-6">
+          {/* Organization Selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Sélectionner une organisation</label>
+            <select
+              value={selectedOrgForBilling}
+              onChange={e => setSelectedOrgForBilling(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {organizations.map(org => (
+                <option key={org.id} value={org.id}>
+                  {org.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Billing Info Cards */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Plan actuel</p>
+                  <p className="text-2xl font-bold text-gray-900">Pro</p>
+                  <Badge className="w-fit">Actif</Badge>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Montant mensuel</p>
+                  <p className="text-2xl font-bold text-gray-900">€299</p>
+                  <p className="text-xs text-gray-600">Facturé mensuellement</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Prochaine facturation</p>
+                  <p className="text-2xl font-bold text-gray-900">01 Mai</p>
+                  <p className="text-xs text-gray-600">2026</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Usage Metrics */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Métriques d'utilisation</CardTitle>
+              <CardDescription>Utilisation actuelle des ressources</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="text-sm text-gray-600">Véhicules suivis</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">847 / 1000</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '84.7%' }}></div>
+                  </div>
+                </div>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="text-sm text-gray-600">Appels API (mois)</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">2.4M / 5M</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '48%' }}></div>
+                  </div>
+                </div>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="text-sm text-gray-600">Stockage utilisé</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">45.2 GB / 100 GB</p>
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '45.2%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Upgrade Downgrade Options */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Modifier le plan</CardTitle>
+              <CardDescription>Changer le plan d'abonnement</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="font-medium text-gray-900">Starter</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">€99</p>
+                  <p className="text-xs text-gray-600 mt-1">/mois</p>
+                  <Button variant="outline" className="w-full mt-4">
+                    Rétrograder
+                  </Button>
+                </div>
+                <div className="rounded-lg border-2 border-blue-600 p-4 bg-blue-50">
+                  <p className="font-medium text-gray-900">Pro</p>
+                  <p className="text-2xl font-bold text-blue-600 mt-2">€299</p>
+                  <p className="text-xs text-gray-600 mt-1">/mois</p>
+                  <Badge className="w-fit mt-4">Plan actuel</Badge>
+                </div>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="font-medium text-gray-900">Enterprise</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-2">€1299</p>
+                  <p className="text-xs text-gray-600 mt-1">/mois</p>
+                  <Button className="w-full mt-4">
+                    Passer à Enterprise
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Billing History */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Historique de facturation</CardTitle>
+              <CardDescription>Les 12 dernières factures</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Date</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Description</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">Montant</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">État</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mockBillingRecords.map(record => (
+                      <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4">{new Date(record.date).toLocaleDateString('fr-FR')}</td>
+                        <td className="py-3 px-4">{record.description}</td>
+                        <td className="py-3 px-4 font-medium">€{record.amount}</td>
+                        <td className="py-3 px-4">
+                          <Badge
+                            variant={
+                              record.status === 'payée'
+                                ? 'default'
+                                : record.status === 'en attente'
+                                ? 'secondary'
+                                : 'destructive'
+                            }
+                          >
+                            {record.status === 'payée' ? 'Payée' : record.status === 'en attente' ? 'En attente' : 'Échouée'}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* WHITE LABEL TAB */}
+      {activeTab === 'whitelabel' && (
+        <div className="space-y-6">
+          {/* Organization Selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Sélectionner une organisation</label>
+            <select
+              value={whitelabelOrg}
+              onChange={e => setWhitelabelOrg(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {organizations.map(org => (
+                <option key={org.id} value={org.id}>
+                  {org.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* White Label Toggle */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Activation White Label
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <input
+                  type="checkbox"
+                  defaultChecked
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label className="text-sm text-gray-700">
+                  Activer la personnalisation White Label pour cette organisation
+                </label>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Branding Options */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Options de marque</CardTitle>
+              <CardDescription>Personnalisez l'apparence de la plateforme</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Logo Upload */}
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Logo personnalisé</p>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Cliquez pour télécharger votre logo</p>
+                    <p className="text-xs text-gray-500 mt-1">PNG, JPG ou SVG - Max 5 MB</p>
+                  </div>
+                </div>
+
+                {/* Color Pickers */}
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Couleurs personnalisées</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Couleur primaire</label>
+                      <input
+                        type="color"
+                        defaultValue="#3b82f6"
+                        className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-2">Couleur secondaire</label>
+                      <input
+                        type="color"
+                        defaultValue="#8b5cf6"
+                        className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Custom Domain */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Domaine personnalisé</label>
+                  <Input
+                    type="text"
+                    placeholder="app.votresociete.com"
+                    defaultValue="trackzone.techcorp.com"
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-600 mt-2">Configurez les enregistrements DNS pour activer le domaine</p>
+                </div>
+
+                {/* Footer Text */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Texte du pied de page</label>
+                  <Input
+                    type="text"
+                    placeholder="© 2026 Votre entreprise. Tous droits réservés."
+                    defaultValue="Propulsé par TrackZone"
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Email Branding */}
+                <div>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" defaultChecked className="rounded" />
+                    <span className="text-sm text-gray-700">Utiliser le logo dans les e-mails</span>
+                  </label>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button className="gap-2">
+                    <Zap className="h-4 w-4" />
+                    Enregistrer les modifications
+                  </Button>
+                  <Button variant="outline">Aperçu</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Preview */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Aperçu</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="border border-gray-300 rounded-lg p-6 bg-gradient-to-br from-blue-50 to-purple-50">
+                <div className="w-24 h-24 rounded-lg bg-white border-2 border-blue-600 flex items-center justify-center mb-4">
+                  <span className="text-xs text-gray-500">Logo</span>
+                </div>
+                <p className="text-sm font-medium text-gray-700 mb-4">Aperçu de votre marque personnalisée</p>
+                <p className="text-xs text-gray-600">© 2026 Votre entreprise. Tous droits réservés.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ECHOES INTEGRATION TAB */}
+      {activeTab === 'echoes' && (
+        <div className="space-y-6">
+          {/* Tracker Status Summary */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Circle className="h-3 w-3 text-green-600 fill-green-600" />
+                    <p className="text-sm text-gray-600">En ligne</p>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">2</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Circle className="h-3 w-3 text-gray-400 fill-gray-400" />
+                    <p className="text-sm text-gray-600">Hors ligne</p>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">1</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Circle className="h-3 w-3 text-yellow-600 fill-yellow-600" />
+                    <p className="text-sm text-gray-600">Maintenance</p>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-900">1</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tracker Status Filter */}
+          <div className="flex gap-2">
+            {(['all', 'online', 'offline', 'maintenance'] as const).map(status => (
+              <Button
+                key={status}
+                variant={trackerStatusFilter === status ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTrackerStatusFilter(status)}
+              >
+                {status === 'all' ? 'Tous' : status === 'online' ? 'En ligne' : status === 'offline' ? 'Hors ligne' : 'Maintenance'}
+              </Button>
+            ))}
+          </div>
+
+          {/* Trackers List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Radio className="h-5 w-5" />
+                Trackers Echoes
+              </CardTitle>
+              <CardDescription>Gérer les trackers et envoyer des commandes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {mockTrackers
+                  .filter(t => trackerStatusFilter === 'all' || t.status === trackerStatusFilter)
+                  .map(tracker => (
+                    <div
+                      key={tracker.id}
+                      className="flex items-center justify-between rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Circle
+                            className={`h-3 w-3 ${
+                              tracker.status === 'online'
+                                ? 'text-green-600 fill-green-600'
+                                : tracker.status === 'offline'
+                                ? 'text-gray-400 fill-gray-400'
+                                : 'text-yellow-600 fill-yellow-600'
+                            }`}
+                          />
+                          <p className="font-medium text-gray-900">{tracker.name}</p>
+                        </div>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                          <span>{tracker.organizationName}</span>
+                          <span>
+                            Dernier contact:{' '}
+                            <span className="font-medium">{formatTimeAgo(new Date(tracker.lastCommunication))}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            tracker.status === 'online'
+                              ? 'default'
+                              : tracker.status === 'offline'
+                              ? 'secondary'
+                              : 'outline'
+                          }
+                          className="capitalize"
+                        >
+                          {tracker.status === 'online' ? 'En ligne' : tracker.status === 'offline' ? 'Hors ligne' : 'Maintenance'}
+                        </Badge>
+                        <Button variant="outline" size="sm" className="gap-1 text-xs">
+                          <Zap className="h-3 w-3" />
+                          Commandes
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Available Commands */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Commandes disponibles</CardTitle>
+              <CardDescription>Envoyer des commandes aux trackers Echoes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Button variant="outline" className="gap-2 h-auto flex-col justify-start p-4">
+                  <Radio className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-medium">Localiser</span>
+                  <span className="text-xs text-gray-600">Position GPS immédiate</span>
+                </Button>
+                <Button variant="outline" className="gap-2 h-auto flex-col justify-start p-4">
+                  <Power className="h-5 w-5 text-red-600" />
+                  <span className="text-sm font-medium">Redémarrer</span>
+                  <span className="text-xs text-gray-600">Redémarrage du tracker</span>
+                </Button>
+                <Button variant="outline" className="gap-2 h-auto flex-col justify-start p-4">
+                  <AlertOctagon className="h-5 w-5 text-yellow-600" />
+                  <span className="text-sm font-medium">Diagnostic</span>
+                  <span className="text-xs text-gray-600">État et santé du tracker</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Connection Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wifi className="h-5 w-5" />
+                État de la connexion
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="text-sm text-gray-600 mb-2">Serveur Echoes</p>
+                  <div className="flex items-center gap-2">
+                    <Circle className="h-3 w-3 text-green-600 fill-green-600" />
+                    <p className="font-medium text-green-600">Connecté</p>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">Latence: 42ms</p>
+                </div>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="text-sm text-gray-600 mb-2">Synchronisation</p>
+                  <p className="font-medium text-gray-900">À jour</p>
+                  <p className="text-xs text-gray-600 mt-2">Dernière sync: à l'instant</p>
+                </div>
               </div>
             </CardContent>
           </Card>

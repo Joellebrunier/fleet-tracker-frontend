@@ -17,6 +17,10 @@ import {
   FolderTree,
   Cpu,
   HelpCircle,
+  Lock,
+  FileCode,
+  Code,
+  FlaskConical,
 } from 'lucide-react'
 import { UserRole } from '@/types/user'
 import { cn } from '@/lib/utils'
@@ -86,6 +90,30 @@ export default function Sidebar() {
   ]
 
   const adminItems = [
+    {
+      label: 'API Docs',
+      icon: FileCode,
+      path: '/api-docs',
+      roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+    },
+    {
+      label: 'SDK',
+      icon: Code,
+      path: '/sdk-examples',
+      roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+    },
+    {
+      label: 'Test',
+      icon: FlaskConical,
+      path: '/test-environment',
+      roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+    },
+    {
+      label: 'Rôles',
+      icon: Lock,
+      path: '/roles',
+      roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+    },
     {
       label: 'Journal d\'audit',
       icon: Shield,

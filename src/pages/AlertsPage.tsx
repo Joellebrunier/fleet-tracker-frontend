@@ -136,6 +136,20 @@ interface RuleFormState {
   conditionDuration: string
   actions: AlertAction[]
   enabled: boolean
+  escalationEnabled: boolean
+  escalationDelay: '5min' | '15min' | '30min' | '1h'
+  escalationTarget: 'Manager' | 'Admin' | 'Super Admin'
+  parentRuleId?: string
+  silentHoursEnabled: boolean
+  silentHoursFrom: string
+  silentHoursTo: string
+  silentHoursDays: boolean[]
+  notificationChannels: {
+    email: boolean
+    pushMobile: boolean
+    whatsapp: boolean
+    sms: boolean
+  }
 }
 
 const defaultRuleForm: RuleFormState = {
@@ -147,6 +161,20 @@ const defaultRuleForm: RuleFormState = {
   conditionDuration: '',
   actions: [],
   enabled: true,
+  escalationEnabled: false,
+  escalationDelay: '15min',
+  escalationTarget: 'Manager',
+  parentRuleId: undefined,
+  silentHoursEnabled: false,
+  silentHoursFrom: '22:00',
+  silentHoursTo: '06:00',
+  silentHoursDays: [true, true, true, true, true, true, true],
+  notificationChannels: {
+    email: true,
+    pushMobile: false,
+    whatsapp: false,
+    sms: true,
+  },
 }
 
 type TabView = 'alerts' | 'rules' | 'trends'
@@ -768,6 +796,46 @@ export default function AlertsPage() {
       {/* Rules Tab */}
       {tab === 'rules' && (
         <div className="space-y-4">
+          {/* Silent Hours Configuration Card */}
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Clock size={18} className="text-blue-600" />
+                Heures silencieuses
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="silentEnabled"
+                  defaultChecked={false}
+                  className="rounded border-gray-300"
+                />
+                <label htmlFor="silentEnabled" className="text-sm font-medium text-gray-700">
+                  Activer les heures silencieuses globales
+                </label>
+              </div>
+              <p className="text-xs text-gray-600">
+                Les alertes non-critiques seront mises en attente pendant cette période
+              </p>
+              <div className="flex gap-2 items-center">
+                <span className="text-sm text-gray-600">De</span>
+                <input
+                  type="time"
+                  defaultValue="22:00"
+                  className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                />
+                <span className="text-sm text-gray-600">à</span>
+                <input
+                  type="time"
+                  defaultValue="06:00"
+                  className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {rulesLoading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
@@ -820,6 +888,18 @@ export default function AlertsPage() {
                           <p className="mt-0.5 text-sm text-gray-500">
                             {rule.description || typeConf?.description || rule.type}
                           </p>
+                          {/* Escalation info */}
+                          {(rule as any).escalationEnabled && (
+                            <p className="mt-1 text-xs text-orange-600">
+                              <span className="font-medium">Escalade:</span> {(rule as any).escalationDelay} → {(rule as any).escalationTarget}
+                            </p>
+                          )}
+                          {/* Dependencies info */}
+                          {(rule as any).parentRuleId && (
+                            <p className="mt-1 text-xs text-purple-600">
+                              <span className="font-medium">Dépend de:</span> Règle parente
+                            </p>
+                          )}
                         </div>
                         <div className="flex gap-1 items-center">
                           <button
@@ -867,13 +947,15 @@ export default function AlertsPage() {
                 ? 'Étape 1 : Choisir un type d\'alerte'
                 : ruleStep === 1
                   ? 'Étape 2 : Configurer la règle'
-                  : 'Étape 3 : Définir les actions de notification'}
+                  : ruleStep === 2
+                    ? 'Étape 3 : Définir les actions de notification'
+                    : 'Étape 4 : Configuration avancée'}
             </DialogDescription>
           </DialogHeader>
 
           {/* Step indicators */}
           <div className="flex items-center gap-2 mb-2">
-            {[0, 1, 2].map((step) => (
+            {[0, 1, 2, 3].map((step) => (
               <div key={step} className="flex items-center gap-2 flex-1">
                 <div
                   className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -886,7 +968,7 @@ export default function AlertsPage() {
                 >
                   {step < ruleStep ? <Check size={14} /> : step + 1}
                 </div>
-                {step < 2 && (
+                {step < 3 && (
                   <div
                     className={`flex-1 h-0.5 ${step < ruleStep ? 'bg-green-300' : 'bg-gray-200'}`}
                   />
@@ -1071,6 +1153,214 @@ export default function AlertsPage() {
             </div>
           )}
 
+          {/* Step 3: Advanced Configuration */}
+          {ruleStep === 3 && (
+            <div className="space-y-5">
+              {/* Notification Channels */}
+              <div className="rounded-lg border border-gray-200 p-4">
+                <h4 className="font-medium text-sm mb-3 text-gray-900">Canaux de notification</h4>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={ruleForm.notificationChannels.email}
+                      onChange={(e) =>
+                        setRuleForm((prev) => ({
+                          ...prev,
+                          notificationChannels: { ...prev.notificationChannels, email: e.target.checked },
+                        }))
+                      }
+                      className="rounded border-gray-300"
+                    />
+                    <span>Email</span>
+                    <span className="ml-auto text-xs text-green-600">✅</span>
+                  </label>
+                  <label className="flex items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={ruleForm.notificationChannels.pushMobile}
+                      onChange={(e) =>
+                        setRuleForm((prev) => ({
+                          ...prev,
+                          notificationChannels: { ...prev.notificationChannels, pushMobile: e.target.checked },
+                        }))
+                      }
+                      className="rounded border-gray-300"
+                    />
+                    <span>Push mobile</span>
+                    <span className="ml-auto text-xs text-yellow-600">⚠️ Non configuré</span>
+                  </label>
+                  <label className="flex items-center gap-3 text-sm opacity-50">
+                    <input type="checkbox" disabled className="rounded border-gray-300" />
+                    <span>WhatsApp</span>
+                    <span className="ml-auto text-xs text-red-600">❌ Non disponible</span>
+                  </label>
+                  <label className="flex items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={ruleForm.notificationChannels.sms}
+                      onChange={(e) =>
+                        setRuleForm((prev) => ({
+                          ...prev,
+                          notificationChannels: { ...prev.notificationChannels, sms: e.target.checked },
+                        }))
+                      }
+                      className="rounded border-gray-300"
+                    />
+                    <span>SMS</span>
+                    <span className="ml-auto text-xs text-green-600">✅</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Escalation */}
+              <div className="rounded-lg border border-gray-200 p-4">
+                <h4 className="font-medium text-sm mb-3 text-gray-900">Escalade</h4>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={ruleForm.escalationEnabled}
+                      onChange={(e) => setRuleForm((prev) => ({ ...prev, escalationEnabled: e.target.checked }))}
+                      className="rounded border-gray-300"
+                    />
+                    <span>Activer l'escalade automatique</span>
+                  </label>
+                  {ruleForm.escalationEnabled && (
+                    <div className="ml-6 space-y-3">
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-700">Délai avant escalade</label>
+                        <select
+                          value={ruleForm.escalationDelay}
+                          onChange={(e) =>
+                            setRuleForm((prev) => ({
+                              ...prev,
+                              escalationDelay: e.target.value as any,
+                            }))
+                          }
+                          className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+                        >
+                          <option value="5min">5 minutes</option>
+                          <option value="15min">15 minutes</option>
+                          <option value="30min">30 minutes</option>
+                          <option value="1h">1 heure</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium text-gray-700">Escalader vers</label>
+                        <select
+                          value={ruleForm.escalationTarget}
+                          onChange={(e) =>
+                            setRuleForm((prev) => ({
+                              ...prev,
+                              escalationTarget: e.target.value as any,
+                            }))
+                          }
+                          className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+                        >
+                          <option value="Manager">Manager</option>
+                          <option value="Admin">Admin</option>
+                          <option value="Super Admin">Super Admin</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Silent Hours */}
+              <div className="rounded-lg border border-gray-200 p-4">
+                <h4 className="font-medium text-sm mb-3 text-gray-900">Heures silencieuses</h4>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={ruleForm.silentHoursEnabled}
+                      onChange={(e) => setRuleForm((prev) => ({ ...prev, silentHoursEnabled: e.target.checked }))}
+                      className="rounded border-gray-300"
+                    />
+                    <span>Activer les heures silencieuses</span>
+                  </label>
+                  {ruleForm.silentHoursEnabled && (
+                    <div className="ml-6 space-y-3">
+                      <div className="flex gap-2 items-end">
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-gray-700">De</label>
+                          <input
+                            type="time"
+                            value={ruleForm.silentHoursFrom}
+                            onChange={(e) => setRuleForm((prev) => ({ ...prev, silentHoursFrom: e.target.value }))}
+                            className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                          />
+                        </div>
+                        <span className="text-gray-400">à</span>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-gray-700">À</label>
+                          <input
+                            type="time"
+                            value={ruleForm.silentHoursTo}
+                            onChange={(e) => setRuleForm((prev) => ({ ...prev, silentHoursTo: e.target.value }))}
+                            className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-xs font-medium text-gray-700">Jours applicables</label>
+                        <div className="flex gap-2">
+                          {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                const newDays = [...ruleForm.silentHoursDays]
+                                newDays[idx] = !newDays[idx]
+                                setRuleForm((prev) => ({ ...prev, silentHoursDays: newDays }))
+                              }}
+                              className={`h-8 w-8 rounded-md border text-xs font-medium transition-colors ${
+                                ruleForm.silentHoursDays[idx]
+                                  ? 'border-blue-500 bg-blue-500 text-white'
+                                  : 'border-gray-300 bg-white text-gray-600'
+                              }`}
+                            >
+                              {day}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Dependencies */}
+              <div className="rounded-lg border border-gray-200 p-4">
+                <h4 className="font-medium text-sm mb-3 text-gray-900">Dépendances</h4>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-700">Alerte parente (optionnel)</label>
+                  <select
+                    value={ruleForm.parentRuleId || ''}
+                    onChange={(e) =>
+                      setRuleForm((prev) => ({
+                        ...prev,
+                        parentRuleId: e.target.value || undefined,
+                      }))
+                    }
+                    className="w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+                  >
+                    <option value="">Aucune dépendance</option>
+                    {(rules as AlertRule[])?.map((rule) => (
+                      <option key={rule.id} value={rule.id}>
+                        {rule.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Cette alerte ne se déclenchera que si l'alerte parente est active
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {formError && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
               {formError}
@@ -1083,7 +1373,7 @@ export default function AlertsPage() {
                 Retour
               </Button>
             )}
-            {ruleStep < 2 ? (
+            {ruleStep < 3 ? (
               <Button
                 onClick={() => {
                   if (ruleStep === 0 && !ruleForm.type) {

@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUIStore } from '@/stores/uiStore';
-import { Menu, X, Map, Truck, AlertCircle, Settings, BarChart3, Zap, Shield, Home, Users, FolderTree, } from 'lucide-react';
+import { Menu, X, Map, Truck, AlertCircle, Settings, BarChart3, Zap, Shield, Home, Users, FolderTree, Cpu, HelpCircle, Lock, } from 'lucide-react';
 import { UserRole } from '@/types/user';
 import { cn } from '@/lib/utils';
 export default function Sidebar() {
@@ -42,6 +42,12 @@ export default function Sidebar() {
             roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN],
         },
         {
+            label: 'Appareils',
+            icon: Cpu,
+            path: '/devices',
+            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
+        },
+        {
             label: 'Geofences',
             icon: Zap,
             path: '/geofences',
@@ -62,6 +68,18 @@ export default function Sidebar() {
     ];
     const adminItems = [
         {
+            label: 'Rôles',
+            icon: Lock,
+            path: '/roles',
+            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+        },
+        {
+            label: 'Journal d\'audit',
+            icon: Shield,
+            path: '/audit-log',
+            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+        },
+        {
             label: 'Administration',
             icon: Shield,
             path: '/admin',
@@ -80,8 +98,10 @@ export default function Sidebar() {
                                         return (_jsxs(Link, { to: item.path, onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive(item.path)
                                                 ? 'bg-red-50 text-red-600'
                                                 : 'text-gray-700 hover:bg-gray-100'), children: [_jsx(Icon, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: item.label })] }, item.path));
-                                    })] }))] }), _jsx("div", { className: "absolute bottom-0 w-full border-t border-gray-200 p-3", children: _jsxs(Link, { to: "/settings", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/settings')
-                                ? 'bg-blue-50 text-blue-600'
-                                : 'text-gray-700 hover:bg-gray-100'), children: [_jsx(Settings, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Param\u00E8tres" })] }) })] }), sidebarOpen && (_jsx("div", { className: "fixed inset-0 z-20 bg-black/50 lg:hidden", onClick: () => setSidebarOpen(false) }))] }));
+                                    })] }))] }), _jsxs("div", { className: "absolute bottom-0 w-full border-t border-gray-200 p-3 space-y-1", children: [_jsxs(Link, { to: "/help", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/help')
+                                    ? 'bg-blue-50 text-blue-600'
+                                    : 'text-gray-700 hover:bg-gray-100'), children: [_jsx(HelpCircle, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Aide" })] }), _jsxs(Link, { to: "/settings", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/settings')
+                                    ? 'bg-blue-50 text-blue-600'
+                                    : 'text-gray-700 hover:bg-gray-100'), children: [_jsx(Settings, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Param\u00E8tres" })] })] })] }), sidebarOpen && (_jsx("div", { className: "fixed inset-0 z-20 bg-black/50 lg:hidden", onClick: () => setSidebarOpen(false) }))] }));
 }
 //# sourceMappingURL=Sidebar.js.map
