@@ -513,7 +513,14 @@ export default function MapPage() {
 
         {/* Help button bottom right */}
         <div className="absolute bottom-4 right-4 z-[1000]">
-          <KeyboardShortcuts onShortcut={handleShortcut} />
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-white/90 shadow"
+            onClick={() => setShowHelpPopover(!showHelpPopover)}
+          >
+            <HelpCircle size={16} />
+          </Button>
         </div>
       </div>
 
