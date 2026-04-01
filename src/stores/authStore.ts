@@ -23,11 +23,30 @@ interface AuthState {
   canAccess: (requiredRoles: UserRole[]) => boolean
 }
 
+// Hydrate initial state synchronously from localStorage to avoid redirect race condition
+function getInitialAuthState() {
+  try {
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN)
+    const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+    if (token && userStr) {
+      const user = JSON.parse(userStr) as User
+      return { user, token, isAuthenticated: true }
+    }
+  } catch {
+    // Invalid stored data — start fresh
+    localStorage.removeItem(STORAGE_KEYS.TOKEN)
+    localStorage.removeItem(STORAGE_KEYS.USER)
+  }
+  return { user: null, token: null, isAuthenticated: false }
+}
+
+const initialAuth = getInitialAuthState()
+
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
+  user: initialAuth.user,
   organization: null,
-  token: null,
-  isAuthenticated: false,
+  token: initialAuth.token,
+  isAuthenticated: initialAuth.isAuthenticated,
   isLoading: false,
   error: null,
 
