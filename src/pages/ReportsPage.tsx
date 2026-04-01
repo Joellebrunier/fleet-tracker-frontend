@@ -98,8 +98,7 @@ const FORMAT_ICONS: Record<ReportFormat, typeof File> = {
 }
 
 export default function ReportsPage() {
-  const { user } = useAuthStore()
-  const orgId = user?.organizationId
+  const orgId = useAuthStore((s) => s.user?.organizationId) || ''
 
   // State for report generation dialog
   const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null)

@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react'
-import { useGeofences, useGeofenceStats, useCreateGeofence, useDeleteGeofence } from '@/hooks/useGeofences'
+import { useQueryClient } from '@tanstack/react-query'
+import { useGeofences, useGeofenceStats, useCreateGeofence } from '@/hooks/useGeofences'
 import { GeofenceShape, GeofenceEvent, GeofenceFormData, Geofence } from '@/types/geofence'
+import { apiClient } from '@/lib/api'
+import { API_ROUTES } from '@/lib/constants'
+import { useAuthStore } from '@/stores/authStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -71,6 +75,8 @@ function getShapeLabel(shape: GeofenceShape): string {
 }
 
 export default function GeofencesPage() {
+  const orgId = useAuthStore((s) => s.user?.organizationId) || ''
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [modalMode, setModalMode] = useState<ModalMode>(null)
@@ -593,7 +599,14 @@ export default function GeofencesPage() {
               variant="destructive"
               className="bg-red-600 hover:bg-red-700"
               onClick={async () => {
-                // Delete is handled via the hook pattern
+                if (deleteConfirmId) {
+                  try {
+                    await apiClient.delete(API_ROUTES.GEOFENCE_DETAIL(orgId, deleteConfirmId))
+                    queryClient.invalidateQueries({ queryKey: ['geofences'] })
+                  } catch {
+                    // Silently handle
+                  }
+                }
                 setDeleteConfirmId(null)
               }}
             >
