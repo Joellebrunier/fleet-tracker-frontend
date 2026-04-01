@@ -708,73 +708,73 @@ export default function SuperAdminPage() {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-3">
                   {/* API Status */}
-                  <div className={`rounded-lg p-4 ${getStatusColor(health?.api.status || 'down')}`}>
+                  <div className={`rounded-lg p-4 ${getStatusColor(health?.api?.status || 'down')}`}>
                     <div className="flex items-center gap-2 mb-3">
                       <Server className="h-5 w-5" />
-                      <p className={`text-sm font-medium ${getStatusTextColor(health?.api.status || 'down')}`}>
+                      <p className={`text-sm font-medium ${getStatusTextColor(health?.api?.status || 'down')}`}>
                         Serveur API
                       </p>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(health?.api.status || 'down')}
+                        {getStatusIcon(health?.api?.status || 'down')}
                         <span className="font-semibold text-gray-900 capitalize">
-                          {health?.api.status || 'Unknown'}
+                          {health?.api?.status || 'Unknown'}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600">
-                        Réponse : {health?.api.responseTime}ms
+                        Réponse : {health?.api?.responseTime}ms
                       </p>
                       <p className="text-xs text-gray-600">
-                        Dernière vérif. : {health?.api.lastCheck ? formatTimeAgo(new Date(health.api.lastCheck)) : 'N/A'}
+                        Dernière vérif. : {health?.api?.lastCheck ? formatTimeAgo(new Date(health.api.lastCheck)) : 'N/A'}
                       </p>
                     </div>
                   </div>
 
                   {/* Database Status */}
-                  <div className={`rounded-lg p-4 ${getStatusColor(health?.database.status || 'down')}`}>
+                  <div className={`rounded-lg p-4 ${getStatusColor(health?.database?.status || 'down')}`}>
                     <div className="flex items-center gap-2 mb-3">
                       <Database className="h-5 w-5" />
-                      <p className={`text-sm font-medium ${getStatusTextColor(health?.database.status || 'down')}`}>
+                      <p className={`text-sm font-medium ${getStatusTextColor(health?.database?.status || 'down')}`}>
                         Base de données
                       </p>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(health?.database.status || 'down')}
+                        {getStatusIcon(health?.database?.status || 'down')}
                         <span className="font-semibold text-gray-900 capitalize">
-                          {health?.database.status || 'Unknown'}
+                          {health?.database?.status || 'Unknown'}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600">
-                        Réponse : {health?.database.responseTime}ms
+                        Réponse : {health?.database?.responseTime}ms
                       </p>
                       <p className="text-xs text-gray-600">
-                        Connexions : {health?.database.connections || 0}
+                        Connexions : {health?.database?.connections || 0}
                       </p>
                     </div>
                   </div>
 
                   {/* GPS Providers Status */}
-                  <div className={`rounded-lg p-4 ${getStatusColor(health?.gpsProviders.status || 'down')}`}>
+                  <div className={`rounded-lg p-4 ${getStatusColor(health?.gpsProviders?.status || 'down')}`}>
                     <div className="flex items-center gap-2 mb-3">
                       <Wifi className="h-5 w-5" />
-                      <p className={`text-sm font-medium ${getStatusTextColor(health?.gpsProviders.status || 'down')}`}>
+                      <p className={`text-sm font-medium ${getStatusTextColor(health?.gpsProviders?.status || 'down')}`}>
                         Fournisseurs GPS
                       </p>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        {getStatusIcon(health?.gpsProviders.status || 'down')}
+                        {getStatusIcon(health?.gpsProviders?.status || 'down')}
                         <span className="font-semibold text-gray-900 capitalize">
-                          {health?.gpsProviders.status || 'Unknown'}
+                          {health?.gpsProviders?.status || 'Unknown'}
                         </span>
                       </div>
                       <p className="text-xs text-gray-600">
-                        Actifs : {health?.gpsProviders.activeTrackers || 0}
+                        Actifs : {health?.gpsProviders?.activeTrackers || 0}
                       </p>
                       <p className="text-xs text-gray-600">
-                        Mis à jour : {health?.gpsProviders.lastUpdate ? formatTimeAgo(new Date(health.gpsProviders.lastUpdate)) : 'N/A'}
+                        Mis à jour : {health?.gpsProviders?.lastUpdate ? formatTimeAgo(new Date(health.gpsProviders.lastUpdate)) : 'N/A'}
                       </p>
                     </div>
                   </div>
