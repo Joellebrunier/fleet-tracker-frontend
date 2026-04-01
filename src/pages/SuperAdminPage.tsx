@@ -24,6 +24,12 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
+  Download,
+  Upload,
+  Power,
+  HardDrive,
+  AlertCircle,
+  Info,
 } from 'lucide-react'
 import { apiClient } from '@/lib/api'
 import { API_ROUTES } from '@/lib/constants'
@@ -83,12 +89,29 @@ interface User {
   createdAt: string
 }
 
+// Mock error logs data
+const mockErrors = [
+  { time: '14:32', level: 'error', message: 'Connexion GPS perdue — Flespi channel #4521', count: 3 },
+  { time: '13:15', level: 'warning', message: 'Temps de réponse API > 2s', count: 12 },
+  { time: '12:01', level: 'info', message: 'Sauvegarde automatique terminée', count: 1 },
+  { time: '10:45', level: 'error', message: 'Échec synchronisation Echoes', count: 5 },
+]
+
+// Mock GPS provider health data
+const gpsProviderHealth = [
+  { name: 'Flespi', status: 'connected', latency: 45 },
+  { name: 'Echoes', status: 'degraded', latency: 350 },
+  { name: 'KeepTrace', status: 'connected', latency: 89 },
+  { name: 'Ubiwan', status: 'disconnected', latency: null },
+]
+
 export default function SuperAdminPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [searchOrg, setSearchOrg] = useState('')
   const [searchUser, setSearchUser] = useState('')
   const [orgStatusFilter, setOrgStatusFilter] = useState<'all' | 'active' | 'paused' | 'suspended'>('all')
   const [userRoleFilter, setUserRoleFilter] = useState<string>('all')
+  const [suspendedOrgs, setSuspendedOrgs] = useState<Set<string>>(new Set())
 
   // Fetch system health
   const { data: health, isLoading: healthLoading, refetch: refetchHealth } = useQuery({
@@ -201,6 +224,68 @@ export default function SuperAdminPage() {
         return <AlertTriangle className="h-5 w-5 text-red-600" />
       default:
         return <Clock className="h-5 w-5 text-gray-600" />
+    }
+  }
+
+  const toggleOrgSuspend = (orgId: string) => {
+    setSuspendedOrgs(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(orgId)) {
+        newSet.delete(orgId)
+      } else {
+        newSet.add(orgId)
+      }
+      return newSet
+    })
+  }
+
+  const handleImportTrackers = () => {
+    alert('Fonctionnalité en cours de développement')
+  }
+
+  const handleExportTrackers = () => {
+    alert('Fonctionnalité en cours de développement')
+  }
+
+  const handleImportPlatform = () => {
+    alert('Fonctionnalité en cours de développement')
+  }
+
+  const handleSyncMetadata = () => {
+    alert('Fonctionnalité en cours de développement')
+  }
+
+  const handleBackup = () => {
+    alert('Fonctionnalité en cours de développement')
+  }
+
+  const handleRestore = () => {
+    alert('Fonctionnalité en cours de développement')
+  }
+
+  const getErrorLevelColor = (level: string) => {
+    switch (level) {
+      case 'error':
+        return 'bg-red-100 text-red-900'
+      case 'warning':
+        return 'bg-yellow-100 text-yellow-900'
+      case 'info':
+        return 'bg-blue-100 text-blue-900'
+      default:
+        return 'bg-gray-100 text-gray-900'
+    }
+  }
+
+  const getErrorLevelDot = (level: string) => {
+    switch (level) {
+      case 'error':
+        return <div className="h-3 w-3 rounded-full bg-red-600" />
+      case 'warning':
+        return <div className="h-3 w-3 rounded-full bg-yellow-600" />
+      case 'info':
+        return <div className="h-3 w-3 rounded-full bg-blue-600" />
+      default:
+        return <div className="h-3 w-3 rounded-full bg-gray-600" />
     }
   }
 
@@ -353,6 +438,51 @@ export default function SuperAdminPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Connection Health Check */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wifi className="h-5 w-5" />
+                Vérifications santé connexion
+              </CardTitle>
+              <CardDescription>État de connexion des fournisseurs GPS</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {gpsProviderHealth.map(provider => (
+                  <div
+                    key={provider.name}
+                    className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      {provider.status === 'connected' && (
+                        <>
+                          <div className="h-3 w-3 rounded-full bg-green-600" />
+                          <span className="text-sm font-medium text-gray-900">{provider.name}</span>
+                          <span className="text-xs text-green-600">Connecté — {provider.latency}ms</span>
+                        </>
+                      )}
+                      {provider.status === 'degraded' && (
+                        <>
+                          <div className="h-3 w-3 rounded-full bg-yellow-600" />
+                          <span className="text-sm font-medium text-gray-900">{provider.name}</span>
+                          <span className="text-xs text-yellow-600">Latence élevée — {provider.latency}ms</span>
+                        </>
+                      )}
+                      {provider.status === 'disconnected' && (
+                        <>
+                          <div className="h-3 w-3 rounded-full bg-red-600" />
+                          <span className="text-sm font-medium text-gray-900">{provider.name}</span>
+                          <span className="text-xs text-red-600">Déconnecté</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* System Health Status */}
           <Card>
@@ -537,35 +667,74 @@ export default function SuperAdminPage() {
                   {filteredOrganizations.length === 0 ? (
                     <p className="text-center text-gray-600 py-8">Aucune organisation trouvée</p>
                   ) : (
-                    filteredOrganizations.map(org => (
-                      <div
-                        key={org.id}
-                        className="flex items-center justify-between rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-900">{org.name}</p>
-                          <p className="text-sm text-gray-600">
-                            Plan {org.plan} • {org.users} utilisateurs • {org.vehicles} véhicules
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Créé {formatTimeAgo(new Date(org.createdAt))} • Dernière activité{' '}
-                            {formatTimeAgo(new Date(org.lastActivity))}
-                          </p>
+                    filteredOrganizations.map(org => {
+                      const isSuspended = suspendedOrgs.has(org.id)
+                      return (
+                        <div
+                          key={org.id}
+                          className="flex flex-col rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors space-y-3"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900">{org.name}</p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {org.users} utilisateurs • {org.vehicles} véhicules
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Créé {formatTimeAgo(new Date(org.createdAt))} • Dernière activité{' '}
+                                {formatTimeAgo(new Date(org.lastActivity))}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={org.plan === 'Pro' || org.plan === 'Enterprise' ? 'default' : 'secondary'}
+                                className="capitalize"
+                              >
+                                {org.plan}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                            <div className="flex-1">
+                              <p className="text-xs text-gray-600">
+                                Facturation : {org.plan} — Prochaine échéance : 01/05/2026
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant={isSuspended ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => toggleOrgSuspend(org.id)}
+                                className={isSuspended ? 'gap-1' : 'gap-1'}
+                              >
+                                {isSuspended ? (
+                                  <>
+                                    <Power className="h-4 w-4" />
+                                    Activer
+                                  </>
+                                ) : (
+                                  <>
+                                    <Power className="h-4 w-4" />
+                                    Suspendre
+                                  </>
+                                )}
+                              </Button>
+                              <Badge
+                                variant={org.status === 'active' && !isSuspended ? 'default' : 'secondary'}
+                                className="capitalize"
+                              >
+                                {isSuspended ? 'Suspendu' : org.status}
+                              </Badge>
+                              <Button variant="outline" size="sm" className="gap-1">
+                                <Eye className="h-4 w-4" />
+                                Gérer
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={org.status === 'active' ? 'default' : 'secondary'}
-                            className="capitalize"
-                          >
-                            {org.status}
-                          </Badge>
-                          <Button variant="outline" size="sm" className="gap-1">
-                            <Eye className="h-4 w-4" />
-                            Gérer
-                          </Button>
-                        </div>
-                      </div>
-                    ))
+                      )
+                    })
                   )}
                 </div>
               </CardContent>
@@ -721,6 +890,22 @@ export default function SuperAdminPage() {
                       <input type="checkbox" className="rounded" />
                       <span className="text-sm text-gray-700">Mode maintenance</span>
                     </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" className="rounded" />
+                      <span className="text-sm text-gray-700">Notifications WhatsApp</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" className="rounded" defaultChecked />
+                      <span className="text-sm text-gray-700">Export programmé</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" className="rounded" />
+                      <span className="text-sm text-gray-700">Widgets personnalisables</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input type="checkbox" className="rounded" defaultChecked />
+                      <span className="text-sm text-gray-700">API publique</span>
+                    </label>
                   </div>
                 </div>
 
@@ -730,6 +915,137 @@ export default function SuperAdminPage() {
                     Enregistrer la configuration
                   </Button>
                   <Button variant="outline">Réinitialiser</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Import / Export Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5" />
+                Import / Export
+              </CardTitle>
+              <CardDescription>Gérer les traceurs via import/export CSV</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Button
+                  variant="outline"
+                  className="gap-2 justify-start"
+                  onClick={handleImportTrackers}
+                >
+                  <Upload className="h-4 w-4" />
+                  Importer des trackers (CSV)
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2 justify-start"
+                  onClick={handleExportTrackers}
+                >
+                  <Download className="h-4 w-4" />
+                  Exporter tous les trackers (CSV)
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2 justify-start"
+                  onClick={handleImportPlatform}
+                >
+                  <Upload className="h-4 w-4" />
+                  Importer depuis une plateforme
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2 justify-start"
+                  onClick={handleSyncMetadata}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Synchroniser les métadonnées
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Error Logs Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                Journaux d'erreurs
+              </CardTitle>
+              <CardDescription>Erreurs et avertissements récents du système</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {mockErrors.map((error, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between rounded-lg border border-gray-200 p-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      {getErrorLevelDot(error.level)}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-600">{error.time}</p>
+                        <p className="text-sm text-gray-900 truncate">{error.message}</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="ml-2">
+                      {error.count}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+              <Button
+                variant="link"
+                className="w-full mt-4 justify-center text-blue-600 hover:text-blue-700"
+              >
+                Voir tous les journaux
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Backup and Restore Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HardDrive className="h-5 w-5" />
+                Sauvegarde et restauration
+              </CardTitle>
+              <CardDescription>Gérer les sauvegardes du système</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="rounded-lg border border-gray-200 p-4 bg-gray-50">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium">Dernière sauvegarde :</span> il y a 6 heures
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={handleBackup}
+                  >
+                    <HardDrive className="h-4 w-4" />
+                    Lancer une sauvegarde
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    onClick={handleRestore}
+                  >
+                    <AlertTriangle className="h-4 w-4" />
+                    Restaurer depuis une sauvegarde
+                  </Button>
+                </div>
+                <div className="rounded-lg bg-blue-50 p-3 border border-blue-200">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-blue-600" />
+                    <p className="text-xs text-blue-800">
+                      Opération: 0% - Estimation: 5 minutes
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>

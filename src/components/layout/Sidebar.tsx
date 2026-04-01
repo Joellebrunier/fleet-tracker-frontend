@@ -15,6 +15,8 @@ import {
   Home,
   Users,
   FolderTree,
+  Cpu,
+  HelpCircle,
 } from 'lucide-react'
 import { UserRole } from '@/types/user'
 import { cn } from '@/lib/utils'
@@ -58,6 +60,12 @@ export default function Sidebar() {
       roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN],
     },
     {
+      label: 'Appareils',
+      icon: Cpu,
+      path: '/devices',
+      roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
+    },
+    {
       label: 'Geofences',
       icon: Zap,
       path: '/geofences',
@@ -78,6 +86,12 @@ export default function Sidebar() {
   ]
 
   const adminItems = [
+    {
+      label: 'Journal d\'audit',
+      icon: Shield,
+      path: '/audit-log',
+      roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+    },
     {
       label: 'Administration',
       icon: Shield,
@@ -166,8 +180,21 @@ export default function Sidebar() {
           )}
         </nav>
 
-        {/* Settings */}
-        <div className="absolute bottom-0 w-full border-t border-gray-200 p-3">
+        {/* Settings & Help */}
+        <div className="absolute bottom-0 w-full border-t border-gray-200 p-3 space-y-1">
+          <Link
+            to="/help"
+            onClick={() => setSidebarOpen(false)}
+            className={cn(
+              'flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors',
+              isActive('/help')
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-gray-700 hover:bg-gray-100'
+            )}
+          >
+            <HelpCircle size={18} />
+            <span className="text-sm font-medium">Aide</span>
+          </Link>
           <Link
             to="/settings"
             onClick={() => setSidebarOpen(false)}

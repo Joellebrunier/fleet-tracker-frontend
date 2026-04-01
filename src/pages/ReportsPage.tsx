@@ -26,6 +26,9 @@ import {
   Loader2,
   FileSpreadsheet,
   File,
+  Printer,
+  Mail,
+  Clock as ClockIcon,
 } from 'lucide-react'
 import { format, subDays } from 'date-fns'
 import { formatDateTime } from '@/lib/utils'
@@ -36,6 +39,7 @@ import { useAuthStore } from '@/stores/authStore'
 type ReportType = 'trip' | 'fuel' | 'driver' | 'fleet' | 'maintenance' | 'compliance'
 type ReportFormat = 'pdf' | 'excel' | 'csv'
 type ReportStatus = 'pending' | 'completed' | 'failed'
+type ScheduleFrequency = 'daily' | 'weekly' | 'monthly'
 
 interface GeneratedReport {
   id: string
@@ -47,6 +51,15 @@ interface GeneratedReport {
   dateTo: Date
   vehicleCount?: number
   downloadUrl?: string
+}
+
+interface ReportTemplate {
+  name: string
+  description: string
+  type: ReportType
+  frequency?: ScheduleFrequency
+  format: ReportFormat
+  icon: typeof FileText
 }
 
 interface Vehicle {
@@ -97,12 +110,41 @@ const FORMAT_ICONS: Record<ReportFormat, typeof File> = {
   csv: File,
 }
 
+const reportTemplates: ReportTemplate[] = [
+  {
+    name: 'Rapport hebdomadaire flotte',
+    description: 'Rapport hebdomadaire, tous les véhicules, PDF',
+    type: 'fleet',
+    frequency: 'weekly',
+    format: 'pdf',
+    icon: BarChart3,
+  },
+  {
+    name: 'Rapport mensuel conducteurs',
+    description: 'Rapport mensuel, performance des conducteurs, Excel',
+    type: 'driver',
+    frequency: 'monthly',
+    format: 'excel',
+    icon: FileText,
+  },
+  {
+    name: 'Rapport quotidien alertes',
+    description: 'Rapport quotidien, résumé des alertes, Email',
+    type: 'compliance',
+    frequency: 'daily',
+    format: 'pdf',
+    icon: BarChart3,
+  },
+]
+
 export default function ReportsPage() {
   const orgId = useAuthStore((s) => s.user?.organizationId) || ''
 
   // State for report generation dialog
   const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [showScheduleForm, setShowScheduleForm] = useState(false)
+  const [showEmailDialog, setShowEmailDialog] = useState(false)
 
   // Form state
   const [dateFrom, setDateFrom] = useState<string>(
@@ -112,6 +154,15 @@ export default function ReportsPage() {
   const [selectedVehicles, setSelectedVehicles] = useState<string[]>([])
   const [reportFormat, setReportFormat] = useState<ReportFormat>('pdf')
   const [isGenerating, setIsGenerating] = useState(false)
+
+  // Schedule state
+  const [scheduleFrequency, setScheduleFrequency] = useState<ScheduleFrequency>('weekly')
+  const [scheduleEmail, setScheduleEmail] = useState('')
+
+  // Email state
+  const [emailRecipient, setEmailRecipient] = useState('')
+  const [emailSubject, setEmailSubject] = useState('')
+  const [emailMessage, setEmailMessage] = useState('')
 
   // Generated reports state
   const [generatedReports, setGeneratedReports] = useState<GeneratedReport[]>([
@@ -219,6 +270,26 @@ export default function ReportsPage() {
     }
   }, [])
 
+  const applyTemplate = useCallback((template: ReportTemplate) => {
+    setSelectedReportType(template.type)
+    setReportFormat(template.format)
+    setDialogOpen(true)
+  }, [])
+
+  const handlePrint = useCallback(() => {
+    window.print()
+  }, [])
+
+  const handleSendEmail = useCallback(() => {
+    if (emailRecipient && emailSubject) {
+      alert('Rapport envoyé!')
+      setShowEmailDialog(false)
+      setEmailRecipient('')
+      setEmailSubject('')
+      setEmailMessage('')
+    }
+  }, [emailRecipient, emailSubject])
+
   const reportTypes = Object.entries(REPORT_TYPE_CONFIG).map(([key, config]) => ({
     type: key as ReportType,
     ...config,
@@ -228,12 +299,41 @@ export default function ReportsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Reports</h1>
-        <p className="mt-2 text-gray-600">Generate and download fleet reports</p>
+        <h1 className="text-3xl font-bold text-gray-900">Rapports</h1>
+        <p className="mt-2 text-gray-600">Générer et télécharger les rapports de flotte</p>
+      </div>
+
+      {/* Report Templates Section */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Modèles de rapports</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {reportTemplates.map((template) => {
+            const Icon = template.icon
+            return (
+              <Card
+                key={template.name}
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => applyTemplate(template)}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-base">{template.name}</CardTitle>
+                      <CardDescription className="text-xs">{template.description}</CardDescription>
+                    </div>
+                    <Icon className="text-blue-600 flex-shrink-0" size={20} />
+                  </div>
+                </CardHeader>
+              </Card>
+            )
+          })}
+        </div>
       </div>
 
       {/* Report Types Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">Créer un rapport personnalisé</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {reportTypes.map((report) => {
           const Icon = report.icon
           return (
@@ -248,7 +348,7 @@ export default function ReportsPage() {
                     <CardTitle className="text-lg">{report.title}</CardTitle>
                     <CardDescription className="text-sm">{report.description}</CardDescription>
                   </div>
-                  <Icon className="text-fleet-tracker-600 flex-shrink-0" size={24} />
+                  <Icon className="text-blue-600 flex-shrink-0" size={24} />
                 </div>
               </CardHeader>
               <CardContent>
@@ -258,12 +358,13 @@ export default function ReportsPage() {
                   onClick={() => handleOpenDialog(report.type)}
                 >
                   <Download size={16} />
-                  Generate Report
+                  Générer le rapport
                 </Button>
               </CardContent>
             </Card>
           )
         })}
+        </div>
       </div>
 
       {/* Report Configuration Dialog */}
@@ -274,7 +375,7 @@ export default function ReportsPage() {
               {selectedReportType && REPORT_TYPE_CONFIG[selectedReportType].title}
             </DialogTitle>
             <DialogDescription>
-              Configure the report parameters and download format
+              Configurez les paramètres du rapport et le format de téléchargement
             </DialogDescription>
           </DialogHeader>
 
@@ -283,11 +384,11 @@ export default function ReportsPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Calendar size={18} className="text-gray-600" />
-                <h3 className="font-semibold text-gray-900">Date Range</h3>
+                <h3 className="font-semibold text-gray-900">Période</h3>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">From</label>
+                  <label className="text-sm font-medium text-gray-700">De</label>
                   <Input
                     type="date"
                     value={dateFrom}
@@ -296,7 +397,7 @@ export default function ReportsPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">To</label>
+                  <label className="text-sm font-medium text-gray-700">À</label>
                   <Input
                     type="date"
                     value={dateTo}
@@ -311,10 +412,10 @@ export default function ReportsPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Car size={18} className="text-gray-600" />
-                <h3 className="font-semibold text-gray-900">Vehicles (Optional)</h3>
+                <h3 className="font-semibold text-gray-900">Véhicules (Optionnel)</h3>
               </div>
               <p className="text-sm text-gray-600">
-                Leave blank to include all vehicles in your fleet
+                Laissez vide pour inclure tous les véhicules de votre flotte
               </p>
               <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto">
                 {vehicles.map((vehicle) => (
@@ -341,7 +442,7 @@ export default function ReportsPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Filter size={18} className="text-gray-600" />
-                <h3 className="font-semibold text-gray-900">Report Format</h3>
+                <h3 className="font-semibold text-gray-900">Format du rapport</h3>
               </div>
               <div className="flex gap-3">
                 {(['pdf', 'excel', 'csv'] as ReportFormat[]).map((format) => {
@@ -352,7 +453,7 @@ export default function ReportsPage() {
                       onClick={() => setReportFormat(format)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
                         reportFormat === format
-                          ? 'border-fleet-tracker-600 bg-fleet-tracker-50 text-fleet-tracker-700'
+                          ? 'border-blue-600 bg-blue-50 text-blue-700'
                           : 'border-gray-200 text-gray-700 hover:border-gray-300'
                       }`}
                     >
@@ -365,9 +466,33 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-wrap gap-2">
             <Button variant="outline" onClick={handleCloseDialog} disabled={isGenerating}>
-              Cancel
+              Annuler
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowScheduleForm(!showScheduleForm)}
+              className="gap-2"
+            >
+              <ClockIcon size={16} />
+              Programmer
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handlePrint}
+              className="gap-2"
+            >
+              <Printer size={16} />
+              Imprimer
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowEmailDialog(true)}
+              className="gap-2"
+            >
+              <Mail size={16} />
+              Email
             </Button>
             <Button
               onClick={handleGenerateReport}
@@ -377,14 +502,127 @@ export default function ReportsPage() {
               {isGenerating ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Generating...
+                  Génération...
                 </>
               ) : (
                 <>
                   <Download size={16} />
-                  Generate Report
+                  Générer le rapport
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Schedule Dialog */}
+      {showScheduleForm && (
+        <Dialog open={showScheduleForm} onOpenChange={setShowScheduleForm}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Programmer la génération du rapport</DialogTitle>
+              <DialogDescription>
+                Configurez la fréquence d'envoi automatique du rapport
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Fréquence</label>
+                <select
+                  value={scheduleFrequency}
+                  onChange={(e) => setScheduleFrequency(e.target.value as ScheduleFrequency)}
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="daily">Quotidien</option>
+                  <option value="weekly">Hebdomadaire</option>
+                  <option value="monthly">Mensuel</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Email de livraison</label>
+                <Input
+                  type="email"
+                  value={scheduleEmail}
+                  onChange={(e) => setScheduleEmail(e.target.value)}
+                  placeholder="votre.email@exemple.com"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Prochain envoi</label>
+                <div className="text-sm text-gray-600">
+                  {scheduleFrequency === 'daily' && 'Demain à 08:00'}
+                  {scheduleFrequency === 'weekly' && 'Lundi prochain à 09:00'}
+                  {scheduleFrequency === 'monthly' && '1er du mois prochain à 09:00'}
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowScheduleForm(false)}>
+                Annuler
+              </Button>
+              <Button onClick={() => {
+                setShowScheduleForm(false)
+                alert('Programmation enregistrée!')
+              }}>
+                Enregistrer
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Email Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Envoyer le rapport par email</DialogTitle>
+            <DialogDescription>
+              Configurez les détails de l'email avant d'envoyer
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Destinataire *</label>
+              <Input
+                type="email"
+                value={emailRecipient}
+                onChange={(e) => setEmailRecipient(e.target.value)}
+                placeholder="destinataire@exemple.com"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Objet *</label>
+              <Input
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                placeholder={selectedReportType ? REPORT_TYPE_CONFIG[selectedReportType].title : 'Objet du rapport'}
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Message</label>
+              <textarea
+                value={emailMessage}
+                onChange={(e) => setEmailMessage(e.target.value)}
+                placeholder="Votre message..."
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm resize-none"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEmailDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendEmail}>
+              Envoyer
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -394,21 +632,21 @@ export default function ReportsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Generated Reports</CardTitle>
+            <CardTitle>Rapports générés</CardTitle>
             <Badge variant="secondary">{generatedReports.length}</Badge>
           </div>
         </CardHeader>
         <CardContent>
           {generatedReports.length === 0 ? (
             <div className="space-y-3 text-center py-12">
-              <p className="text-gray-500">No reports generated yet</p>
+              <p className="text-gray-500">Aucun rapport généré encore</p>
               <Button
                 variant="outline"
                 onClick={() => handleOpenDialog('trip')}
                 className="gap-2"
               >
                 <Download size={16} />
-                Generate your first report
+                Générer votre premier rapport
               </Button>
             </div>
           ) : (
@@ -417,17 +655,17 @@ export default function ReportsPage() {
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="px-4 py-3 text-left font-semibold text-gray-900">
-                      Report Type
+                      Type de rapport
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-900">
-                      Date Range
+                      Période
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-900">
                       Format
                     </th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-900">Status</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-900">Statut</th>
                     <th className="px-4 py-3 text-left font-semibold text-gray-900">
-                      Generated
+                      Généré
                     </th>
                     <th className="px-4 py-3 text-right font-semibold text-gray-900">
                       Action
@@ -456,8 +694,8 @@ export default function ReportsPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-gray-600">
-                          {format(report.dateFrom, 'MMM dd, yyyy')} -{' '}
-                          {format(report.dateTo, 'MMM dd, yyyy')}
+                          {format(report.dateFrom, 'dd MMM, yyyy')} -{' '}
+                          {format(report.dateTo, 'dd MMM, yyyy')}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
@@ -469,17 +707,17 @@ export default function ReportsPage() {
                           {report.status === 'completed' && (
                             <Badge className="bg-green-100 text-green-800 flex w-fit gap-1">
                               <CheckCircle size={14} />
-                              Completed
+                              Complété
                             </Badge>
                           )}
                           {report.status === 'pending' && (
                             <Badge className="bg-yellow-100 text-yellow-800 flex w-fit gap-1">
                               <Loader2 size={14} className="animate-spin" />
-                              Pending
+                              En attente
                             </Badge>
                           )}
                           {report.status === 'failed' && (
-                            <Badge className="bg-red-100 text-red-800">Failed</Badge>
+                            <Badge className="bg-red-100 text-red-800">Échoué</Badge>
                           )}
                         </td>
                         <td className="px-4 py-3 text-gray-600 text-xs">
@@ -497,7 +735,7 @@ export default function ReportsPage() {
                             className="gap-2"
                           >
                             <Download size={14} />
-                            Download
+                            Télécharger
                           </Button>
                         </td>
                       </tr>

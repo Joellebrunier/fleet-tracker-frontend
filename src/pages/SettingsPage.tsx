@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/uiStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Key, Database, MapPin, Globe, Copy, RefreshCw, Eye, EyeOff, Wifi, Server, User, Bell, Palette } from 'lucide-react'
+import { Key, Database, MapPin, Globe, Copy, RefreshCw, Eye, EyeOff, Wifi, Server, User, Bell, Palette, Shield } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -112,6 +112,46 @@ export default function SettingsPage() {
           >
             {isEditing ? 'Enregistrer' : 'Modifier le profil'}
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Security section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield size={20} />
+            Sécurité
+          </CardTitle>
+          <CardDescription>Gérez la sécurité de votre compte</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Authentification à deux facteurs (2FA)</p>
+              <p className="text-sm text-gray-500">Ajoutez une couche de sécurité supplémentaire à votre compte</p>
+            </div>
+            <Button variant="outline">Activer</Button>
+          </div>
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Dernière connexion</p>
+              <p className="text-sm text-gray-500">{user?.lastLogin ? new Date(user.lastLogin).toLocaleString('fr-FR') : 'Information non disponible'}</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Sessions actives</p>
+              <p className="text-sm text-gray-500">1 session active (cet appareil)</p>
+            </div>
+            <Button variant="outline" className="text-red-600">Déconnecter tout</Button>
+          </div>
+          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Changer le mot de passe</p>
+              <p className="text-sm text-gray-500">Mettez à jour votre mot de passe régulièrement</p>
+            </div>
+            <Button variant="outline">Modifier</Button>
+          </div>
         </CardContent>
       </Card>
 

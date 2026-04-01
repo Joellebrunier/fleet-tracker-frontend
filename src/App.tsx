@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/stores/uiStore'
@@ -16,11 +16,14 @@ import VehiclesPage from '@/pages/VehiclesPage'
 import VehicleDetailPage from '@/pages/VehicleDetailPage'
 import VehicleGroupsPage from '@/pages/VehicleGroupsPage'
 import DriversPage from '@/pages/DriversPage'
+import DevicesPage from '@/pages/DevicesPage'
 import GeofencesPage from '@/pages/GeofencesPage'
 import AlertsPage from '@/pages/AlertsPage'
 import ReportsPage from '@/pages/ReportsPage'
 import SettingsPage from '@/pages/SettingsPage'
 import SuperAdminPage from '@/pages/SuperAdminPage'
+import AuditLogPage from '@/pages/AuditLogPage'
+import HelpPage from '@/pages/HelpPage'
 
 function App() {
   const { initAuth, isAuthenticated } = useAuth()
@@ -59,10 +62,16 @@ function App() {
         />
         <Route path="/vehicle-groups" element={<ProtectedRoute><VehicleGroupsPage /></ProtectedRoute>} />
         <Route path="/drivers" element={<ProtectedRoute><DriversPage /></ProtectedRoute>} />
+        <Route path="/devices" element={<ProtectedRoute><DevicesPage /></ProtectedRoute>} />
         <Route path="/geofences" element={<ProtectedRoute><GeofencesPage /></ProtectedRoute>} />
         <Route path="/alerts" element={<ProtectedRoute><AlertsPage /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
+        <Route
+          path="/audit-log"
+          element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><AuditLogPage /></ProtectedRoute>}
+        />
         <Route
           path="/admin"
           element={<ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}><SuperAdminPage /></ProtectedRoute>}

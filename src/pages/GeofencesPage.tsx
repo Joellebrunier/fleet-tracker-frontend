@@ -18,11 +18,21 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { MapPin, Plus, Trash2, Edit2, Search, Circle, Pentagon, Square, Eye, EyeOff } from 'lucide-react'
+import { MapPin, Plus, Trash2, Edit2, Search, Circle, Pentagon, Square, Eye, EyeOff, Clock } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import GeofenceDrawMap from '@/components/geofences/GeofenceDrawMap'
 
 type ModalMode = 'create' | 'edit' | 'view' | null
+
+interface GeofenceTemplate {
+  name: string
+  namePrefix: string
+  shape: {
+    type: 'circle' | 'polygon' | 'rectangle'
+    radiusMeters?: number
+  }
+  color: string
+}
 
 interface GeofenceFormState {
   name: string
@@ -50,6 +60,13 @@ const triggerOptions = [
   { value: GeofenceEvent.ENTRY, label: 'Entry Only' },
   { value: GeofenceEvent.EXIT, label: 'Exit Only' },
   { value: GeofenceEvent.BOTH, label: 'Entry & Exit' },
+]
+
+const geofenceTemplates: GeofenceTemplate[] = [
+  { name: 'Zone de dépôt', namePrefix: 'Dépôt', shape: { type: 'circle', radiusMeters: 200 }, color: '#3b82f6' },
+  { name: 'Zone de livraison', namePrefix: 'Livraison', shape: { type: 'circle', radiusMeters: 500 }, color: '#10b981' },
+  { name: 'Zone interdite', namePrefix: 'Interdite', shape: { type: 'polygon' }, color: '#ef4444' },
+  { name: 'Zone de chantier', namePrefix: 'Chantier', shape: { type: 'rectangle' }, color: '#f97316' },
 ]
 
 function getShapeIcon(type: string) {
@@ -84,6 +101,7 @@ export default function GeofencesPage() {
   const [form, setForm] = useState<GeofenceFormState>(defaultForm)
   const [formError, setFormError] = useState('')
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [showTemplates, setShowTemplates] = useState(false)
 
   const { data: geofencesData, isLoading } = useGeofences(page)
   const { data: stats } = useGeofenceStats()
@@ -104,7 +122,17 @@ export default function GeofencesPage() {
     setForm(defaultForm)
     setFormError('')
     setSelectedGeofence(null)
+    setShowTemplates(false)
     setModalMode('create')
+  }, [])
+
+  const applyTemplate = useCallback((template: GeofenceTemplate) => {
+    setForm((prev) => ({
+      ...prev,
+      name: `${template.namePrefix} - `,
+      color: template.color,
+    }))
+    setShowTemplates(false)
   }, [])
 
   const openEditModal = useCallback((geofence: Geofence) => {
@@ -177,13 +205,48 @@ export default function GeofencesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Geofences</h1>
-          <p className="mt-1 text-gray-600">Create and manage location boundaries for your fleet</p>
+          <h1 className="text-3xl font-bold text-gray-900">Géoclôtures</h1>
+          <p className="mt-1 text-gray-600">Créer et gérer les limites de localisation pour votre flotte</p>
         </div>
-        <Button className="gap-2" onClick={openCreateModal}>
-          <Plus size={18} />
-          Create Geofence
-        </Button>
+        <div className="flex gap-2">
+          <div className="relative">
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => setShowTemplates(!showTemplates)}
+            >
+              Modèles
+            </Button>
+            {showTemplates && (
+              <div className="absolute right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                <div className="p-2 space-y-1">
+                  {geofenceTemplates.map((template) => (
+                    <button
+                      key={template.name}
+                      onClick={() => {
+                        openCreateModal()
+                        applyTemplate(template)
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: template.color }}
+                        />
+                        <span className="font-medium">{template.name}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <Button className="gap-2" onClick={openCreateModal}>
+            <Plus size={18} />
+            Créer
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -193,8 +256,8 @@ export default function GeofencesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Zones</p>
-                  <p className="mt-1 text-2xl font-bold">{stats.total}</p>
+                  <p className="text-sm text-gray-600">Total géoclôtures</p>
+                  <p className="mt-1 text-2xl font-bold">{filteredGeofences.length}</p>
                 </div>
                 <div className="rounded-full bg-blue-100 p-3">
                   <MapPin size={20} className="text-blue-600" />
@@ -206,8 +269,10 @@ export default function GeofencesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Active</p>
-                  <p className="mt-1 text-2xl font-bold text-green-600">{stats.active}</p>
+                  <p className="text-sm text-gray-600">Actives</p>
+                  <p className="mt-1 text-2xl font-bold text-green-600">
+                    {filteredGeofences.filter((g) => g.isActive).length}
+                  </p>
                 </div>
                 <div className="rounded-full bg-green-100 p-3">
                   <Eye size={20} className="text-green-600" />
@@ -219,8 +284,8 @@ export default function GeofencesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Violations Today</p>
-                  <p className="mt-1 text-2xl font-bold text-red-600">{stats.violations}</p>
+                  <p className="text-sm text-gray-600">Alertes aujourd'hui</p>
+                  <p className="mt-1 text-2xl font-bold text-red-600">0</p>
                 </div>
                 <div className="rounded-full bg-red-100 p-3">
                   <EyeOff size={20} className="text-red-600" />
@@ -232,8 +297,10 @@ export default function GeofencesPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Vehicles Assigned</p>
-                  <p className="mt-1 text-2xl font-bold">{stats.vehiclesAssigned}</p>
+                  <p className="text-sm text-gray-600">Véhicules surveillés</p>
+                  <p className="mt-1 text-2xl font-bold">
+                    {filteredGeofences.reduce((sum, g) => sum + ((g as any).vehicleCount || 0), 0)}
+                  </p>
                 </div>
                 <div className="rounded-full bg-purple-100 p-3">
                   <MapPin size={20} className="text-purple-600" />
@@ -248,7 +315,7 @@ export default function GeofencesPage() {
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
         <Input
-          placeholder="Search geofences..."
+          placeholder="Rechercher les géoclôtures..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10"
@@ -267,17 +334,17 @@ export default function GeofencesPage() {
           <CardContent className="py-12">
             <MapPin className="mx-auto mb-4 text-gray-400" size={48} />
             <h3 className="text-lg font-medium text-gray-700">
-              {search ? 'No geofences match your search' : 'No geofences created yet'}
+              {search ? 'Aucune géoclôture ne correspond à votre recherche' : 'Aucune géoclôture créée'}
             </h3>
             <p className="mt-2 text-sm text-gray-500">
               {search
-                ? 'Try a different search term'
-                : 'Click "Create Geofence" to define your first zone'}
+                ? 'Essayez un terme de recherche différent'
+                : 'Cliquez sur "Créer" pour définir votre première zone'}
             </p>
             {!search && (
               <Button className="mt-4 gap-2" onClick={openCreateModal}>
                 <Plus size={16} />
-                Create Your First Geofence
+                Créer votre première géoclôture
               </Button>
             )}
           </CardContent>
@@ -292,7 +359,7 @@ export default function GeofencesPage() {
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-1">
                     <div
                       className="rounded-lg p-2"
                       style={{
@@ -302,7 +369,7 @@ export default function GeofencesPage() {
                     >
                       {getShapeIcon(geofence.shape.type)}
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <CardTitle className="text-base">{geofence.name}</CardTitle>
                       {geofence.description && (
                         <p className="mt-0.5 text-xs text-gray-500">{geofence.description}</p>
@@ -310,7 +377,7 @@ export default function GeofencesPage() {
                     </div>
                   </div>
                   <Badge variant={geofence.isActive ? 'default' : 'secondary'}>
-                    {geofence.isActive ? 'Active' : 'Inactive'}
+                    {geofence.isActive ? 'Actif' : 'Inactif'}
                   </Badge>
                 </div>
               </CardHeader>
@@ -321,17 +388,33 @@ export default function GeofencesPage() {
                     <p className="font-medium capitalize">{geofence.shape.type}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Trigger</p>
+                    <p className="text-gray-500">Déclencheur</p>
                     <p className="font-medium capitalize">{geofence.triggerEvent}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Details</p>
+                    <p className="text-gray-500">Détails</p>
                     <p className="font-medium text-xs">{getShapeLabel(geofence.shape)}</p>
                   </div>
                 </div>
 
+                {((geofence as any).timeRules || (geofence as any).vehicleCount) && (
+                  <div className="flex flex-wrap gap-2">
+                    {(geofence as any).timeRules && (
+                      <Badge variant="outline" className="gap-1 text-xs">
+                        <Clock size={12} />
+                        Règles temporelles actives
+                      </Badge>
+                    )}
+                    {(geofence as any).vehicleCount && (
+                      <Badge variant="outline" className="text-xs">
+                        {(geofence as any).vehicleCount} véhicules
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                  <p className="text-xs text-gray-400">Created {formatDateTime(geofence.createdAt)}</p>
+                  <p className="text-xs text-gray-400">Créé {formatDateTime(geofence.createdAt)}</p>
                   <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"
@@ -389,12 +472,12 @@ export default function GeofencesPage() {
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {modalMode === 'create' ? 'Create New Geofence' : `Edit: ${selectedGeofence?.name}`}
+              {modalMode === 'create' ? 'Créer une nouvelle géoclôture' : `Modifier: ${selectedGeofence?.name}`}
             </DialogTitle>
             <DialogDescription>
               {modalMode === 'create'
-                ? 'Draw a zone on the map and configure alert settings.'
-                : 'Modify the geofence shape and settings.'}
+                ? 'Dessinez une zone sur la carte et configurez les paramètres d\'alerte.'
+                : 'Modifiez la forme de la géoclôture et les paramètres.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -416,11 +499,11 @@ export default function GeofencesPage() {
             {/* Form Fields */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700">Name *</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Nom *</label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g. Warehouse Zone, Client Site..."
+                  placeholder="Exemple: Zone d'entrepôt, Site client..."
                 />
               </div>
 
@@ -429,12 +512,12 @@ export default function GeofencesPage() {
                 <Input
                   value={form.description}
                   onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Optional description..."
+                  placeholder="Description facultative..."
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Trigger Event</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Événement de déclenchement</label>
                 <select
                   value={form.triggerEvent}
                   onChange={(e) =>
@@ -451,7 +534,7 @@ export default function GeofencesPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Zone Color</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Couleur de la zone</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -464,7 +547,7 @@ export default function GeofencesPage() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Alert Settings</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Paramètres d'alerte</label>
                 <div className="flex flex-wrap gap-4">
                   <label className="flex items-center gap-2 text-sm">
                     <input
@@ -475,7 +558,7 @@ export default function GeofencesPage() {
                       }
                       className="rounded border-gray-300"
                     />
-                    Alert on entry
+                    Alerte à l'entrée
                   </label>
                   <label className="flex items-center gap-2 text-sm">
                     <input
@@ -486,7 +569,7 @@ export default function GeofencesPage() {
                       }
                       className="rounded border-gray-300"
                     />
-                    Alert on exit
+                    Alerte à la sortie
                   </label>
                 </div>
               </div>
@@ -501,17 +584,17 @@ export default function GeofencesPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={closeModal}>
-              Cancel
+              Annuler
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={createMutation.isPending}
             >
               {createMutation.isPending
-                ? 'Saving...'
+                ? 'Enregistrement...'
                 : modalMode === 'create'
-                  ? 'Create Geofence'
-                  : 'Save Changes'}
+                  ? 'Créer une géoclôture'
+                  : 'Enregistrer les modifications'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -522,7 +605,7 @@ export default function GeofencesPage() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{selectedGeofence?.name}</DialogTitle>
-            <DialogDescription>{selectedGeofence?.description || 'No description'}</DialogDescription>
+            <DialogDescription>{selectedGeofence?.description || 'Pas de description'}</DialogDescription>
           </DialogHeader>
 
           {selectedGeofence && (
@@ -535,30 +618,30 @@ export default function GeofencesPage() {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-500">Status</p>
+                  <p className="text-gray-500">Statut</p>
                   <Badge variant={selectedGeofence.isActive ? 'default' : 'secondary'}>
-                    {selectedGeofence.isActive ? 'Active' : 'Inactive'}
+                    {selectedGeofence.isActive ? 'Actif' : 'Inactif'}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-gray-500">Shape</p>
+                  <p className="text-gray-500">Forme</p>
                   <p className="font-medium">{getShapeLabel(selectedGeofence.shape)}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Trigger</p>
+                  <p className="text-gray-500">Déclencheur</p>
                   <p className="font-medium capitalize">{selectedGeofence.triggerEvent}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Created</p>
+                  <p className="text-gray-500">Créé</p>
                   <p className="font-medium">{formatDateTime(selectedGeofence.createdAt)}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Alert on Entry</p>
-                  <p className="font-medium">{selectedGeofence.alertOnEntry ? 'Yes' : 'No'}</p>
+                  <p className="text-gray-500">Alerte à l'entrée</p>
+                  <p className="font-medium">{selectedGeofence.alertOnEntry ? 'Oui' : 'Non'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500">Alert on Exit</p>
-                  <p className="font-medium">{selectedGeofence.alertOnExit ? 'Yes' : 'No'}</p>
+                  <p className="text-gray-500">Alerte à la sortie</p>
+                  <p className="font-medium">{selectedGeofence.alertOnExit ? 'Oui' : 'Non'}</p>
                 </div>
               </div>
             </div>
@@ -566,7 +649,7 @@ export default function GeofencesPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={closeModal}>
-              Close
+              Fermer
             </Button>
             <Button
               onClick={() => {
@@ -576,7 +659,7 @@ export default function GeofencesPage() {
                 }
               }}
             >
-              Edit Geofence
+              Modifier la géoclôture
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -586,14 +669,14 @@ export default function GeofencesPage() {
       <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete Geofence</DialogTitle>
+            <DialogTitle>Supprimer la géoclôture</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this geofence? This action cannot be undone.
+              Êtes-vous sûr de vouloir supprimer cette géoclôture? Cette action ne peut pas être annulée.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
-              Cancel
+              Annuler
             </Button>
             <Button
               variant="destructive"
@@ -610,7 +693,7 @@ export default function GeofencesPage() {
                 setDeleteConfirmId(null)
               }}
             >
-              Delete
+              Supprimer
             </Button>
           </DialogFooter>
         </DialogContent>

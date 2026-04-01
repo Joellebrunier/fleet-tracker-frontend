@@ -10,10 +10,10 @@ import { Input } from '@/components/ui/input'
 import { useVehicles } from '@/hooks/useVehicles'
 import { useMapStore } from '@/stores/mapStore'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
-import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff } from 'lucide-react'
+import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind } from 'lucide-react'
 import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
 import { useQueryClient } from '@tanstack/react-query'
-import { MAPBOX_TILE_URL } from '@/lib/constants'
+import { MAPBOX_TILE_URL, MAPBOX_TOKEN } from '@/lib/constants'
 
 // Fix default marker icons for Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -71,6 +71,73 @@ function FlyToVehicle({ lat, lng }: { lat: number; lng: number }) {
   return null
 }
 
+// Component to handle keyboard shortcuts
+function KeyboardShortcuts({ onShortcut }: { onShortcut: (action: string) => void }) {
+  const map = useMap()
+  const [showHelp, setShowHelp] = useState(false)
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'f') {
+        onShortcut('fullscreen')
+      } else if (e.key.toLowerCase() === 't') {
+        onShortcut('traffic')
+      } else if (e.key.toLowerCase() === 's') {
+        onShortcut('streets')
+      } else if (e.key.toLowerCase() === 'a') {
+        onShortcut('satellite')
+      } else if (e.key.toLowerCase() === 'r') {
+        onShortcut('terrain')
+      } else if (e.key === '?') {
+        setShowHelp(!showHelp)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [onShortcut, showHelp])
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShowHelp(!showHelp)}
+        className="absolute bottom-16 right-4 z-[1000] bg-white shadow-md rounded-lg p-2 hover:bg-gray-50 border border-gray-200"
+        title="Press ? for help"
+      >
+        <HelpCircle size={16} className="text-gray-600" />
+      </button>
+
+      {showHelp && (
+        <div className="absolute bottom-28 right-4 z-[1000] bg-white shadow-lg rounded-lg p-3 border border-gray-200 w-56 text-xs">
+          <p className="font-semibold mb-2 text-gray-900">Raccourcis clavier</p>
+          <div className="space-y-1.5 text-gray-600">
+            <div className="flex justify-between">
+              <span>F</span>
+              <span>Basculer plein écran</span>
+            </div>
+            <div className="flex justify-between">
+              <span>T</span>
+              <span>Afficher trafic</span>
+            </div>
+            <div className="flex justify-between">
+              <span>S</span>
+              <span>Plan rue</span>
+            </div>
+            <div className="flex justify-between">
+              <span>A</span>
+              <span>Satellite</span>
+            </div>
+            <div className="flex justify-between">
+              <span>R</span>
+              <span>Terrain</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // TODO: Implement marker clustering - when zoom < 8 and vehicles are close together, show count badges
 // This would require leaflet.markercluster or custom grouping logic
 // Component to fit bounds to all vehicles
@@ -97,6 +164,8 @@ export default function MapPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [tileLayer, setTileLayer] = useState<'streets' | 'satellite' | 'terrain'>('streets')
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showTraffic, setShowTraffic] = useState(false)
+  const [showHelpPopover, setShowHelpPopover] = useState(false)
   const {
     selectedVehicleId,
     selectVehicle,
@@ -137,6 +206,14 @@ export default function MapPage() {
 
   const movingCount = vehiclesWithGps.filter((v: any) => (v.currentSpeed || 0) > 2).length
   const stoppedCount = vehiclesWithGps.length - movingCount
+  const offlineCount = vehicles.length - vehiclesWithGps.length
+
+  // Calculate average speed of moving vehicles
+  const avgFleetSpeed = movingCount > 0
+    ? vehiclesWithGps
+        .filter((v: any) => (v.currentSpeed || 0) > 2)
+        .reduce((sum: number, v: any) => sum + (v.currentSpeed || 0), 0) / movingCount
+    : 0
 
   const tileUrl =
     tileLayer === 'satellite'
@@ -146,6 +223,28 @@ export default function MapPage() {
         : MAPBOX_TILE_URL('streets-v12')
 
   const tileAttribution = '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+
+  const trafficUrl = `https://api.mapbox.com/styles/v1/mapbox/traffic-day-v2/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`
+
+  const handleShortcut = (action: string) => {
+    switch (action) {
+      case 'fullscreen':
+        setIsFullscreen(!isFullscreen)
+        break
+      case 'traffic':
+        setShowTraffic(!showTraffic)
+        break
+      case 'streets':
+        setTileLayer('streets')
+        break
+      case 'satellite':
+        setTileLayer('satellite')
+        break
+      case 'terrain':
+        setTileLayer('terrain')
+        break
+    }
+  }
 
   return (
     <div className="flex h-[calc(100vh-80px)] gap-4">
@@ -158,8 +257,10 @@ export default function MapPage() {
           zoomControl={false}
         >
           <TileLayer url={tileUrl} attribution={tileAttribution} tileSize={512} zoomOffset={-1} />
+          {showTraffic && <TileLayer url={trafficUrl} attribution={tileAttribution} opacity={0.5} />}
 
           <FitBounds vehicles={vehicles} />
+          <KeyboardShortcuts onShortcut={handleShortcut} />
 
           {selectedVehicle?.currentLat && selectedVehicle?.currentLng && (
             <FlyToVehicle lat={selectedVehicle.currentLat} lng={selectedVehicle.currentLng} />
@@ -221,6 +322,15 @@ export default function MapPage() {
             {tileLayer === 'streets' ? 'Satellite' : tileLayer === 'satellite' ? 'Terrain' : 'Plan'}
           </Button>
           <Button
+            variant={showTraffic ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setShowTraffic(!showTraffic)}
+            className="gap-2 bg-white shadow-md"
+          >
+            <Wind size={16} />
+            Trafic
+          </Button>
+          <Button
             variant="outline"
             size="sm"
             onClick={() => setIsFullscreen(!isFullscreen)}
@@ -232,7 +342,7 @@ export default function MapPage() {
         </div>
 
         {/* Stats overlay */}
-        <div className="absolute bottom-4 left-4 z-[1000] flex gap-2">
+        <div className="absolute bottom-4 left-4 z-[1000] flex flex-wrap gap-2 max-w-xs">
           <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-green-500 inline-block"></span>
             {movingCount} en mouvement
@@ -240,6 +350,13 @@ export default function MapPage() {
           <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-gray-400 inline-block"></span>
             {stoppedCount} à l'arrêt
+          </div>
+          <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-red-400 inline-block"></span>
+            {offlineCount} hors ligne
+          </div>
+          <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium">
+            Vitesse moyenne: {avgFleetSpeed.toFixed(0)} km/h
           </div>
           <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium">
             {vehiclesWithGps.length} / {vehicles.length} GPS actif
@@ -250,6 +367,11 @@ export default function MapPage() {
             {isConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
             {isConnected ? 'Live' : 'Polling'}
           </div>
+        </div>
+
+        {/* Help button bottom right */}
+        <div className="absolute bottom-4 right-4 z-[1000]">
+          <KeyboardShortcuts onShortcut={handleShortcut} />
         </div>
       </div>
 

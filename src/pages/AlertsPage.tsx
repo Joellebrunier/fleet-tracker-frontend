@@ -46,8 +46,11 @@ import {
   Fuel,
   Activity,
   Trash2,
+  TrendingUp,
+  Save,
 } from 'lucide-react'
 import { formatDateTime, getSeverityColor } from '@/lib/utils'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 // Alert type configuration for the rule builder
 const alertTypeConfig: Record<
@@ -146,7 +149,7 @@ const defaultRuleForm: RuleFormState = {
   enabled: true,
 }
 
-type TabView = 'alerts' | 'rules'
+type TabView = 'alerts' | 'rules' | 'trends'
 
 export default function AlertsPage() {
   const [tab, setTab] = useState<TabView>('alerts')
@@ -161,6 +164,12 @@ export default function AlertsPage() {
   const [ruleStep, setRuleStep] = useState(0)
   const [formError, setFormError] = useState('')
   const [disabledRules, setDisabledRules] = useState<Set<string>>(new Set())
+  const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null)
+  const [alertNotes, setAlertNotes] = useState<Record<string, string>>({})
+  const [alertAssignments, setAlertAssignments] = useState<Record<string, string>>({})
+  const [showNoteForm, setShowNoteForm] = useState(false)
+  const [noteInput, setNoteInput] = useState('')
+  const [showAssignDropdown, setShowAssignDropdown] = useState(false)
 
   const { data: alertsData, isLoading } = useAlerts({ page, limit: 20, status })
   const { data: stats } = useAlertStats()
@@ -257,6 +266,28 @@ export default function AlertsPage() {
         return 'bg-gray-100 text-gray-700 border-gray-200'
     }
   }
+
+  const getPriorityDot = (type: string) => {
+    if (['OVERSPEED', 'ACCIDENT'].includes(type)) {
+      return <span className="inline-block w-2 h-2 rounded-full bg-red-600 mr-2" />
+    } else if (['GEOFENCE_ENTRY', 'GEOFENCE_EXIT', 'LOW_BATTERY'].includes(type)) {
+      return <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2" />
+    } else {
+      return <span className="inline-block w-2 h-2 rounded-full bg-blue-600 mr-2" />
+    }
+  }
+
+  const trendData = [
+    { name: 'Lun', alerts: 12 },
+    { name: 'Mar', alerts: 19 },
+    { name: 'Mer', alerts: 15 },
+    { name: 'Jeu', alerts: 25 },
+    { name: 'Ven', alerts: 18 },
+    { name: 'Sam', alerts: 10 },
+    { name: 'Dim', alerts: 8 },
+  ]
+
+  const assignmentOptions = ['Admin', 'Manager', 'Opérateur']
 
   return (
     <div className="space-y-6">
@@ -363,6 +394,14 @@ export default function AlertsPage() {
           }`}
         >
           Alertes ({stats?.total || 0})
+        </button>
+        <button
+          onClick={() => setTab('trends')}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            tab === 'trends' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Tendances
         </button>
         <button
           onClick={() => setTab('rules')}
@@ -473,9 +512,14 @@ export default function AlertsPage() {
               {filteredAlerts.map((alert) => (
                 <Card
                   key={alert.id}
-                  className={`transition-all ${
+                  className={`transition-all cursor-pointer ${
                     selectedAlerts.includes(alert.id) ? 'ring-2 ring-blue-400' : ''
-                  }`}
+                  } ${selectedAlertId === alert.id ? 'ring-2 ring-green-400' : ''}`}
+                  onClick={() => {
+                    setSelectedAlertId(selectedAlertId === alert.id ? null : alert.id)
+                    setShowNoteForm(false)
+                    setShowAssignDropdown(false)
+                  }}
                 >
                   <CardContent className="py-4">
                     <div className="flex items-start gap-3">
@@ -484,19 +528,21 @@ export default function AlertsPage() {
                         checked={selectedAlerts.includes(alert.id)}
                         onChange={() => handleSelectAlert(alert.id)}
                         className="mt-1 rounded border-gray-300"
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <div
                         className={`rounded-lg p-2 ${getSeverityBadgeClass(alert.severity)}`}
                       >
+                        {getPriorityDot(alert.type)}
                         <AlertCircle size={16} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
-                          <div>
+                          <div className="flex-1">
                             <h3 className="font-medium text-gray-900">{alert.title}</h3>
                             <p className="mt-0.5 text-sm text-gray-600 line-clamp-1">{alert.message}</p>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                             <span
                               className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${getSeverityBadgeClass(
                                 alert.severity
@@ -523,6 +569,101 @@ export default function AlertsPage() {
                           </div>
                         </div>
                         <p className="mt-1 text-xs text-gray-400">{formatDateTime(alert.createdAt)}</p>
+
+                        {selectedAlertId === alert.id && (
+                          <div className="mt-3 space-y-3 border-t border-gray-100 pt-3">
+                            {alertAssignments[alert.id] && (
+                              <div className="text-xs">
+                                <span className="text-gray-600">Assigné à: </span>
+                                <Badge variant="outline" className="ml-1">
+                                  {alertAssignments[alert.id]}
+                                </Badge>
+                              </div>
+                            )}
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setShowAssignDropdown(!showAssignDropdown)
+                                }}
+                              >
+                                Assigner
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setShowNoteForm(!showNoteForm)
+                                  setNoteInput(alertNotes[alert.id] || '')
+                                }}
+                              >
+                                Notes
+                              </Button>
+                            </div>
+
+                            {showAssignDropdown && (
+                              <div className="flex gap-1 flex-wrap">
+                                {assignmentOptions.map((opt) => (
+                                  <Badge
+                                    key={opt}
+                                    variant="secondary"
+                                    className="cursor-pointer"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setAlertAssignments({
+                                        ...alertAssignments,
+                                        [alert.id]: opt,
+                                      })
+                                      setShowAssignDropdown(false)
+                                    }}
+                                  >
+                                    {opt}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+
+                            {showNoteForm && (
+                              <div className="space-y-2">
+                                <textarea
+                                  placeholder="Ajouter une note..."
+                                  value={noteInput}
+                                  onChange={(e) => setNoteInput(e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="w-full text-xs p-2 border border-gray-300 rounded resize-none"
+                                  rows={2}
+                                />
+                                <Button
+                                  size="sm"
+                                  className="gap-1 text-xs w-full"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setAlertNotes({
+                                      ...alertNotes,
+                                      [alert.id]: noteInput,
+                                    })
+                                    setShowNoteForm(false)
+                                  }}
+                                >
+                                  <Save size={12} />
+                                  Enregistrer
+                                </Button>
+                              </div>
+                            )}
+
+                            {alertNotes[alert.id] && (
+                              <div className="text-xs bg-gray-50 p-2 rounded border border-gray-200">
+                                <p className="font-medium text-gray-700">Note:</p>
+                                <p className="text-gray-600 mt-1">{alertNotes[alert.id]}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -558,6 +699,70 @@ export default function AlertsPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Trends Tab */}
+      {tab === 'trends' && (
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card>
+              <CardContent className="pt-6">
+                <div>
+                  <p className="text-sm text-gray-600">Alertes cette semaine</p>
+                  <p className="mt-2 text-2xl font-bold">87</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div>
+                  <p className="text-sm text-gray-600">Alertes ce mois</p>
+                  <p className="mt-2 text-2xl font-bold">342</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div>
+                  <p className="text-sm text-gray-600">Type le plus fréquent</p>
+                  <p className="mt-2 text-lg font-bold text-orange-600">Overspeed</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp size={20} />
+                Fréquence des alertes - 7 derniers jours
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={trendData}>
+                  <defs>
+                    <linearGradient id="colorAlerts" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area
+                    type="monotone"
+                    dataKey="alerts"
+                    stroke="#3b82f6"
+                    fillOpacity={1}
+                    fill="url(#colorAlerts)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Rules Tab */}

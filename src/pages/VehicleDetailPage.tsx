@@ -24,6 +24,8 @@ import {
   Battery,
   Route,
   Zap,
+  Signal,
+  Activity,
 } from 'lucide-react'
 import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer'
 import { GpsDataExport } from '@/components/vehicles/GpsDataExport'
@@ -323,6 +325,80 @@ export default function VehicleDetailPage() {
             <p className="font-semibold text-gray-900 mt-0.5">
               {(vehicle as any).vehicleType || vehicle.type || '—'}
             </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Telemetry cards */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Engine Hours */}
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <Activity size={18} className="text-gray-400 mb-2" />
+            <p className="text-xs text-gray-500">Heures moteur</p>
+            <p className="font-semibold text-gray-900 mt-0.5 text-lg">
+              {((vehicle as any).engineHours || 0).toLocaleString('fr-FR')} h
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Signal Strength */}
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <Signal size={18} className="text-gray-400 mb-2" />
+            <p className="text-xs text-gray-500">Force du signal</p>
+            <div className="mt-2 flex gap-0.5">
+              {[...Array(5)].map((_, idx) => {
+                const signalStrength = ((vehicle as any).signalStrength || 0)
+                const filled = idx < Math.ceil((signalStrength / 100) * 5)
+                return (
+                  <div
+                    key={idx}
+                    className={`h-1.5 flex-1 rounded-sm ${
+                      filled ? 'bg-blue-500' : 'bg-gray-200'
+                    }`}
+                  />
+                )
+              })}
+            </div>
+            <p className="text-xs text-gray-600 mt-1">
+              {((vehicle as any).signalStrength || 0).toFixed(0)}%
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* GPS Accuracy */}
+        <Card>
+          <CardContent className="pt-5 pb-4">
+            <MapPin size={18} className="text-gray-400 mb-2" />
+            <p className="text-xs text-gray-500">Précision GPS</p>
+            <div className="mt-2">
+              {(() => {
+                const gpsAccuracy = ((vehicle as any).gpsAccuracy || 0)
+                let color = 'text-green-600'
+                let bgColor = 'bg-green-50'
+                let label = 'Excellente'
+
+                if (gpsAccuracy > 15) {
+                  color = 'text-red-600'
+                  bgColor = 'bg-red-50'
+                  label = 'Mauvaise'
+                } else if (gpsAccuracy > 5) {
+                  color = 'text-yellow-600'
+                  bgColor = 'bg-yellow-50'
+                  label = 'Acceptable'
+                }
+
+                return (
+                  <div className={`rounded px-2 py-1.5 ${bgColor}`}>
+                    <p className={`font-medium text-sm ${color}`}>
+                      {gpsAccuracy.toFixed(1)} m
+                    </p>
+                    <p className={`text-xs ${color}`}>{label}</p>
+                  </div>
+                )
+              })()}
+            </div>
           </CardContent>
         </Card>
       </div>

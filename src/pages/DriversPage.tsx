@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useAuthStore } from '@/stores/authStore'
 import { apiClient } from '@/lib/api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { UserCircle, Plus, Search, Phone, Mail, Car, Shield, Clock, Star, Edit2, Trash2 } from 'lucide-react'
+import { UserCircle, Plus, Search, Phone, Mail, Car, Shield, Clock, Star, Edit2, Trash2, Calendar } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 
 interface Driver {
@@ -33,6 +33,7 @@ interface DriverFormData {
   licenseNumber: string
   licenseExpiry: string
   assignedVehicleId?: string
+  notes?: string
 }
 
 type DriverStatus = 'active' | 'inactive' | 'on_leave'
@@ -51,6 +52,7 @@ export default function DriversPage() {
   const [statusFilter, setStatusFilter] = useState<DriverStatus | 'all'>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null)
+  const [schedulingDriver, setSchedulingDriver] = useState<Driver | null>(null)
   const [formData, setFormData] = useState<DriverFormData>({
     firstName: '',
     lastName: '',
@@ -58,6 +60,7 @@ export default function DriversPage() {
     phone: '',
     licenseNumber: '',
     licenseExpiry: '',
+    notes: '',
   })
 
   // Generate deterministic performance scores based on driver ID
@@ -136,6 +139,7 @@ export default function DriversPage() {
           .toISOString()
           .split('T')[0],
         assignedVehicleId: driver.assignedVehicleId,
+        notes: (driver as any).notes || '',
       })
     }
     setIsModalOpen(true)
@@ -151,6 +155,7 @@ export default function DriversPage() {
       phone: '',
       licenseNumber: '',
       licenseExpiry: '',
+      notes: '',
     })
   }
 
@@ -493,6 +498,15 @@ export default function DriversPage() {
                     variant="outline"
                     size="sm"
                     className="flex-1"
+                    onClick={() => setSchedulingDriver(driver)}
+                  >
+                    <Calendar className="h-4 w-4 mr-1" />
+                    Planning
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
                     onClick={() => handleOpenModal(driver)}
                   >
                     <Edit2 className="h-4 w-4 mr-1" />
@@ -606,6 +620,21 @@ export default function DriversPage() {
                 }
               />
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">
+                Notes
+              </label>
+              <textarea
+                value={formData.notes || ''}
+                onChange={(e) =>
+                  handleFormChange('notes', e.target.value)
+                }
+                placeholder="Notes ou commentaires sur le conducteur..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+              />
+            </div>
           </div>
 
           <DialogFooter>
@@ -625,6 +654,47 @@ export default function DriversPage() {
                 : editingDriver
                   ? 'Mettre à jour'
                   : 'Créer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Scheduling Modal */}
+      <Dialog open={!!schedulingDriver} onOpenChange={() => setSchedulingDriver(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              Planning de {schedulingDriver?.firstName} {schedulingDriver?.lastName}
+            </DialogTitle>
+            <DialogDescription>
+              Configurez le planning hebdomadaire du conducteur
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            <div className="grid grid-cols-7 gap-2">
+              {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, idx) => (
+                <div key={day} className="text-center">
+                  <div className="font-semibold text-sm text-slate-700 mb-2">{day}</div>
+                  <div className="space-y-1">
+                    <button className="w-full px-2 py-1 text-xs bg-gray-100 hover:bg-green-100 rounded border border-gray-300 hover:border-green-400 transition-colors">
+                      Matin
+                    </button>
+                    <button className="w-full px-2 py-1 text-xs bg-gray-100 hover:bg-green-100 rounded border border-gray-300 hover:border-green-400 transition-colors">
+                      Après-midi
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSchedulingDriver(null)}
+            >
+              Fermer
             </Button>
           </DialogFooter>
         </DialogContent>

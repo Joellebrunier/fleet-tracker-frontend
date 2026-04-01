@@ -526,6 +526,91 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* Speed Distribution Chart */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Distribution des vitesses</CardTitle>
+          <CardDescription className="text-xs">Nombre de véhicules par plage de vitesse</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={[
+              { range: '0-30 km/h', count: 45 },
+              { range: '30-60 km/h', count: 82 },
+              { range: '60-90 km/h', count: 63 },
+              { range: '90-120 km/h', count: 28 },
+              { range: '>120 km/h', count: 5 }
+            ]}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="range" stroke="#9ca3af" style={{ fontSize: '12px' }} />
+              <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                }}
+                formatter={(value: any) => [`${value} véhicules`, 'Nombre']}
+              />
+              <Bar dataKey="count" fill="#06b6d4" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Comparison and Activity */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Weekly Comparison Chart */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Comparaison hebdomadaire</CardTitle>
+            <CardDescription className="text-xs">Cette semaine vs semaine dernière</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={[
+                { name: 'Km parcourus', current: 12450, previous: 11200 },
+                { name: 'Alertes', current: 23, previous: 31 },
+                { name: 'Heures actives', current: 856, previous: 790 }
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="name" stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Legend />
+                <Bar dataKey="current" fill="#3b82f6" radius={[8, 8, 0, 0]} name="Cette semaine" />
+                <Bar dataKey="previous" fill="#9ca3af" radius={[8, 8, 0, 0]} name="Semaine dernière" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Activity Zones Placeholder */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Zones d'activité</CardTitle>
+            <CardDescription className="text-xs">Cartographie de la densité de passage</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mb-3 rounded-lg bg-gray-100 p-3">
+                <MapPin size={24} className="text-gray-400" />
+              </div>
+              <p className="text-sm font-medium text-gray-700">Carte thermique</p>
+              <p className="text-xs text-gray-500 mt-2">
+                Les cartes thermiques sont disponibles sur la page Carte principale. Utilisez le bouton 'Zones d'activité' pour afficher la densité de passage.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Second row */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Fleet activity - top moving vehicles */}

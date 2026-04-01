@@ -6,9 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, Plus, Grid2X2, List, MapPin, Clock } from 'lucide-react'
+import { Search, Plus, Grid2X2, List, MapPin, Clock, Download, Trash2 } from 'lucide-react'
 import { VehicleStatus } from '@/types/vehicle'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
+import type { Vehicle } from '@/types/vehicle'
 
 export default function VehiclesPage() {
   const navigate = useNavigate()
@@ -17,6 +18,7 @@ export default function VehiclesPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('')
   const [selectedGroup, setSelectedGroup] = useState<string>('')
   const [page, setPage] = useState(1)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const { data: vehiclesData, isLoading } = useVehicles({
     page,
@@ -42,6 +44,51 @@ export default function VehiclesPage() {
     }
   }
 
+  const toggleSelectVehicle = (vehicleId: string) => {
+    const newSelection = new Set(selectedIds)
+    if (newSelection.has(vehicleId)) {
+      newSelection.delete(vehicleId)
+    } else {
+      newSelection.add(vehicleId)
+    }
+    setSelectedIds(newSelection)
+  }
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allIds = new Set(vehicles.map(v => v.id))
+      setSelectedIds(allIds)
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const exportToCSV = () => {
+    const headers = ['Nom', 'Plaque', 'Type', 'VIN', 'Statut', 'Vitesse', 'Dernière comm']
+    const rows = vehicles.map(v => [
+      v.name,
+      v.plate,
+      v.type || '-',
+      v.vin || '-',
+      v.status,
+      formatSpeed(v.currentSpeed),
+      formatTimeAgo(v.lastCommunication)
+    ])
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `vehicles_${new Date().toISOString().split('T')[0]}.csv`)
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -50,10 +97,18 @@ export default function VehiclesPage() {
           <h1 className="text-3xl font-bold text-gray-900">Véhicules</h1>
           <p className="mt-2 text-gray-600">Gérez et surveillez votre flotte</p>
         </div>
-        <Button className="gap-2">
-          <Plus size={18} />
-          Ajouter un véhicule
-        </Button>
+        <div className="flex gap-2">
+          {selectedIds.size === 0 && (
+            <Button variant="outline" className="gap-2" onClick={exportToCSV}>
+              <Download size={18} />
+              Exporter
+            </Button>
+          )}
+          <Button className="gap-2">
+            <Plus size={18} />
+            Ajouter un véhicule
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -141,6 +196,14 @@ export default function VehiclesPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 w-12">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size === vehicles.length && vehicles.length > 0}
+                      onChange={(e) => toggleSelectAll(e.target.checked)}
+                      className="rounded"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nom</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Immatriculation
@@ -159,26 +222,58 @@ export default function VehiclesPage() {
                 {vehicles.map((vehicle) => (
                   <tr
                     key={vehicle.id}
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{vehicle.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-4 py-4 text-sm font-medium text-gray-900 w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(vehicle.id)}
+                        onChange={() => toggleSelectVehicle(vehicle.id)}
+                        className="rounded"
+                      />
+                    </td>
+                    <td
+                      className="px-6 py-4 text-sm font-medium text-gray-900 cursor-pointer"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    >
+                      {vehicle.name}
+                    </td>
+                    <td
+                      className="px-6 py-4 text-sm text-gray-600 cursor-pointer"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    >
                       {vehicle.plate}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td
+                      className="px-6 py-4 text-sm text-gray-600 cursor-pointer"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    >
                       {vehicle.vin ? (vehicle.vin.length > 8 ? vehicle.vin.substring(0, 8) + '...' : vehicle.vin) : '-'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 capitalize">{vehicle.type}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    <td
+                      className="px-6 py-4 text-sm text-gray-600 capitalize cursor-pointer"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    >
+                      {vehicle.type}
+                    </td>
+                    <td
+                      className="px-6 py-4 text-sm font-medium text-gray-900 cursor-pointer"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    >
                       {formatSpeed(vehicle.currentSpeed)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td
+                      className="px-6 py-4 cursor-pointer"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    >
                       <Badge variant={getStatusBadgeVariant(vehicle.status)}>
                         {vehicle.status}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td
+                      className="px-6 py-4 text-sm text-gray-600 cursor-pointer"
+                      onClick={() => navigate(`/vehicles/${vehicle.id}`)}
+                    >
                       {formatTimeAgo(vehicle.lastCommunication)}
                     </td>
                     <td className="px-6 py-4">
@@ -313,6 +408,33 @@ export default function VehiclesPage() {
               Suivant
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Floating Action Bar for Selection */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-900">
+            {selectedIds.size} véhicules sélectionnés
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportToCSV}
+            className="gap-2"
+          >
+            <Download size={16} />
+            Exporter
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="gap-2 text-red-600"
+          >
+            <Trash2 size={16} />
+            Supprimer
+          </Button>
         </div>
       )}
     </div>
