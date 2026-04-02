@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
+import { apiClient } from '@/lib/api'
+import { API_ROUTES } from '@/lib/constants'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Key, Database, MapPin, Globe, Copy, RefreshCw, Eye, EyeOff, Wifi, Server, User, Bell, Palette, Shield, LogOut, Plus, Trash2 } from 'lucide-react'
+import { Key, Database, MapPin, Globe, Copy, RefreshCw, Eye, EyeOff, Wifi, Server, User, Bell, Palette, Shield, LogOut, Plus, Trash2, Save, Check } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -97,18 +99,16 @@ export default function SettingsPage() {
   useEffect(() => {
     const loadSessions = async () => {
       try {
-        const response = await fetch('/api/auth/sessions')
-        if (response.ok) {
-          const data = await response.json()
-          setSessions(data.sessions || [])
-        }
+        const response = await apiClient.get(API_ROUTES.AUTH_SESSIONS)
+        const data = response.data
+        setSessions(data.sessions || data || [])
       } catch (error) {
-        // Fallback to mock data on error
+        // Fallback to current session on error
         setSessions([
           {
             id: '1',
-            deviceName: 'Chrome sur Windows',
-            ipAddress: '192.168.1.100',
+            deviceName: 'Session actuelle',
+            ipAddress: '—',
             lastActive: new Date().toISOString(),
           },
         ])
@@ -127,15 +127,13 @@ export default function SettingsPage() {
         return
       }
       try {
-        const response = await fetch(`/api/organizations/${organizationId}`)
-        if (response.ok) {
-          const data = await response.json()
-          setOrganization({
-            name: data.name || '',
-            address: data.address || '',
-            phone: data.phone || '',
-          })
-        }
+        const response = await apiClient.get(API_ROUTES.ORGANIZATION(organizationId))
+        const data = response.data
+        setOrganization({
+          name: data.name || '',
+          address: data.address || '',
+          phone: data.phone || '',
+        })
       } catch (error) {
         console.error('Failed to load organization:', error)
       } finally {
@@ -153,11 +151,9 @@ export default function SettingsPage() {
         return
       }
       try {
-        const response = await fetch(`/api/organizations/${organizationId}/departments`)
-        if (response.ok) {
-          const data = await response.json()
-          setDepartments(data.departments || [])
-        }
+        const response = await apiClient.get(API_ROUTES.DEPARTMENTS(organizationId))
+        const data = response.data
+        setDepartments(data.departments || data || [])
       } catch (error) {
         console.error('Failed to load departments:', error)
       } finally {
@@ -165,6 +161,23 @@ export default function SettingsPage() {
       }
     }
     loadDepartments()
+  }, [organizationId])
+
+  // Load GPS providers configuration
+  useEffect(() => {
+    const loadProviders = async () => {
+      if (!organizationId) return
+      try {
+        const response = await apiClient.get(API_ROUTES.GPS_PROVIDERS(organizationId))
+        const data = response.data
+        if (data && typeof data === 'object') {
+          setProviders(prev => ({ ...prev, ...data }))
+        }
+      } catch {
+        // Keep defaults if API not available
+      }
+    }
+    loadProviders()
   }, [organizationId])
 
   const handleProviderToggle = (provider: string) => {
@@ -194,9 +207,27 @@ export default function SettingsPage() {
     setApiKey(newKey)
   }
 
+  // Save GPS providers
+  const [providersSaving, setProvidersSaving] = useState(false)
+  const [providersSaved, setProvidersSaved] = useState(false)
+
+  const handleSaveProviders = async () => {
+    if (!organizationId) return
+    setProvidersSaving(true)
+    try {
+      await apiClient.put(API_ROUTES.GPS_PROVIDERS(organizationId), providers)
+      setProvidersSaved(true)
+      setTimeout(() => setProvidersSaved(false), 3000)
+    } catch (error) {
+      console.error('Failed to save GPS providers:', error)
+    } finally {
+      setProvidersSaving(false)
+    }
+  }
+
   const handleDisconnectSession = async (sessionId: string) => {
     try {
-      await fetch(`/api/auth/sessions/${sessionId}`, { method: 'DELETE' })
+      await apiClient.delete(API_ROUTES.AUTH_SESSION_DETAIL(sessionId))
       setSessions(prev => prev.filter(s => s.id !== sessionId))
     } catch (error) {
       console.error('Failed to disconnect session:', error)
@@ -205,7 +236,7 @@ export default function SettingsPage() {
 
   const handleDisconnectAllSessions = async () => {
     try {
-      await fetch('/api/auth/sessions', { method: 'DELETE' })
+      await apiClient.delete(API_ROUTES.AUTH_SESSIONS)
       setSessions([])
     } catch (error) {
       console.error('Failed to disconnect all sessions:', error)
@@ -215,11 +246,7 @@ export default function SettingsPage() {
   const handleSaveOrganization = async () => {
     if (!organizationId) return
     try {
-      await fetch(`/api/organizations/${organizationId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(organization),
-      })
+      await apiClient.patch(API_ROUTES.ORGANIZATION(organizationId), organization)
       setOrgEditing(false)
     } catch (error) {
       console.error('Failed to save organization:', error)
@@ -229,21 +256,15 @@ export default function SettingsPage() {
   const handleAddDepartment = async () => {
     if (!organizationId || !newDeptName.trim()) return
     try {
-      const response = await fetch(`/api/organizations/${organizationId}/departments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newDeptName,
-          description: newDeptDesc,
-        }),
+      const response = await apiClient.post(API_ROUTES.DEPARTMENTS(organizationId), {
+        name: newDeptName,
+        description: newDeptDesc,
       })
-      if (response.ok) {
-        const data = await response.json()
-        setDepartments(prev => [...prev, data])
-        setNewDeptName('')
-        setNewDeptDesc('')
-        setShowNewDept(false)
-      }
+      const data = response.data
+      setDepartments(prev => [...prev, data])
+      setNewDeptName('')
+      setNewDeptDesc('')
+      setShowNewDept(false)
     } catch (error) {
       console.error('Failed to create department:', error)
     }
@@ -252,9 +273,7 @@ export default function SettingsPage() {
   const handleDeleteDepartment = async (deptId: string) => {
     if (!organizationId) return
     try {
-      await fetch(`/api/organizations/${organizationId}/departments/${deptId}`, {
-        method: 'DELETE',
-      })
+      await apiClient.delete(API_ROUTES.DEPARTMENT_DETAIL(organizationId, deptId))
       setDepartments(prev => prev.filter(d => d.id !== deptId))
     } catch (error) {
       console.error('Failed to delete department:', error)
@@ -944,6 +963,23 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Save GPS Providers Button */}
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveProviders}
+              disabled={providersSaving}
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+            >
+              {providersSaved ? (
+                <><Check size={16} /> Enregistré</>
+              ) : providersSaving ? (
+                <><RefreshCw size={16} className="animate-spin" /> Enregistrement...</>
+              ) : (
+                <><Save size={16} /> Enregistrer les fournisseurs</>
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>

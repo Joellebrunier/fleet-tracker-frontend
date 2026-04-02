@@ -154,15 +154,24 @@ export function useVehicleStats(id: string) {
 }
 
 // Get vehicle groups
-// NOTE: VEHICLE_GROUPS route has been removed from the backend
-// This functionality has been deprecated
 export function useVehicleGroups() {
+  const orgId = useAuthStore.getState().user?.organizationId || ''
   return useQuery({
     queryKey: vehicleKeys.groups,
     queryFn: async () => {
-      // Placeholder - returns empty array until endpoint is restored
-      return []
+      if (!orgId) return []
+      try {
+        const response = await apiClient.get(API_ROUTES.VEHICLE_GROUPS(orgId))
+        const raw = response.data
+        if (Array.isArray(raw)) return raw as VehicleGroup[]
+        if (raw && Array.isArray(raw.data)) return raw.data as VehicleGroup[]
+        if (raw && Array.isArray(raw.groups)) return raw.groups as VehicleGroup[]
+        return []
+      } catch {
+        return []
+      }
     },
+    enabled: !!orgId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }

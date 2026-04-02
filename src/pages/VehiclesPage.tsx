@@ -46,14 +46,26 @@ export default function VehiclesPage() {
     limit: 20,
     status: selectedStatus as any,
     search: searchTerm,
-  })
+    type: selectedType || undefined,
+    source: selectedSource || undefined,
+  } as any)
 
   // Mutation hooks
   const createVehicle = useCreateVehicle()
   const updateVehicleMutation = useUpdateVehicle(editingVehicle?.id || '')
   const deleteVehicleMutation = useDeleteVehicle(deleteConfirmId || '')
 
-  const vehicles: Vehicle[] = vehiclesData?.data || []
+  const allVehicles: Vehicle[] = vehiclesData?.data || []
+
+  // Client-side filtering for type and source (backend may not support these params)
+  const vehicles = allVehicles.filter((v) => {
+    if (selectedType && v.type !== selectedType) return false
+    if (selectedSource) {
+      const source = ((v.metadata as any)?.source || '').toLowerCase()
+      if (source !== selectedSource.toLowerCase()) return false
+    }
+    return true
+  })
   const totalPages = vehiclesData?.totalPages || 1
 
   const getStatusBadgeVariant = (status: string) => {

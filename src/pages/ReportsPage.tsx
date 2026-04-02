@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,6 +36,7 @@ import { formatDateTime } from '@/lib/utils'
 import { apiClient } from '@/lib/api'
 import { API_ROUTES } from '@/lib/constants'
 import { useAuthStore } from '@/stores/authStore'
+import { useVehicles } from '@/hooks/useVehicles'
 
 type ReportType = 'trip' | 'fuel' | 'driver' | 'fleet' | 'maintenance' | 'compliance'
 type ReportFormat = 'pdf' | 'excel' | 'csv'
@@ -172,40 +173,38 @@ export default function ReportsPage() {
   // Error state
   const [generationError, setGenerationError] = useState('')
 
-  // Generated reports state
-  const [generatedReports, setGeneratedReports] = useState<GeneratedReport[]>([
-    {
-      id: '1',
-      type: 'trip',
-      format: 'pdf',
-      status: 'completed',
-      generatedAt: new Date(Date.now() - 86400000),
-      dateFrom: subDays(new Date(), 60),
-      dateTo: subDays(new Date(), 30),
-      vehicleCount: 5,
-      downloadUrl: '/reports/trip-report-2024.pdf',
-    },
-    {
-      id: '2',
-      type: 'fuel',
-      format: 'excel',
-      status: 'completed',
-      generatedAt: new Date(Date.now() - 172800000),
-      dateFrom: subDays(new Date(), 90),
-      dateTo: subDays(new Date(), 60),
-      vehicleCount: 8,
-      downloadUrl: '/reports/fuel-report-2024.xlsx',
-    },
-  ])
+  // Generated reports state — starts empty, populated via API
+  const [generatedReports, setGeneratedReports] = useState<GeneratedReport[]>([])
 
-  // Mock vehicles (in a real app, these would come from the backend)
-  const [vehicles] = useState<Vehicle[]>([
-    { id: 'v1', name: 'Truck 1', plate: 'ABC-123' },
-    { id: 'v2', name: 'Truck 2', plate: 'DEF-456' },
-    { id: 'v3', name: 'Van 1', plate: 'GHI-789' },
-    { id: 'v4', name: 'Van 2', plate: 'JKL-012' },
-    { id: 'v5', name: 'Car 1', plate: 'MNO-345' },
-  ])
+  // Load report history from API
+  useEffect(() => {
+    const loadReportHistory = async () => {
+      if (!orgId) return
+      try {
+        const response = await apiClient.get(`${API_ROUTES.REPORTS_GENERATE(orgId)}/history`)
+        const data = response.data
+        if (Array.isArray(data)) {
+          setGeneratedReports(data.map((r: any) => ({
+            ...r,
+            generatedAt: new Date(r.generatedAt || r.createdAt),
+            dateFrom: new Date(r.dateFrom),
+            dateTo: new Date(r.dateTo),
+          })))
+        }
+      } catch {
+        // API may not have history endpoint yet — keep empty
+      }
+    }
+    loadReportHistory()
+  }, [orgId])
+
+  // Fetch real vehicles from API
+  const { data: vehiclesData } = useVehicles({ limit: 500 })
+  const vehicles: Vehicle[] = (vehiclesData?.data || []).map((v: any) => ({
+    id: v.id,
+    name: v.name || v.plate || 'Sans nom',
+    plate: v.plate || '—',
+  }))
 
   const handleOpenDialog = useCallback((reportType: ReportType) => {
     setSelectedReportType(reportType)
