@@ -34,11 +34,17 @@ export function useVehicles(filters: VehicleListQuery = {}) {
     queryFn: async () => {
       if (!orgId) return { data: [], total: 0, page: 1, limit: 20, totalPages: 0 } as any
 
-      const params = new URLSearchParams({
+      // Filter out undefined, null, and empty string values to avoid sending invalid params
+      const rawParams: Record<string, string> = {
         page: page.toString(),
         limit: limit.toString(),
-        ...otherFilters,
-      } as any)
+      }
+      for (const [key, value] of Object.entries(otherFilters)) {
+        if (value !== undefined && value !== null && value !== '') {
+          rawParams[key] = String(value)
+        }
+      }
+      const params = new URLSearchParams(rawParams)
 
       try {
         const response = await apiClient.get(
