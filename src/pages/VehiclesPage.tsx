@@ -568,7 +568,7 @@ export default function VehiclesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Type</label>
-                <select value={formData.type} onChange={(e) => setFormData(p => ({...p, type: e.target.value}))} className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+                <select value={formData.type} onChange={(e) => setFormData(p => ({...p, type: e.target.value}))} className="w-full rounded-md border border-gray-300 bg-white text-gray-900 px-3 py-2 text-sm">
                   <option value="car">Voiture</option>
                   <option value="truck">Camion</option>
                   <option value="van">Fourgon</option>
@@ -595,7 +595,7 @@ export default function VehiclesPage() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Notes</label>
-              <textarea value={formData.notes} onChange={(e) => setFormData(p => ({...p, notes: e.target.value}))} placeholder="Informations supplémentaires..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} />
+              <textarea value={formData.notes} onChange={(e) => setFormData(p => ({...p, notes: e.target.value}))} placeholder="Informations supplémentaires..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} />
             </div>
           </div>
           <DialogFooter>
