@@ -11,7 +11,7 @@ import { useVehicles } from '@/hooks/useVehicles'
 import { useMapStore } from '@/stores/mapStore'
 import { useAuthStore } from '@/stores/authStore'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
-import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin, AlertCircle, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin, AlertCircle, ChevronDown, CheckCircle2, X, Edit2, Trash2 } from 'lucide-react'
 import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
 import { useQueryClient } from '@tanstack/react-query'
 import { MAPBOX_TILE_URL, MAPBOX_TOKEN } from '@/lib/constants'
@@ -169,9 +169,14 @@ function FitBounds({ vehicles }: { vehicles: any[] }) {
   return null
 }
 
+type MapStyle = 'plan' | 'satellite' | 'relief' | 'sombre' | 'clair'
+
+type DetailPanelTab = 'temps-reel' | 'historique'
+
 export default function MapPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
+  const [mapStyle, setMapStyle] = useState<MapStyle>('plan')
   const [tileLayer, setTileLayer] = useState<'streets' | 'satellite' | 'terrain'>('streets')
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showTraffic, setShowTraffic] = useState(false)
@@ -179,6 +184,7 @@ export default function MapPage() {
   const [showMiniMap, setShowMiniMap] = useState(true)
   const [showManualGps, setShowManualGps] = useState(false)
   const [showProviderPanel, setShowProviderPanel] = useState(true)
+  const [activeDetailTab, setActiveDetailTab] = useState<DetailPanelTab>('temps-reel')
   const [manualGpsForm, setManualGpsForm] = useState({ lat: '', lng: '', vehicleId: '', name: '' })
   const [manualMarkers, setManualMarkers] = useState<Array<{ lat: number; lng: number; name: string }>>([])
   const [providerStatus, setProviderStatus] = useState({
@@ -188,6 +194,12 @@ export default function MapPage() {
     ubiwan: { status: 'connected' as 'connected' | 'failed', failoverActive: false },
   })
   const [isSubmittingGps, setIsSubmittingGps] = useState(false)
+
+  // Filter states
+  const [sourceFilter, setSourceFilter] = useState<'TOUS' | 'ECHOES' | 'UBIWAN' | 'KEEPTRACE'>('TOUS')
+  const [statutFilter, setStatutFilter] = useState<'TOUS' | 'LOCALISÉS' | 'NON LOC.'>('TOUS')
+  const [groupeFilter, setGroupeFilter] = useState<string>('Tous')
+
   const organizationId = useAuthStore((s) => s.user?.organizationId) || ''
   const [useImperialUnits] = useState(() => {
     try {
@@ -218,14 +230,46 @@ export default function MapPage() {
 
   const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData])
 
+  // Get unique groups from vehicles (with colors for display)
+  const uniqueGroups = useMemo(() => {
+    const groups = new Set<string>()
+    vehicles.forEach((v: any) => {
+      if (v.group) groups.add(v.group)
+    })
+    return Array.from(groups).sort()
+  }, [vehicles])
+
   const filteredVehicles = useMemo(
     () =>
-      vehicles.filter(
-        (v: any) =>
+      vehicles.filter((v: any) => {
+        // Search filter
+        const matchesSearch =
           v.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (v.plate || '').toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [vehicles, searchTerm]
+
+        if (!matchesSearch) return false
+
+        // Source filter (GPS provider)
+        if (sourceFilter !== 'TOUS') {
+          const provider = (v.gpsProvider || '').toUpperCase()
+          if (provider !== sourceFilter) return false
+        }
+
+        // Statut filter (GPS localized or not)
+        if (statutFilter === 'LOCALISÉS') {
+          if (!v.currentLat || !v.currentLng) return false
+        } else if (statutFilter === 'NON LOC.') {
+          if (v.currentLat && v.currentLng) return false
+        }
+
+        // Groupe filter
+        if (groupeFilter !== 'Tous') {
+          if (v.group !== groupeFilter) return false
+        }
+
+        return true
+      }),
+    [vehicles, searchTerm, sourceFilter, statutFilter, groupeFilter]
   )
 
   const vehiclesWithGps = useMemo(
@@ -246,12 +290,24 @@ export default function MapPage() {
         .reduce((sum: number, v: any) => sum + (v.currentSpeed || 0), 0) / movingCount
     : 0
 
-  const tileUrl =
-    tileLayer === 'satellite'
-      ? MAPBOX_TILE_URL('satellite-streets-v12')
-      : tileLayer === 'terrain'
-        ? MAPBOX_TILE_URL('outdoors-v12')
-        : MAPBOX_TILE_URL('streets-v12')
+  // Map style to tile layer mapping
+  const getTileUrl = (style: MapStyle) => {
+    switch (style) {
+      case 'satellite':
+        return MAPBOX_TILE_URL('satellite-streets-v12')
+      case 'relief':
+        return MAPBOX_TILE_URL('outdoors-v12')
+      case 'sombre':
+        return MAPBOX_TILE_URL('dark-v11')
+      case 'clair':
+        return MAPBOX_TILE_URL('light-v11')
+      case 'plan':
+      default:
+        return MAPBOX_TILE_URL('streets-v12')
+    }
+  }
+
+  const tileUrl = getTileUrl(mapStyle)
 
   const tileAttribution = '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 
@@ -281,6 +337,30 @@ export default function MapPage() {
     <div className="flex h-[calc(100vh-80px)] gap-4">
       {/* Map */}
       <div className={`relative ${isFullscreen ? 'w-full' : 'flex-1'} rounded-lg border border-gray-200 overflow-hidden shadow-sm`}>
+        {/* Map Style Selector */}
+        <div className="absolute top-4 left-4 z-[1000] bg-white rounded-lg shadow-md p-2 flex gap-1.5">
+          {(
+            [
+              { id: 'plan', label: 'Plan' },
+              { id: 'satellite', label: 'Satellite' },
+              { id: 'relief', label: 'Relief' },
+              { id: 'sombre', label: 'Sombre' },
+              { id: 'clair', label: 'Clair' },
+            ] as const
+          ).map((style) => (
+            <button
+              key={style.id}
+              onClick={() => setMapStyle(style.id as MapStyle)}
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                mapStyle === style.id
+                  ? 'bg-blue-500 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {style.label}
+            </button>
+          ))}
+        </div>
         <MapContainer
           center={[43.7, 3.87]}
           zoom={6}
@@ -424,7 +504,7 @@ export default function MapPage() {
         </div>
 
         {/* Stats overlay */}
-        <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
+        <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-2">
           {/* Provider failover indicator */}
           <div className="rounded-lg bg-white px-3 py-1.5 shadow-md text-xs font-medium flex items-center gap-1.5">
             <span className={`h-2 w-2 rounded-full inline-block ${providerStatus.flespi.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
@@ -588,6 +668,177 @@ export default function MapPage() {
             <HelpCircle size={16} />
           </Button>
         </div>
+
+        {/* Vehicle Detail Panel */}
+        {selectedVehicle && !isFullscreen && (
+          <div className="absolute top-0 right-0 h-full w-80 bg-white shadow-lg border-l border-gray-200 z-[999] flex flex-col overflow-hidden rounded-r-lg">
+            {/* Header */}
+            <div className="bg-white p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex-1">
+                  <h2 className="text-lg font-bold text-gray-900">{selectedVehicle.plate}</h2>
+                  <Badge
+                    variant={selectedVehicle.currentSpeed > 2 ? 'default' : 'secondary'}
+                    className="text-xs mt-1"
+                  >
+                    {selectedVehicle.currentSpeed > 2 ? 'EN MOUVEMENT' : 'À L\'ARRÊT'}
+                  </Badge>
+                </div>
+                <button
+                  onClick={() => selectVehicle(null)}
+                  className="text-gray-400 hover:text-gray-600 p-1"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200 bg-gray-50">
+              <button
+                onClick={() => setActiveDetailTab('temps-reel')}
+                className={`flex-1 px-4 py-2 text-xs font-medium transition-all ${
+                  activeDetailTab === 'temps-reel'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                TEMPS RÉEL
+              </button>
+              <button
+                onClick={() => setActiveDetailTab('historique')}
+                className={`flex-1 px-4 py-2 text-xs font-medium transition-all ${
+                  activeDetailTab === 'historique'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                HISTORIQUE
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto">
+              {activeDetailTab === 'temps-reel' ? (
+                <div className="divide-y divide-gray-200">
+                  {/* IDENTITÉ section */}
+                  <div className="p-4">
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-3">Identité</h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Plaque</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.plate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">VIN</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.vin || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Statut API</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.apiStatus || 'Actif'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Flotte ID</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.fleetId || selectedVehicle.id}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* APPAREIL GPS section */}
+                  <div className="p-4">
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-3">Appareil GPS</h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Type</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.gpsDeviceType || 'Standard'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">ID Appareil</span>
+                        <span className="font-medium text-gray-900 truncate">{selectedVehicle.gpsDeviceId || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* TÉLÉMÉTRIE section */}
+                  <div className="p-4">
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-3">Télémétrie</h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Vitesse</span>
+                        <span className="font-medium text-gray-900">
+                          {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).unit}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Odomètre</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.odometer || 'N/A'} km</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Carburant</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.fuelLevel || 'N/A'}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* POSITION section */}
+                  <div className="p-4">
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-3">Position</h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Latitude</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.currentLat?.toFixed(6)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Longitude</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.currentLng?.toFixed(6)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ACTIVITÉ section */}
+                  <div className="p-4">
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-3">Activité</h3>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Dernière com.</span>
+                        <span className="font-medium text-gray-900">{formatTimeAgo(selectedVehicle.lastCommunication)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Début trajet</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.tripStart || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Fin trajet</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.tripEnd || 'N/A'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 text-xs text-gray-600">
+                  <p>Historique non disponible</p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer with action buttons */}
+            <div className="border-t border-gray-200 p-4 flex gap-2 bg-gray-50">
+              <button
+                onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 transition-colors"
+              >
+                <Edit2 size={14} />
+                Éditer
+              </button>
+              <button
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded text-xs font-medium hover:bg-red-100 transition-colors border border-red-200"
+              >
+                <Trash2 size={14} />
+                Supprimer
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Sidebar */}
@@ -608,13 +859,89 @@ export default function MapPage() {
           </CardContent>
         </Card>
 
-        {/* Vehicle list */}
+        {/* Vehicle list with filters */}
         <Card className="flex-1 overflow-hidden flex flex-col">
-          <CardHeader className="pb-2 pt-4">
-            <CardTitle className="text-sm font-semibold text-gray-700">
-              Véhicules ({filteredVehicles.length})
-            </CardTitle>
+          {/* Filter Controls */}
+          <CardHeader className="pb-3 pt-4">
+            {/* SOURCE filter */}
+            <div className="mb-3">
+              <p className="text-xs font-semibold text-gray-700 mb-1.5">SOURCE</p>
+              <div className="flex gap-1.5">
+                {(['TOUS', 'ECHOES', 'UBIWAN', 'KEEPTRACE'] as const).map((source) => (
+                  <button
+                    key={source}
+                    onClick={() => setSourceFilter(source)}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                      sourceFilter === source
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {source}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* STATUT filter */}
+            <div className="mb-3">
+              <p className="text-xs font-semibold text-gray-700 mb-1.5">STATUT</p>
+              <div className="flex gap-1.5">
+                {(['TOUS', 'LOCALISÉS', 'NON LOC.'] as const).map((statut) => (
+                  <button
+                    key={statut}
+                    onClick={() => setStatutFilter(statut)}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                      statutFilter === statut
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {statut}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* GROUPE filter */}
+            <div className="mb-2">
+              <p className="text-xs font-semibold text-gray-700 mb-1.5">GROUPE</p>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => setGroupeFilter('Tous')}
+                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                    groupeFilter === 'Tous'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Tous
+                </button>
+                {uniqueGroups.map((group) => (
+                  <button
+                    key={group}
+                    onClick={() => setGroupeFilter(group)}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
+                      groupeFilter === group
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    <span className="text-sm">■</span>
+                    {group}
+                  </button>
+                ))}
+              </div>
+            </div>
           </CardHeader>
+
+          {/* Vehicle list header */}
+          <div className="px-4 py-2 border-t border-gray-200 flex items-center justify-between text-xs font-semibold text-gray-700">
+            <span>VÉHICULE — {filteredVehicles.length} RÉSULTATS</span>
+            <span>VITESSE</span>
+          </div>
+
+          {/* Vehicle list */}
           <CardContent className="flex-1 overflow-y-auto pb-4">
             <div className="space-y-1.5">
               {filteredVehicles.map((vehicle: any) => {
@@ -630,21 +957,16 @@ export default function MapPage() {
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
-                          !hasGps ? 'bg-red-400' : isMoving ? 'bg-green-500' : 'bg-gray-400'
-                        }`}
-                      ></span>
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-gray-900 truncate">{vehicle.name}</p>
-                        <p className="text-xs text-gray-500 truncate">{vehicle.plate}</p>
+                        <p className="font-bold text-sm text-gray-900 truncate">{vehicle.plate}</p>
+                        <p className="text-xs text-gray-500 truncate">{vehicle.name}</p>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="text-xs font-medium text-gray-700">
-                          {hasGps ? `${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} ${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}` : 'Hors ligne'}
+                          {hasGps ? `${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value}` : '—'}
                         </p>
-                        <p className="text-xs text-gray-400">{formatTimeAgo(vehicle.lastCommunication)}</p>
+                        <p className="text-xs text-gray-500">{vehicle.gpsProvider || '—'}</p>
                       </div>
                     </div>
                   </button>
