@@ -360,6 +360,149 @@ const data = await response.json();`
                   Copier
                 </Button>
               </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Python</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.trackzone.com/api/vehicles', headers=headers)
+data = response.json()`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.trackzone.com/api/vehicles', headers=headers)
+data = response.json()`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Récupérer l'historique GPS</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">cURL</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`curl -X GET "https://api.trackzone.com/api/gps/history/vehicle-123" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json"`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `curl -X GET "https://api.trackzone.com/api/gps/history/vehicle-123" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json"`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">JavaScript (fetch)</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`const vehicleId = 'vehicle-123';
+const response = await fetch(\`https://api.trackzone.com/api/gps/history/\${vehicleId}\`, {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  }
+});
+const history = await response.json();`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `const vehicleId = 'vehicle-123';
+const response = await fetch(\`https://api.trackzone.com/api/gps/history/\${vehicleId}\`, {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  }
+});
+const history = await response.json();`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Python</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`import requests
+
+vehicle_id = 'vehicle-123'
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+url = f'https://api.trackzone.com/api/gps/history/{vehicle_id}'
+response = requests.get(url, headers=headers)
+history = response.json()`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `import requests
+
+vehicle_id = 'vehicle-123'
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+url = f'https://api.trackzone.com/api/gps/history/{vehicle_id}'
+response = requests.get(url, headers=headers)
+history = response.json()`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -368,6 +511,50 @@ const data = await response.json();`
               <CardTitle>Créer un géofence</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">cURL</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`curl -X POST "https://api.trackzone.com/api/geofences" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Zone de dépôt",
+    "shape": {
+      "type": "circle",
+      "center": {"lat": 48.8566, "lng": 2.3522},
+      "radiusMeters": 200
+    },
+    "alertOnEntry": true,
+    "alertOnExit": true
+  }'`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `curl -X POST "https://api.trackzone.com/api/geofences" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Zone de dépôt",
+    "shape": {
+      "type": "circle",
+      "center": {"lat": 48.8566, "lng": 2.3522},
+      "radiusMeters": 200
+    },
+    "alertOnEntry": true,
+    "alertOnExit": true
+  }'`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
+
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">
                   JavaScript (fetch)
@@ -416,6 +603,169 @@ const data = await response.json();`}</code>
   })
 });
 const data = await response.json();`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Python</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`import requests
+import json
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+payload = {
+    'name': 'Zone de dépôt',
+    'shape': {
+        'type': 'circle',
+        'center': {'lat': 48.8566, 'lng': 2.3522},
+        'radiusMeters': 200
+    },
+    'alertOnEntry': True,
+    'alertOnExit': True
+}
+
+response = requests.post('https://api.trackzone.com/api/geofences',
+                         headers=headers, json=payload)
+data = response.json()`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `import requests
+import json
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+payload = {
+    'name': 'Zone de dépôt',
+    'shape': {
+        'type': 'circle',
+        'center': {'lat': 48.8566, 'lng': 2.3522},
+        'radiusMeters': 200
+    },
+    'alertOnEntry': True,
+    'alertOnExit': True
+}
+
+response = requests.post('https://api.trackzone.com/api/geofences',
+                         headers=headers, json=payload)
+data = response.json()`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Récupérer les alertes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">cURL</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`curl -X GET "https://api.trackzone.com/api/alerts" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json"`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `curl -X GET "https://api.trackzone.com/api/alerts" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json"`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">JavaScript (fetch)</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`const response = await fetch('https://api.trackzone.com/api/alerts', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  }
+});
+const alerts = await response.json();`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `const response = await fetch('https://api.trackzone.com/api/alerts', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  }
+});
+const alerts = await response.json();`
+                    )
+                  }
+                >
+                  <Copy size={16} className="mr-2" />
+                  Copier
+                </Button>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Python</h3>
+                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                  <code>{`import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.trackzone.com/api/alerts', headers=headers)
+alerts = response.json()`}</code>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    copyToClipboard(
+                      `import requests
+
+headers = {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.trackzone.com/api/alerts', headers=headers)
+alerts = response.json()`
                     )
                   }
                 >

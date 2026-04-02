@@ -40,6 +40,9 @@ import {
   Settings,
   GripHorizontal,
   Building2,
+  ChevronUp,
+  ChevronDown,
+  RotateCcw,
 } from 'lucide-react'
 import {
   Dialog,
@@ -124,6 +127,22 @@ export default function DashboardPage() {
   const orgId = useAuthStore((s) => s.user?.organizationId) || ''
 
   // Widget Configuration State
+  const defaultWidgetOrder: WidgetId[] = [
+    'hourly-activity',
+    'fleet-status',
+    'alert-distribution',
+    'quick-actions',
+    'alerts-feed',
+    'status-summary',
+    'speed-distribution',
+    'weekly-comparison',
+    'heatmap',
+    'fleet-activity',
+    'providers',
+    'recent-updates',
+    'departments',
+  ]
+
   const [widgetConfig, setWidgetConfig] = useState<Record<WidgetId, WidgetConfig>>(() => {
     const saved = localStorage.getItem('dashboard_widgets')
     const defaultConfig: Record<WidgetId, WidgetConfig> = {
@@ -148,6 +167,15 @@ export default function DashboardPage() {
     }
   })
 
+  const [widgetOrder, setWidgetOrder] = useState<WidgetId[]>(() => {
+    const saved = localStorage.getItem('dashboard_widget_order')
+    try {
+      return saved ? JSON.parse(saved) : defaultWidgetOrder
+    } catch {
+      return defaultWidgetOrder
+    }
+  })
+
   const [showWidgetConfig, setShowWidgetConfig] = useState(false)
   const [departments, setDepartments] = useState<Department[]>([
     { id: '1', name: 'Logistique', vehicleCount: 24, driverCount: 8, performanceScore: 92 },
@@ -163,6 +191,27 @@ export default function DashboardPage() {
     localStorage.setItem('dashboard_widgets', JSON.stringify(widgetConfig))
   }, [widgetConfig])
 
+  // Save widget order to localStorage
+  useEffect(() => {
+    localStorage.setItem('dashboard_widget_order', JSON.stringify(widgetOrder))
+  }, [widgetOrder])
+
+  const widgetLabels: Record<WidgetId, string> = {
+    'hourly-activity': 'Activité horaire',
+    'fleet-status': 'État de la flotte',
+    'alert-distribution': 'Distribution des alertes',
+    'quick-actions': 'Actions rapides',
+    'alerts-feed': 'Flux d\'alertes',
+    'status-summary': 'Résumé du statut',
+    'speed-distribution': 'Distribution des vitesses',
+    'weekly-comparison': 'Comparaison hebdomadaire',
+    heatmap: 'Carte thermique',
+    'fleet-activity': 'Activité de la flotte',
+    providers: 'Fournisseurs GPS',
+    'recent-updates': 'Mises à jour récentes',
+    departments: 'Départements',
+  }
+
   const toggleWidgetVisibility = (id: WidgetId) => {
     setWidgetConfig((prev) => ({
       ...prev,
@@ -175,6 +224,48 @@ export default function DashboardPage() {
       ...prev,
       [id]: { ...prev[id], size },
     }))
+  }
+
+  const moveWidgetUp = (id: WidgetId) => {
+    const currentIndex = widgetOrder.indexOf(id)
+    if (currentIndex > 0) {
+      const reordered: WidgetId[] = [...widgetOrder]
+      const temp = reordered[currentIndex - 1]
+      reordered[currentIndex - 1] = reordered[currentIndex]
+      reordered[currentIndex] = temp
+      setWidgetOrder(reordered)
+    }
+  }
+
+  const moveWidgetDown = (id: WidgetId) => {
+    const currentIndex = widgetOrder.indexOf(id)
+    if (currentIndex < widgetOrder.length - 1) {
+      const reordered: WidgetId[] = [...widgetOrder]
+      const temp = reordered[currentIndex + 1]
+      reordered[currentIndex + 1] = reordered[currentIndex]
+      reordered[currentIndex] = temp
+      setWidgetOrder(reordered)
+    }
+  }
+
+  const resetWidgetConfig = () => {
+    const defaultConfig: Record<WidgetId, WidgetConfig> = {
+      'hourly-activity': { visible: true, size: 'normal' },
+      'fleet-status': { visible: true, size: 'normal' },
+      'alert-distribution': { visible: true, size: 'normal' },
+      'quick-actions': { visible: true, size: 'normal' },
+      'alerts-feed': { visible: true, size: 'normal' },
+      'status-summary': { visible: true, size: 'normal' },
+      'speed-distribution': { visible: true, size: 'normal' },
+      'weekly-comparison': { visible: true, size: 'normal' },
+      heatmap: { visible: true, size: 'expanded' },
+      'fleet-activity': { visible: true, size: 'normal' },
+      providers: { visible: true, size: 'normal' },
+      'recent-updates': { visible: true, size: 'normal' },
+      departments: { visible: true, size: 'normal' },
+    }
+    setWidgetConfig(defaultConfig)
+    setWidgetOrder(defaultWidgetOrder)
   }
 
   const addDepartment = () => {
@@ -360,48 +451,94 @@ export default function DashboardPage() {
           className="gap-2"
         >
           <Settings size={16} />
-          <span>Widgets</span>
+          <span>Personnaliser</span>
         </Button>
       </div>
 
       {/* Widget Configuration Panel */}
       {showWidgetConfig && (
         <Card className="bg-blue-50 border-blue-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Configuration des widgets</CardTitle>
-            <CardDescription className="text-xs">
-              Activez/désactivez les widgets et ajustez leur taille
-            </CardDescription>
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Personnaliser les widgets</CardTitle>
+                <CardDescription className="text-sm mt-1">
+                  Gérez la visibilité, la taille et l'ordre des widgets de votre tableau de bord
+                </CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetWidgetConfig}
+                className="gap-2 text-amber-600 border-amber-200 hover:bg-amber-50"
+              >
+                <RotateCcw size={14} />
+                <span>Réinitialiser</span>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(Object.keys(widgetConfig) as WidgetId[]).map((id) => (
-                <div key={id} className="flex flex-col gap-2 p-3 bg-white rounded-lg border">
+            <div className="space-y-3">
+              {widgetOrder.map((id) => (
+                <div
+                  key={id}
+                  className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                >
+                  {/* Visibility Toggle */}
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={widgetConfig[id].visible}
                       onChange={() => toggleWidgetVisibility(id)}
-                      className="w-4 h-4"
+                      className="w-4 h-4 rounded cursor-pointer"
                     />
-                    <span className="text-sm font-medium text-gray-700">
-                      {id.replace(/-/g, ' ').charAt(0).toUpperCase() + id.replace(/-/g, ' ').slice(1)}
-                    </span>
                   </label>
-                  <div className="flex gap-1">
+
+                  {/* Widget Label */}
+                  <div className="flex-1">
+                    <span className={`text-sm font-medium ${
+                      widgetConfig[id].visible ? 'text-gray-900' : 'text-gray-500'
+                    }`}>
+                      {widgetLabels[id]}
+                    </span>
+                  </div>
+
+                  {/* Size Selector */}
+                  <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
                     {(['compact', 'normal', 'expanded'] as const).map((size) => (
                       <button
                         key={size}
                         onClick={() => setWidgetSize(id, size)}
-                        className={`flex-1 px-2 py-1 text-xs rounded border transition-colors ${
+                        title={size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large'}
+                        className={`px-2 py-1 text-xs rounded transition-colors ${
                           widgetConfig[id].size === size
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
+                            ? 'bg-blue-500 text-white'
+                            : 'text-gray-600 hover:text-gray-900'
                         }`}
                       >
-                        {size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large'}
+                        {size === 'compact' ? 'C' : size === 'normal' ? 'N' : 'L'}
                       </button>
                     ))}
+                  </div>
+
+                  {/* Reorder Buttons */}
+                  <div className="flex gap-1 border-l border-gray-200 pl-3">
+                    <button
+                      onClick={() => moveWidgetUp(id)}
+                      disabled={widgetOrder.indexOf(id) === 0}
+                      className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="Monter"
+                    >
+                      <ChevronUp size={16} />
+                    </button>
+                    <button
+                      onClick={() => moveWidgetDown(id)}
+                      disabled={widgetOrder.indexOf(id) === widgetOrder.length - 1}
+                      className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      title="Descendre"
+                    >
+                      <ChevronDown size={16} />
+                    </button>
                   </div>
                 </div>
               ))}

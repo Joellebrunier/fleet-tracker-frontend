@@ -9,11 +9,21 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { useVehicles } from '@/hooks/useVehicles'
 import { useMapStore } from '@/stores/mapStore'
+import { useAuthStore } from '@/stores/authStore'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
-import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin } from 'lucide-react'
+import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin, AlertCircle, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
 import { useQueryClient } from '@tanstack/react-query'
 import { MAPBOX_TILE_URL, MAPBOX_TOKEN } from '@/lib/constants'
+
+// Helper function to convert speed based on user preferences
+function getFormattedSpeed(speedKmh: number, useImperial: boolean): { value: string; unit: string } {
+  if (useImperial) {
+    const mph = speedKmh * 0.621371
+    return { value: mph.toFixed(0), unit: 'mph' }
+  }
+  return { value: speedKmh.toFixed(0), unit: 'km/h' }
+}
 
 // Fix default marker icons for Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -168,8 +178,25 @@ export default function MapPage() {
   const [showHelpPopover, setShowHelpPopover] = useState(false)
   const [showMiniMap, setShowMiniMap] = useState(true)
   const [showManualGps, setShowManualGps] = useState(false)
-  const [manualGpsForm, setManualGpsForm] = useState({ lat: '', lng: '', name: '' })
+  const [showProviderPanel, setShowProviderPanel] = useState(true)
+  const [manualGpsForm, setManualGpsForm] = useState({ lat: '', lng: '', vehicleId: '', name: '' })
   const [manualMarkers, setManualMarkers] = useState<Array<{ lat: number; lng: number; name: string }>>([])
+  const [providerStatus, setProviderStatus] = useState({
+    flespi: { status: 'connected' as 'connected' | 'failed', failoverActive: false },
+    echoes: { status: 'connected' as 'connected' | 'failed', failoverActive: false },
+    keeptrace: { status: 'connected' as 'connected' | 'failed', failoverActive: false },
+    ubiwan: { status: 'connected' as 'connected' | 'failed', failoverActive: false },
+  })
+  const [isSubmittingGps, setIsSubmittingGps] = useState(false)
+  const organizationId = useAuthStore((s) => s.user?.organizationId) || ''
+  const [useImperialUnits] = useState(() => {
+    try {
+      const prefs = localStorage.getItem('fleet-tracker_preferences')
+      return prefs ? JSON.parse(prefs).units === 'imperial' : false
+    } catch {
+      return false
+    }
+  })
   const {
     selectedVehicleId,
     selectVehicle,
@@ -286,17 +313,32 @@ export default function MapPage() {
             >
               <Popup>
                 <div className="min-w-48 p-1">
-                  <p className="font-bold text-sm">{vehicle.name}</p>
-                  <p className="text-xs text-gray-500 mb-2">{vehicle.plate}</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="font-bold text-sm">{vehicle.name}</p>
+                      <p className="text-xs text-gray-500">{vehicle.plate}</p>
+                    </div>
+                    {vehicle.gpsProviderFailover && (
+                      <div title="Basculement fournisseur actif">
+                        <AlertCircle size={14} className="text-amber-500" />
+                      </div>
+                    )}
+                  </div>
                   <div className="text-xs space-y-1">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Vitesse:</span>
-                      <span className="font-medium">{(vehicle.currentSpeed || 0).toFixed(0)} km/h</span>
+                      <span className="font-medium">{getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Dernière com.:</span>
                       <span className="font-medium">{formatTimeAgo(vehicle.lastCommunication)}</span>
                     </div>
+                    {vehicle.gpsProvider && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Fournisseur:</span>
+                        <span className="font-medium text-xs">{vehicle.gpsProvider}</span>
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={() => navigate(`/vehicles/${vehicle.id}`)}
@@ -385,8 +427,9 @@ export default function MapPage() {
         <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
           {/* Provider failover indicator */}
           <div className="rounded-lg bg-white px-3 py-1.5 shadow-md text-xs font-medium flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-green-500 inline-block"></span>
+            <span className={`h-2 w-2 rounded-full inline-block ${providerStatus.flespi.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
             Fournisseur principal: Flespi
+            {providerStatus.flespi.failoverActive && <AlertCircle size={12} className="text-amber-500" />}
           </div>
         </div>
 
@@ -405,7 +448,7 @@ export default function MapPage() {
             {offlineCount} hors ligne
           </div>
           <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium">
-            Vitesse moyenne: {avgFleetSpeed.toFixed(0)} km/h
+            Vitesse moyenne: {getFormattedSpeed(avgFleetSpeed, useImperialUnits).value} {getFormattedSpeed(avgFleetSpeed, useImperialUnits).unit}
           </div>
           <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium">
             {vehiclesWithGps.length} / {vehicles.length} GPS actif
@@ -444,7 +487,7 @@ export default function MapPage() {
         {/* Manual GPS entry form */}
         {showManualGps && (
           <div className="absolute top-20 right-4 z-[1000]">
-            <Card className="w-64 shadow-lg">
+            <Card className="w-72 shadow-lg">
               <CardHeader className="pb-2 pt-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm">Saisie manuelle GPS</CardTitle>
@@ -457,6 +500,21 @@ export default function MapPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
+                <div>
+                  <label className="text-xs text-gray-600 block mb-1">Véhicule</label>
+                  <select
+                    value={manualGpsForm.vehicleId}
+                    onChange={(e) => setManualGpsForm({ ...manualGpsForm, vehicleId: e.target.value })}
+                    className="w-full h-8 px-2 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Sélectionner un véhicule</option>
+                    {vehicles.map((v: any) => (
+                      <option key={v.id} value={v.id}>
+                        {v.name} ({v.plate})
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="text-xs text-gray-600 block mb-1">Latitude</label>
                   <Input
@@ -479,32 +537,40 @@ export default function MapPage() {
                     className="h-8 text-xs"
                   />
                 </div>
-                <div>
-                  <label className="text-xs text-gray-600 block mb-1">Nom du traceur</label>
-                  <Input
-                    type="text"
-                    placeholder="Traceur manuel"
-                    value={manualGpsForm.name}
-                    onChange={(e) => setManualGpsForm({ ...manualGpsForm, name: e.target.value })}
-                    className="h-8 text-xs"
-                  />
-                </div>
                 <Button
                   size="sm"
-                  onClick={() => {
-                    if (manualGpsForm.lat && manualGpsForm.lng) {
-                      const newMarker = {
-                        lat: parseFloat(manualGpsForm.lat),
-                        lng: parseFloat(manualGpsForm.lng),
-                        name: manualGpsForm.name || 'Traceur manuel',
+                  disabled={!manualGpsForm.vehicleId || !manualGpsForm.lat || !manualGpsForm.lng || isSubmittingGps}
+                  onClick={async () => {
+                    if (manualGpsForm.vehicleId && manualGpsForm.lat && manualGpsForm.lng && organizationId) {
+                      setIsSubmittingGps(true)
+                      try {
+                        const response = await fetch(
+                          `/api/organizations/${organizationId}/vehicles/${manualGpsForm.vehicleId}/position`,
+                          {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              lat: parseFloat(manualGpsForm.lat),
+                              lng: parseFloat(manualGpsForm.lng),
+                              timestamp: new Date().toISOString(),
+                              source: 'manual',
+                            }),
+                          }
+                        )
+                        if (response.ok) {
+                          setManualGpsForm({ lat: '', lng: '', vehicleId: '', name: '' })
+                          queryClient.invalidateQueries({ queryKey: ['vehicles'] })
+                        }
+                      } catch (error) {
+                        console.error('Erreur lors de la soumission GPS:', error)
+                      } finally {
+                        setIsSubmittingGps(false)
                       }
-                      setManualMarkers([...manualMarkers, newMarker])
-                      setManualGpsForm({ lat: '', lng: '', name: '' })
                     }
                   }}
                   className="w-full text-xs h-8"
                 >
-                  Ajouter
+                  {isSubmittingGps ? 'Envoi...' : 'Envoyer'}
                 </Button>
               </CardContent>
             </Card>
@@ -576,7 +642,7 @@ export default function MapPage() {
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="text-xs font-medium text-gray-700">
-                          {hasGps ? `${(vehicle.currentSpeed || 0).toFixed(0)} km/h` : 'Hors ligne'}
+                          {hasGps ? `${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} ${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}` : 'Hors ligne'}
                         </p>
                         <p className="text-xs text-gray-400">{formatTimeAgo(vehicle.lastCommunication)}</p>
                       </div>
@@ -586,6 +652,53 @@ export default function MapPage() {
               })}
             </div>
           </CardContent>
+        </Card>
+
+        {/* GPS Provider Status Panel */}
+        <Card>
+          <CardHeader className="pb-2 pt-4">
+            <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowProviderPanel(!showProviderPanel)}>
+              <CardTitle className="text-sm font-semibold">Fournisseurs GPS</CardTitle>
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${showProviderPanel ? 'rotate-0' : '-rotate-90'}`}
+              />
+            </div>
+          </CardHeader>
+          {showProviderPanel && (
+            <CardContent className="space-y-2 text-xs pb-4">
+              {[
+                { key: 'flespi', label: 'Flespi' },
+                { key: 'echoes', label: 'Echoes' },
+                { key: 'keeptrace', label: 'KeepTrace' },
+                { key: 'ubiwan', label: 'Ubiwan' },
+              ].map((provider) => (
+                <div key={provider.key} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <span className="font-medium">{provider.label}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
+                      {providerStatus[provider.key as keyof typeof providerStatus].status === 'connected' ? (
+                        <>
+                          <CheckCircle2 size={12} className="text-green-500" />
+                          <span className="text-gray-600">Connecté</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle size={12} className="text-red-500" />
+                          <span className="text-gray-600">Erreur</span>
+                        </>
+                      )}
+                    </div>
+                    {providerStatus[provider.key as keyof typeof providerStatus].failoverActive && (
+                      <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-800 border-amber-200">
+                        Secours
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          )}
         </Card>
 
         {/* Selected vehicle details */}
@@ -606,7 +719,7 @@ export default function MapPage() {
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="bg-gray-50 rounded p-2">
                   <p className="text-gray-500">Vitesse</p>
-                  <p className="font-bold text-lg">{(selectedVehicle.currentSpeed || 0).toFixed(0)}<span className="text-xs font-normal"> km/h</span></p>
+                  <p className="font-bold text-lg">{getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).value}<span className="text-xs font-normal"> {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).unit}</span></p>
                 </div>
                 <div className="bg-gray-50 rounded p-2">
                   <p className="text-gray-500">Cap</p>
@@ -616,6 +729,9 @@ export default function MapPage() {
               <div className="text-xs text-gray-500">
                 <p>Position: {selectedVehicle.currentLat?.toFixed(5)}, {selectedVehicle.currentLng?.toFixed(5)}</p>
                 <p>Dernière com.: {formatTimeAgo(selectedVehicle.lastCommunication)}</p>
+                {(selectedVehicle as any).gpsProvider && (
+                  <p>Fournisseur: <span className="font-medium text-gray-700">{(selectedVehicle as any).gpsProvider}</span></p>
+                )}
               </div>
               <Button
                 variant="outline"

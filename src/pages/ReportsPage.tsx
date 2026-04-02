@@ -29,8 +29,9 @@ import {
   Printer,
   Mail,
   Clock as ClockIcon,
+  AlertCircle,
 } from 'lucide-react'
-import { format, subDays } from 'date-fns'
+import { format, subDays, startOfWeek, startOfMonth, endOfMonth } from 'date-fns'
 import { formatDateTime } from '@/lib/utils'
 import { apiClient } from '@/lib/api'
 import { API_ROUTES } from '@/lib/constants'
@@ -158,11 +159,18 @@ export default function ReportsPage() {
   // Schedule state
   const [scheduleFrequency, setScheduleFrequency] = useState<ScheduleFrequency>('weekly')
   const [scheduleEmail, setScheduleEmail] = useState('')
+  const [isScheduling, setIsScheduling] = useState(false)
+  const [scheduleError, setScheduleError] = useState('')
 
   // Email state
   const [emailRecipient, setEmailRecipient] = useState('')
   const [emailSubject, setEmailSubject] = useState('')
   const [emailMessage, setEmailMessage] = useState('')
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [emailError, setEmailError] = useState('')
+
+  // Error state
+  const [generationError, setGenerationError] = useState('')
 
   // Generated reports state
   const [generatedReports, setGeneratedReports] = useState<GeneratedReport[]>([
@@ -209,6 +217,35 @@ export default function ReportsPage() {
   const handleCloseDialog = useCallback(() => {
     setDialogOpen(false)
     setSelectedReportType(null)
+    setGenerationError('')
+  }, [])
+
+  const applyDateRange = useCallback((range: 'today' | 'week' | 'month' | 'lastMonth') => {
+    const today = new Date()
+    let newDateFrom: Date
+    let newDateTo: Date = today
+
+    switch (range) {
+      case 'today':
+        newDateFrom = today
+        break
+      case 'week':
+        newDateFrom = startOfWeek(today, { weekStartsOn: 1 })
+        break
+      case 'month':
+        newDateFrom = startOfMonth(today)
+        break
+      case 'lastMonth':
+        const firstOfThisMonth = startOfMonth(today)
+        newDateTo = subDays(firstOfThisMonth, 1)
+        newDateFrom = startOfMonth(newDateTo)
+        break
+      default:
+        return
+    }
+
+    setDateFrom(format(newDateFrom, 'yyyy-MM-dd'))
+    setDateTo(format(newDateTo, 'yyyy-MM-dd'))
   }, [])
 
   const handleVehicleToggle = useCallback((vehicleId: string) => {
@@ -219,16 +256,18 @@ export default function ReportsPage() {
 
   const handleGenerateReport = useCallback(async () => {
     if (!selectedReportType || !orgId) {
+      setGenerationError('Type de rapport non sélectionné')
       return
     }
 
     setIsGenerating(true)
+    setGenerationError('')
 
     try {
       const payload = {
         type: selectedReportType,
-        dateFrom: new Date(dateFrom),
-        dateTo: new Date(dateTo),
+        dateFrom: dateFrom,
+        dateTo: dateTo,
         vehicleIds: selectedVehicles.length > 0 ? selectedVehicles : undefined,
         format: reportFormat,
       }
@@ -253,7 +292,11 @@ export default function ReportsPage() {
       handleCloseDialog()
     } catch (error) {
       console.error('Failed to generate report:', error)
-      // Optionally show error toast here
+      setGenerationError(
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors de la génération du rapport'
+      )
     } finally {
       setIsGenerating(false)
     }
@@ -280,15 +323,80 @@ export default function ReportsPage() {
     window.print()
   }, [])
 
-  const handleSendEmail = useCallback(() => {
-    if (emailRecipient && emailSubject) {
-      alert('Rapport envoyé!')
+  const handleSendEmail = useCallback(async () => {
+    if (!emailRecipient || !emailSubject || !orgId) {
+      setEmailError('Veuillez remplir tous les champs requis')
+      return
+    }
+
+    setIsSendingEmail(true)
+    setEmailError('')
+
+    try {
+      const payload = {
+        recipient: emailRecipient,
+        subject: emailSubject,
+        message: emailMessage,
+        reportType: selectedReportType,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        vehicleIds: selectedVehicles.length > 0 ? selectedVehicles : undefined,
+        format: reportFormat,
+      }
+
+      await apiClient.post(`${API_ROUTES.ORGANIZATIONS}/${orgId}/reports/email`, payload)
+
       setShowEmailDialog(false)
       setEmailRecipient('')
       setEmailSubject('')
       setEmailMessage('')
+    } catch (error) {
+      console.error('Failed to send email:', error)
+      setEmailError(
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors de l\'envoi de l\'email'
+      )
+    } finally {
+      setIsSendingEmail(false)
     }
-  }, [emailRecipient, emailSubject])
+  }, [emailRecipient, emailSubject, orgId, selectedReportType, dateFrom, dateTo, selectedVehicles, reportFormat])
+
+  const handleScheduleReport = useCallback(async () => {
+    if (!scheduleEmail || !selectedReportType || !orgId) {
+      setScheduleError('Veuillez remplir tous les champs requis')
+      return
+    }
+
+    setIsScheduling(true)
+    setScheduleError('')
+
+    try {
+      const payload = {
+        reportType: selectedReportType,
+        frequency: scheduleFrequency,
+        recipientEmail: scheduleEmail,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        vehicleIds: selectedVehicles.length > 0 ? selectedVehicles : undefined,
+        format: reportFormat,
+      }
+
+      await apiClient.post(`${API_ROUTES.ORGANIZATIONS}/${orgId}/reports/schedule`, payload)
+
+      setShowScheduleForm(false)
+      setScheduleEmail('')
+    } catch (error) {
+      console.error('Failed to schedule report:', error)
+      setScheduleError(
+        error instanceof Error
+          ? error.message
+          : 'Erreur lors de la programmation du rapport'
+      )
+    } finally {
+      setIsScheduling(false)
+    }
+  }, [scheduleEmail, selectedReportType, orgId, scheduleFrequency, dateFrom, dateTo, selectedVehicles, reportFormat])
 
   const reportTypes = Object.entries(REPORT_TYPE_CONFIG).map(([key, config]) => ({
     type: key as ReportType,
@@ -380,12 +488,57 @@ export default function ReportsPage() {
           </DialogHeader>
 
           <div className="space-y-6 py-4">
+            {/* Error Alert */}
+            {generationError && (
+              <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle size={18} className="text-red-600 flex-shrink-0" />
+                <p className="text-sm text-red-700">{generationError}</p>
+              </div>
+            )}
+
             {/* Date Range Section */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Calendar size={18} className="text-gray-600" />
                 <h3 className="font-semibold text-gray-900">Période</h3>
               </div>
+
+              {/* Quick select buttons */}
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyDateRange('today')}
+                  className="text-xs"
+                >
+                  Aujourd'hui
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyDateRange('week')}
+                  className="text-xs"
+                >
+                  Cette semaine
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyDateRange('month')}
+                  className="text-xs"
+                >
+                  Ce mois
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyDateRange('lastMonth')}
+                  className="text-xs"
+                >
+                  Mois dernier
+                </Button>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">De</label>
@@ -527,6 +680,13 @@ export default function ReportsPage() {
             </DialogHeader>
 
             <div className="space-y-4">
+              {scheduleError && (
+                <div className="flex gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700">{scheduleError}</p>
+                </div>
+              )}
+
               <div>
                 <label className="mb-2 block text-sm font-medium text-gray-700">Fréquence</label>
                 <select
@@ -541,12 +701,13 @@ export default function ReportsPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">Email de livraison</label>
+                <label className="mb-2 block text-sm font-medium text-gray-700">Email de livraison *</label>
                 <Input
                   type="email"
                   value={scheduleEmail}
                   onChange={(e) => setScheduleEmail(e.target.value)}
                   placeholder="votre.email@exemple.com"
+                  disabled={isScheduling}
                 />
               </div>
 
@@ -561,14 +722,25 @@ export default function ReportsPage() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowScheduleForm(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowScheduleForm(false)}
+                disabled={isScheduling}
+              >
                 Annuler
               </Button>
-              <Button onClick={() => {
-                setShowScheduleForm(false)
-                alert('Programmation enregistrée!')
-              }}>
-                Enregistrer
+              <Button
+                onClick={handleScheduleReport}
+                disabled={isScheduling}
+              >
+                {isScheduling ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                    Programmation...
+                  </>
+                ) : (
+                  'Enregistrer'
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -586,6 +758,13 @@ export default function ReportsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
+            {emailError && (
+              <div className="flex gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700">{emailError}</p>
+              </div>
+            )}
+
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">Destinataire *</label>
               <Input
@@ -593,6 +772,7 @@ export default function ReportsPage() {
                 value={emailRecipient}
                 onChange={(e) => setEmailRecipient(e.target.value)}
                 placeholder="destinataire@exemple.com"
+                disabled={isSendingEmail}
               />
             </div>
 
@@ -602,6 +782,7 @@ export default function ReportsPage() {
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
                 placeholder={selectedReportType ? REPORT_TYPE_CONFIG[selectedReportType].title : 'Objet du rapport'}
+                disabled={isSendingEmail}
               />
             </div>
 
@@ -613,16 +794,31 @@ export default function ReportsPage() {
                 placeholder="Votre message..."
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm resize-none"
                 rows={3}
+                disabled={isSendingEmail}
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEmailDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowEmailDialog(false)}
+              disabled={isSendingEmail}
+            >
               Annuler
             </Button>
-            <Button onClick={handleSendEmail}>
-              Envoyer
+            <Button
+              onClick={handleSendEmail}
+              disabled={isSendingEmail}
+            >
+              {isSendingEmail ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Envoi...
+                </>
+              ) : (
+                'Envoyer'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

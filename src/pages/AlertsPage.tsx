@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   useAlerts,
   useAlertStats,
@@ -6,6 +6,8 @@ import {
   useAlertRules,
   useCreateAlertRule,
 } from '@/hooks/useAlerts'
+import { useAuthStore } from '@/stores/authStore'
+import axios from 'axios'
 import {
   AlertType,
   AlertSeverity,
@@ -198,6 +200,14 @@ export default function AlertsPage() {
   const [showNoteForm, setShowNoteForm] = useState(false)
   const [noteInput, setNoteInput] = useState('')
   const [showAssignDropdown, setShowAssignDropdown] = useState(false)
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null)
+  const [globalSilentHoursEnabled, setGlobalSilentHoursEnabled] = useState(false)
+  const [globalSilentHoursFrom, setGlobalSilentHoursFrom] = useState('22:00')
+  const [globalSilentHoursTo, setGlobalSilentHoursTo] = useState('06:00')
+  const [savingNotes, setSavingNotes] = useState<Record<string, boolean>>({})
+  const [savingAssignment, setSavingAssignment] = useState<Record<string, boolean>>({})
+
+  const organizationId = useAuthStore((s: any) => s.user?.organizationId) || ''
 
   const { data: alertsData, isLoading } = useAlerts({ page, limit: 20, status })
   const { data: stats } = useAlertStats()
@@ -243,17 +253,116 @@ export default function AlertsPage() {
     setRuleForm(defaultRuleForm)
     setRuleStep(0)
     setFormError('')
+    setEditingRuleId(null)
     setShowRuleModal(true)
+  }
+
+  const handleSaveAlertNote = async (alertId: string, note: string) => {
+    if (!organizationId) return
+    setSavingNotes((prev) => ({ ...prev, [alertId]: true }))
+    try {
+      await axios.put(
+        `/api/organizations/${organizationId}/alerts/${alertId}`,
+        { note }
+      )
+      setAlertNotes((prev) => ({ ...prev, [alertId]: note }))
+      setShowNoteForm(false)
+    } catch (err) {
+      console.error('Failed to save alert note:', err)
+    } finally {
+      setSavingNotes((prev) => ({ ...prev, [alertId]: false }))
+    }
+  }
+
+  const handleSaveAlertAssignment = async (alertId: string, role: string) => {
+    if (!organizationId) return
+    setSavingAssignment((prev) => ({ ...prev, [alertId]: true }))
+    try {
+      await axios.put(
+        `/api/organizations/${organizationId}/alerts/${alertId}`,
+        { assignedRole: role }
+      )
+      setAlertAssignments((prev) => ({ ...prev, [alertId]: role }))
+      setShowAssignDropdown(false)
+    } catch (err) {
+      console.error('Failed to save alert assignment:', err)
+    } finally {
+      setSavingAssignment((prev) => ({ ...prev, [alertId]: false }))
+    }
+  }
+
+  const handleEditRule = (rule: AlertRule) => {
+    const condition = rule.condition as any
+    setRuleForm({
+      name: rule.name,
+      description: rule.description || '',
+      type: rule.type,
+      severity: rule.severity,
+      conditionValue: String(condition?.value || ''),
+      conditionDuration: String(condition?.duration || ''),
+      actions: rule.actions || [],
+      enabled: rule.enabled,
+      escalationEnabled: (rule as any).escalationEnabled || false,
+      escalationDelay: (rule as any).escalationDelay || '15min',
+      escalationTarget: (rule as any).escalationTarget || 'Manager',
+      parentRuleId: (rule as any).parentRuleId,
+      silentHoursEnabled: (rule as any).silentHoursEnabled || false,
+      silentHoursFrom: (rule as any).silentHoursFrom || '22:00',
+      silentHoursTo: (rule as any).silentHoursTo || '06:00',
+      silentHoursDays: (rule as any).silentHoursDays || [true, true, true, true, true, true, true],
+      notificationChannels: (rule as any).notificationChannels || {
+        email: true,
+        pushMobile: false,
+        whatsapp: false,
+        sms: true,
+      },
+    })
+    setEditingRuleId(rule.id)
+    setRuleStep(0)
+    setFormError('')
+    setShowRuleModal(true)
+  }
+
+  const handleDeleteRule = async (ruleId: string) => {
+    if (!organizationId) return
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette règle ?')) return
+    try {
+      await axios.delete(
+        `/api/organizations/${organizationId}/alerts/rules/${ruleId}`
+      )
+      // Refetch rules - this would be handled by the useAlertRules hook with proper invalidation
+      window.location.reload()
+    } catch (err) {
+      console.error('Failed to delete rule:', err)
+    }
+  }
+
+  const handleSaveGlobalSilentHours = async () => {
+    if (!organizationId) return
+    try {
+      await axios.put(
+        `/api/organizations/${organizationId}/alerts/settings`,
+        {
+          globalSilentHours: {
+            enabled: globalSilentHoursEnabled,
+            from: globalSilentHoursFrom,
+            to: globalSilentHoursTo,
+          },
+        }
+      )
+    } catch (err) {
+      console.error('Failed to save global silent hours:', err)
+    }
   }
 
   const handleCreateRule = async () => {
     setFormError('')
     if (!ruleForm.name.trim()) {
-      setFormError('Rule name is required')
+      setFormError('Le nom de la règle est requis')
       return
     }
     if (!ruleForm.type) {
-      setFormError('Please select an alert type')
+      setFormError('Veuillez sélectionner un type d\'alerte')
       return
     }
 
@@ -265,7 +374,7 @@ export default function AlertsPage() {
     }
 
     try {
-      await createRuleMutation.mutateAsync({
+      const ruleData = {
         name: ruleForm.name.trim(),
         description: ruleForm.description.trim() || undefined,
         type: ruleForm.type as AlertType,
@@ -273,10 +382,32 @@ export default function AlertsPage() {
         condition,
         actions: ruleForm.actions.length > 0 ? ruleForm.actions : [{ type: 'push', target: 'all' }],
         enabled: ruleForm.enabled,
-      })
+        escalationEnabled: ruleForm.escalationEnabled,
+        escalationDelay: ruleForm.escalationDelay,
+        escalationTarget: ruleForm.escalationTarget,
+        silentHoursEnabled: ruleForm.silentHoursEnabled,
+        silentHoursFrom: ruleForm.silentHoursFrom,
+        silentHoursTo: ruleForm.silentHoursTo,
+        silentHoursDays: ruleForm.silentHoursDays,
+        parentRuleId: ruleForm.parentRuleId,
+      }
+
+      if (editingRuleId) {
+        // Update existing rule
+        await axios.put(
+          `/api/organizations/${organizationId}/alerts/rules/${editingRuleId}`,
+          ruleData
+        )
+      } else {
+        // Create new rule
+        await createRuleMutation.mutateAsync(ruleData as any)
+      }
       setShowRuleModal(false)
+      setEditingRuleId(null)
+      // Optionally reload to refresh the rules list
+      window.location.reload()
     } catch (err: any) {
-      setFormError(err.response?.data?.message || 'Failed to create rule')
+      setFormError(err.response?.data?.message || (editingRuleId ? 'Échec de la modification de la règle' : 'Échec de la création de la règle'))
     }
   }
 
@@ -305,7 +436,7 @@ export default function AlertsPage() {
     }
   }
 
-  const trendData = [
+  const [trendData, setTrendData] = useState([
     { name: 'Lun', alerts: 12 },
     { name: 'Mar', alerts: 19 },
     { name: 'Mer', alerts: 15 },
@@ -313,7 +444,30 @@ export default function AlertsPage() {
     { name: 'Ven', alerts: 18 },
     { name: 'Sam', alerts: 10 },
     { name: 'Dim', alerts: 8 },
-  ]
+  ])
+  const [trendsLoading, setTrendsLoading] = useState(false)
+
+  // Fetch trends data when component mounts or org changes
+  useEffect(() => {
+    const fetchTrendsData = async () => {
+      if (!organizationId) return
+      setTrendsLoading(true)
+      try {
+        const response = await axios.get(
+          `/api/organizations/${organizationId}/alerts/statistics`
+        )
+        if (response.data?.trendData && Array.isArray(response.data.trendData)) {
+          setTrendData(response.data.trendData)
+        }
+      } catch (err) {
+        // Fall back to generated data if API call fails
+        console.error('Failed to fetch trends data, using generated data:', err)
+      } finally {
+        setTrendsLoading(false)
+      }
+    }
+    fetchTrendsData()
+  }, [organizationId])
 
   const assignmentOptions = ['Admin', 'Manager', 'Opérateur']
 
@@ -640,17 +794,13 @@ export default function AlertsPage() {
                                   <Badge
                                     key={opt}
                                     variant="secondary"
-                                    className="cursor-pointer"
+                                    className="cursor-pointer opacity-70 hover:opacity-100"
                                     onClick={(e) => {
                                       e.stopPropagation()
-                                      setAlertAssignments({
-                                        ...alertAssignments,
-                                        [alert.id]: opt,
-                                      })
-                                      setShowAssignDropdown(false)
+                                      handleSaveAlertAssignment(alert.id, opt)
                                     }}
                                   >
-                                    {opt}
+                                    {savingAssignment[alert.id] ? '...' : opt}
                                   </Badge>
                                 ))}
                               </div>
@@ -669,17 +819,14 @@ export default function AlertsPage() {
                                 <Button
                                   size="sm"
                                   className="gap-1 text-xs w-full"
+                                  disabled={savingNotes[alert.id]}
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    setAlertNotes({
-                                      ...alertNotes,
-                                      [alert.id]: noteInput,
-                                    })
-                                    setShowNoteForm(false)
+                                    handleSaveAlertNote(alert.id, noteInput)
                                   }}
                                 >
                                   <Save size={12} />
-                                  Enregistrer
+                                  {savingNotes[alert.id] ? 'Enregistrement...' : 'Enregistrer'}
                                 </Button>
                               </div>
                             )}
@@ -809,7 +956,11 @@ export default function AlertsPage() {
                 <input
                   type="checkbox"
                   id="silentEnabled"
-                  defaultChecked={false}
+                  checked={globalSilentHoursEnabled}
+                  onChange={(e) => {
+                    setGlobalSilentHoursEnabled(e.target.checked)
+                    handleSaveGlobalSilentHours()
+                  }}
                   className="rounded border-gray-300"
                 />
                 <label htmlFor="silentEnabled" className="text-sm font-medium text-gray-700">
@@ -823,13 +974,21 @@ export default function AlertsPage() {
                 <span className="text-sm text-gray-600">De</span>
                 <input
                   type="time"
-                  defaultValue="22:00"
+                  value={globalSilentHoursFrom}
+                  onChange={(e) => {
+                    setGlobalSilentHoursFrom(e.target.value)
+                  }}
+                  onBlur={handleSaveGlobalSilentHours}
                   className="rounded-md border border-gray-300 px-2 py-1 text-sm"
                 />
                 <span className="text-sm text-gray-600">à</span>
                 <input
                   type="time"
-                  defaultValue="06:00"
+                  value={globalSilentHoursTo}
+                  onChange={(e) => {
+                    setGlobalSilentHoursTo(e.target.value)
+                  }}
+                  onBlur={handleSaveGlobalSilentHours}
                   className="rounded-md border border-gray-300 px-2 py-1 text-sm"
                 />
               </div>
@@ -920,10 +1079,20 @@ export default function AlertsPage() {
                                 : 'bg-blue-500'
                             }`}
                           />
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleEditRule(rule)}
+                          >
                             <Settings size={14} />
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-red-500"
+                            onClick={() => handleDeleteRule(rule.id)}
+                          >
                             <Trash2 size={14} />
                           </Button>
                         </div>
@@ -938,10 +1107,13 @@ export default function AlertsPage() {
       )}
 
       {/* Rule Creation Wizard Modal */}
-      <Dialog open={showRuleModal} onOpenChange={() => setShowRuleModal(false)}>
+      <Dialog open={showRuleModal} onOpenChange={() => {
+        setShowRuleModal(false)
+        setEditingRuleId(null)
+      }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Créer une règle d'alerte</DialogTitle>
+            <DialogTitle>{editingRuleId ? 'Modifier la règle d\'alerte' : 'Créer une règle d\'alerte'}</DialogTitle>
             <DialogDescription>
               {ruleStep === 0
                 ? 'Étape 1 : Choisir un type d\'alerte'
@@ -1389,7 +1561,7 @@ export default function AlertsPage() {
               </Button>
             ) : (
               <Button onClick={handleCreateRule} disabled={createRuleMutation.isPending}>
-                {createRuleMutation.isPending ? 'Création...' : 'Créer une règle'}
+                {createRuleMutation.isPending ? (editingRuleId ? 'Modification...' : 'Création...') : (editingRuleId ? 'Modifier la règle' : 'Créer une règle')}
               </Button>
             )}
           </DialogFooter>

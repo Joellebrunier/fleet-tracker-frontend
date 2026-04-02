@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { Shield, Plus, Edit2, Trash2, Users, Car, MapPin, Bell, FileText, Settings, Lock } from 'lucide-react'
+import { Shield, Plus, Edit2, Trash2, Users, Car, MapPin, Bell, FileText, Settings, Lock, UserPlus, Loader2, AlertCircle } from 'lucide-react'
+import { useAuthStore } from '@/stores/authStore'
+import { apiClient } from '@/lib/api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface CustomRole {
   id: string
@@ -32,12 +35,66 @@ const DEFAULT_ROLES: CustomRole[] = [
 ]
 
 export default function RolesPermissionsPage() {
+  const organizationId = useAuthStore((s) => s.user?.organizationId) || ''
+  const queryClient = useQueryClient()
+
   const [roles, setRoles] = useState<CustomRole[]>(DEFAULT_ROLES)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
   const [editingRole, setEditingRole] = useState<CustomRole | null>(null)
   const [newRoleName, setNewRoleName] = useState('')
   const [newRoleDesc, setNewRoleDesc] = useState('')
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set())
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('')
+  const [inviteError, setInviteError] = useState('')
+
+  // Fetch collaborators
+  const { data: collaborators = [] } = useQuery({
+    queryKey: ['collaborators', organizationId],
+    queryFn: async () => {
+      if (!organizationId) return []
+      try {
+        const response = await apiClient.get(`/api/organizations/${organizationId}/users`)
+        return response.data || []
+      } catch {
+        return []
+      }
+    },
+    enabled: !!organizationId,
+  })
+
+  // Invite user mutation
+  const inviteMutation = useMutation({
+    mutationFn: async (data: { email: string; role: string }) => {
+      return await apiClient.post(
+        `/api/organizations/${organizationId}/users/invite`,
+        data
+      )
+    },
+    onSuccess: () => {
+      setInviteEmail('')
+      setInviteRole('')
+      setInviteError('')
+      setIsInviteModalOpen(false)
+      queryClient.invalidateQueries({ queryKey: ['collaborators', organizationId] })
+    },
+    onError: (error: any) => {
+      setInviteError(error.response?.data?.message || 'Erreur lors de l\'invitation')
+    },
+  })
+
+  // Revoke user invitation mutation
+  const revokeMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await apiClient.delete(
+        `/api/organizations/${organizationId}/users/${userId}`
+      )
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collaborators', organizationId] })
+    },
+  })
 
   const handleCreateRole = () => {
     setEditingRole(null)
@@ -86,6 +143,15 @@ export default function RolesPermissionsPage() {
     if (confirm('Supprimer ce rôle personnalisé ?')) {
       setRoles(prev => prev.filter(r => r.id !== roleId))
     }
+  }
+
+  const handleSendInvite = async () => {
+    if (!inviteEmail.trim() || !inviteRole) {
+      setInviteError('Veuillez remplir tous les champs')
+      return
+    }
+    setInviteError('')
+    await inviteMutation.mutateAsync({ email: inviteEmail.trim(), role: inviteRole })
   }
 
   return (
@@ -142,32 +208,57 @@ export default function RolesPermissionsPage() {
         ))}
       </div>
 
-      {/* Invitation System */}
+      {/* Collaborators Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users size={18} />
-            Système d'invitation
-          </CardTitle>
-          <CardDescription>Invitez de nouveaux membres à rejoindre votre organisation</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-3">
-            <Input placeholder="Email du nouveau membre" className="flex-1" />
-            <select className="rounded-md border border-gray-300 px-3 py-2 text-sm">
-              {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-            </select>
-            <Button className="gap-2">
-              <Plus size={14} />
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Users size={18} />
+                Collaborateurs
+              </CardTitle>
+              <CardDescription>Gérez les accès des membres de votre organisation</CardDescription>
+            </div>
+            <Button onClick={() => setIsInviteModalOpen(true)} className="gap-2">
+              <UserPlus size={14} />
               Inviter
             </Button>
           </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700">Invitations en attente</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {collaborators.length === 0 ? (
             <div className="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-200 rounded-lg">
-              Aucune invitation en attente
+              Aucun collaborateur pour le moment
             </div>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              {collaborators.map((collab: any) => (
+                <div key={collab.id} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                  <div>
+                    <p className="font-medium text-sm text-gray-900">{collab.email}</p>
+                    <p className="text-xs text-gray-500">{collab.role || 'Rôle non assigné'}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {collab.status === 'pending' ? 'En attente' : 'Actif'}
+                    </Badge>
+                    {collab.status === 'pending' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => revokeMutation.mutate(collab.id)}
+                        disabled={revokeMutation.isPending}
+                      >
+                        <Trash2 size={14} />
+                        Révoquer
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -202,6 +293,61 @@ export default function RolesPermissionsPage() {
           <Button variant="outline" className="w-full">Configurer les restrictions</Button>
         </CardContent>
       </Card>
+
+      {/* Invite Modal */}
+      <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Inviter un collaborateur</DialogTitle>
+            <DialogDescription>Envoyez une invitation à un nouveau membre de votre organisation</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {inviteError && (
+              <div className="flex gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle size={16} className="text-red-600 flex-shrink-0" />
+                <p className="text-sm text-red-700">{inviteError}</p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email</label>
+              <Input
+                type="email"
+                placeholder="collaborateur@exemple.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Rôle</label>
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              >
+                <option value="">Sélectionner un rôle</option>
+                {roles.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsInviteModalOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={handleSendInvite}
+              disabled={inviteMutation.isPending}
+              className="gap-2"
+            >
+              {inviteMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              Inviter
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create/Edit Role Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

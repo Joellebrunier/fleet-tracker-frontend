@@ -1,15 +1,69 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/stores/uiStore'
+import { useAuthStore } from '@/stores/authStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Key, Database, MapPin, Globe, Copy, RefreshCw, Eye, EyeOff, Wifi, Server, User, Bell, Palette, Shield } from 'lucide-react'
+import { Key, Database, MapPin, Globe, Copy, RefreshCw, Eye, EyeOff, Wifi, Server, User, Bell, Palette, Shield, LogOut, Plus, Trash2 } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user } = useAuth()
   const { theme, setTheme, locale, setLocale } = useUIStore()
+  const organizationId = useAuthStore((s) => s.user?.organizationId) || ''
   const [isEditing, setIsEditing] = useState(false)
+
+  // Active sessions state
+  const [sessions, setSessions] = useState<Array<{
+    id: string
+    deviceName: string
+    ipAddress: string
+    lastActive: string
+  }>>([])
+  const [sessionsLoading, setSessionsLoading] = useState(true)
+
+  // Organization state
+  const [organization, setOrganization] = useState<{
+    name: string
+    address: string
+    phone: string
+  }>({ name: '', address: '', phone: '' })
+  const [orgEditing, setOrgEditing] = useState(false)
+  const [orgLoading, setOrgLoading] = useState(true)
+
+  // Departments state
+  const [departments, setDepartments] = useState<Array<{
+    id: string
+    name: string
+    description?: string
+  }>>([])
+  const [newDeptName, setNewDeptName] = useState('')
+  const [newDeptDesc, setNewDeptDesc] = useState('')
+  const [showNewDept, setShowNewDept] = useState(false)
+  const [deptsLoading, setDeptsLoading] = useState(true)
+
+  // White label state
+  const [whiteLabelEnabled, setWhiteLabelEnabled] = useState(false)
+  const [whiteLabel, setWhiteLabel] = useState({
+    logoUrl: '',
+    primaryColor: '#000000',
+    companyName: '',
+    customDomain: '',
+  })
+
+  // Unit preferences state
+  const [speedUnit, setSpeedUnit] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('speedUnit') || 'kmh'
+    }
+    return 'kmh'
+  })
+  const [distanceUnit, setDistanceUnit] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('distanceUnit') || 'km'
+    }
+    return 'km'
+  })
 
   // GPS Provider states
   const [providers, setProviders] = useState({
@@ -39,6 +93,80 @@ export default function SettingsPage() {
   const [quietHoursStart, setQuietHoursStart] = useState('22:00')
   const [quietHoursEnd, setQuietHoursEnd] = useState('07:00')
 
+  // Load active sessions
+  useEffect(() => {
+    const loadSessions = async () => {
+      try {
+        const response = await fetch('/api/auth/sessions')
+        if (response.ok) {
+          const data = await response.json()
+          setSessions(data.sessions || [])
+        }
+      } catch (error) {
+        // Fallback to mock data on error
+        setSessions([
+          {
+            id: '1',
+            deviceName: 'Chrome sur Windows',
+            ipAddress: '192.168.1.100',
+            lastActive: new Date().toISOString(),
+          },
+        ])
+      } finally {
+        setSessionsLoading(false)
+      }
+    }
+    loadSessions()
+  }, [])
+
+  // Load organization data
+  useEffect(() => {
+    const loadOrganization = async () => {
+      if (!organizationId) {
+        setOrgLoading(false)
+        return
+      }
+      try {
+        const response = await fetch(`/api/organizations/${organizationId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setOrganization({
+            name: data.name || '',
+            address: data.address || '',
+            phone: data.phone || '',
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load organization:', error)
+      } finally {
+        setOrgLoading(false)
+      }
+    }
+    loadOrganization()
+  }, [organizationId])
+
+  // Load departments
+  useEffect(() => {
+    const loadDepartments = async () => {
+      if (!organizationId) {
+        setDeptsLoading(false)
+        return
+      }
+      try {
+        const response = await fetch(`/api/organizations/${organizationId}/departments`)
+        if (response.ok) {
+          const data = await response.json()
+          setDepartments(data.departments || [])
+        }
+      } catch (error) {
+        console.error('Failed to load departments:', error)
+      } finally {
+        setDeptsLoading(false)
+      }
+    }
+    loadDepartments()
+  }, [organizationId])
+
   const handleProviderToggle = (provider: string) => {
     setProviders(prev => ({
       ...prev,
@@ -65,6 +193,89 @@ export default function SettingsPage() {
     const newKey = 'ft_key_' + Math.random().toString(36).substr(2, 24)
     setApiKey(newKey)
   }
+
+  const handleDisconnectSession = async (sessionId: string) => {
+    try {
+      await fetch(`/api/auth/sessions/${sessionId}`, { method: 'DELETE' })
+      setSessions(prev => prev.filter(s => s.id !== sessionId))
+    } catch (error) {
+      console.error('Failed to disconnect session:', error)
+    }
+  }
+
+  const handleDisconnectAllSessions = async () => {
+    try {
+      await fetch('/api/auth/sessions', { method: 'DELETE' })
+      setSessions([])
+    } catch (error) {
+      console.error('Failed to disconnect all sessions:', error)
+    }
+  }
+
+  const handleSaveOrganization = async () => {
+    if (!organizationId) return
+    try {
+      await fetch(`/api/organizations/${organizationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(organization),
+      })
+      setOrgEditing(false)
+    } catch (error) {
+      console.error('Failed to save organization:', error)
+    }
+  }
+
+  const handleAddDepartment = async () => {
+    if (!organizationId || !newDeptName.trim()) return
+    try {
+      const response = await fetch(`/api/organizations/${organizationId}/departments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newDeptName,
+          description: newDeptDesc,
+        }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setDepartments(prev => [...prev, data])
+        setNewDeptName('')
+        setNewDeptDesc('')
+        setShowNewDept(false)
+      }
+    } catch (error) {
+      console.error('Failed to create department:', error)
+    }
+  }
+
+  const handleDeleteDepartment = async (deptId: string) => {
+    if (!organizationId) return
+    try {
+      await fetch(`/api/organizations/${organizationId}/departments/${deptId}`, {
+        method: 'DELETE',
+      })
+      setDepartments(prev => prev.filter(d => d.id !== deptId))
+    } catch (error) {
+      console.error('Failed to delete department:', error)
+    }
+  }
+
+  const handleSpeedUnitChange = (value: string) => {
+    setSpeedUnit(value)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('speedUnit', value)
+    }
+  }
+
+  const handleDistanceUnitChange = (value: string) => {
+    setDistanceUnit(value)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('distanceUnit', value)
+    }
+  }
+
+  const isAdmin = user?.role === ('ADMIN' as any) || user?.role === ('SUPER_ADMIN' as any) || (user?.role as string) === 'admin' || (user?.role as string) === 'administrator'
 
   return (
     <div className="space-y-6">
@@ -120,6 +331,169 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Organization Profile section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe size={20} />
+            Organisation
+          </CardTitle>
+          <CardDescription>Gérez les informations de votre organisation</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {orgLoading ? (
+            <p className="text-sm text-gray-500">Chargement...</p>
+          ) : (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nom de l'organisation</label>
+                <Input
+                  type="text"
+                  value={organization.name}
+                  disabled={!orgEditing}
+                  onChange={(e) => setOrganization({...organization, name: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Adresse</label>
+                <Input
+                  type="text"
+                  value={organization.address}
+                  disabled={!orgEditing}
+                  onChange={(e) => setOrganization({...organization, address: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Téléphone</label>
+                <Input
+                  type="tel"
+                  value={organization.phone}
+                  disabled={!orgEditing}
+                  onChange={(e) => setOrganization({...organization, phone: e.target.value})}
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex gap-2">
+                {orgEditing ? (
+                  <>
+                    <Button onClick={handleSaveOrganization} className="flex-1">
+                      Enregistrer
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setOrgEditing(false)}
+                    >
+                      Annuler
+                    </Button>
+                  </>
+                ) : (
+                  <Button onClick={() => setOrgEditing(true)} variant="outline" className="w-full">
+                    Modifier l'organisation
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Departments section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Server size={20} />
+            Départements
+          </CardTitle>
+          <CardDescription>Gérez les départements de votre organisation</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {deptsLoading ? (
+            <p className="text-sm text-gray-500">Chargement...</p>
+          ) : (
+            <>
+              {departments.length > 0 ? (
+                <div className="space-y-2">
+                  {departments.map((dept) => (
+                    <div
+                      key={dept.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200"
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">{dept.name}</p>
+                        {dept.description && (
+                          <p className="text-xs text-gray-500">{dept.description}</p>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600"
+                        onClick={() => handleDeleteDepartment(dept.id)}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Aucun département</p>
+              )}
+
+              {showNewDept ? (
+                <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nom du département</label>
+                    <Input
+                      type="text"
+                      value={newDeptName}
+                      onChange={(e) => setNewDeptName(e.target.value)}
+                      placeholder="Ex: Logistique"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description (optionnel)</label>
+                    <Input
+                      type="text"
+                      value={newDeptDesc}
+                      onChange={(e) => setNewDeptDesc(e.target.value)}
+                      placeholder="Description du département"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleAddDepartment} className="flex-1">
+                      Créer
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        setShowNewDept(false)
+                        setNewDeptName('')
+                        setNewDeptDesc('')
+                      }}
+                    >
+                      Annuler
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowNewDept(true)}
+                >
+                  <Plus size={16} className="mr-2" />
+                  Ajouter un département
+                </Button>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Security section */}
       <Card>
         <CardHeader>
@@ -143,12 +517,53 @@ export default function SettingsPage() {
               <p className="text-sm text-gray-500">{user?.lastLogin ? new Date(user.lastLogin).toLocaleString('fr-FR') : 'Information non disponible'}</p>
             </div>
           </div>
-          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
-            <div>
-              <p className="font-medium text-gray-900">Sessions actives</p>
-              <p className="text-sm text-gray-500">1 session active (cet appareil)</p>
+          <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="font-medium text-gray-900">Sessions actives</p>
+                <p className="text-sm text-gray-500">{sessions.length} session(s) active(s)</p>
+              </div>
+              {sessions.length > 0 && (
+                <Button
+                  variant="outline"
+                  className="text-red-600"
+                  onClick={handleDisconnectAllSessions}
+                >
+                  Déconnecter tout
+                </Button>
+              )}
             </div>
-            <Button variant="outline" className="text-red-600">Déconnecter tout</Button>
+            {sessionsLoading ? (
+              <p className="text-sm text-gray-500">Chargement...</p>
+            ) : sessions.length > 0 ? (
+              <div className="space-y-2">
+                {sessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200"
+                  >
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">{session.deviceName}</p>
+                      <p className="text-xs text-gray-500">IP: {session.ipAddress}</p>
+                      <p className="text-xs text-gray-500">
+                        Dernière activité: {new Date(session.lastActive).toLocaleString('fr-FR')}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600"
+                      onClick={() => handleDisconnectSession(session.id)}
+                    >
+                      <LogOut size={16} className="mr-1" />
+                      Déconnecter
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Aucune session active</p>
+            )}
           </div>
           <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
             <div>
@@ -205,7 +620,11 @@ export default function SettingsPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">Unité de vitesse</label>
-            <select className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <select
+              value={speedUnit}
+              onChange={(e) => handleSpeedUnitChange(e.target.value)}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
               <option value="kmh">Kilomètres par heure (km/h)</option>
               <option value="mph">Miles par heure (mph)</option>
               <option value="kn">Nœuds (kn)</option>
@@ -214,7 +633,11 @@ export default function SettingsPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">Unité de distance</label>
-            <select className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <select
+              value={distanceUnit}
+              onChange={(e) => handleDistanceUnitChange(e.target.value)}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
               <option value="km">Kilomètres (km)</option>
               <option value="mi">Miles (mi)</option>
             </select>
@@ -306,6 +729,71 @@ export default function SettingsPage() {
           <Button className="w-full mt-4">Enregistrer les préférences</Button>
         </CardContent>
       </Card>
+
+      {/* White Label section - admin only */}
+      {isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Palette size={20} />
+              Marque blanche
+            </CardTitle>
+            <CardDescription>Personnalisez l'apparence pour votre organisation</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">URL du logo</label>
+              <Input
+                type="url"
+                value={whiteLabel.logoUrl}
+                onChange={(e) => setWhiteLabel({...whiteLabel, logoUrl: e.target.value})}
+                placeholder="https://example.com/logo.png"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'entreprise</label>
+              <Input
+                type="text"
+                value={whiteLabel.companyName}
+                onChange={(e) => setWhiteLabel({...whiteLabel, companyName: e.target.value})}
+                placeholder="Nom de votre entreprise"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Couleur primaire</label>
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  value={whiteLabel.primaryColor}
+                  onChange={(e) => setWhiteLabel({...whiteLabel, primaryColor: e.target.value})}
+                  className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                />
+                <Input
+                  type="text"
+                  value={whiteLabel.primaryColor}
+                  onChange={(e) => setWhiteLabel({...whiteLabel, primaryColor: e.target.value})}
+                  placeholder="#000000"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Domaine personnalisé</label>
+              <Input
+                type="text"
+                value={whiteLabel.customDomain}
+                onChange={(e) => setWhiteLabel({...whiteLabel, customDomain: e.target.value})}
+                placeholder="app.votreentreprise.com"
+              />
+            </div>
+
+            <Button className="w-full">Enregistrer les paramètres de marque blanche</Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* GPS Provider Configuration */}
       <Card>

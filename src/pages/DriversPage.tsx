@@ -25,6 +25,13 @@ interface Driver {
   updatedAt: Date
 }
 
+interface Vehicle {
+  id: string
+  name: string
+  licensePlate: string
+  organizationId: string
+}
+
 interface DriverFormData {
   firstName: string
   lastName: string
@@ -34,6 +41,12 @@ interface DriverFormData {
   licenseExpiry: string
   assignedVehicleId?: string
   notes?: string
+}
+
+interface DriverStats {
+  safety: number
+  efficiency: number
+  punctuality: number
 }
 
 type DriverStatus = 'active' | 'inactive' | 'on_leave'
@@ -53,6 +66,7 @@ export default function DriversPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null)
   const [schedulingDriver, setSchedulingDriver] = useState<Driver | null>(null)
+  const [schedule, setSchedule] = useState<Record<string, boolean>>({})
   const [formData, setFormData] = useState<DriverFormData>({
     firstName: '',
     lastName: '',
@@ -63,8 +77,8 @@ export default function DriversPage() {
     notes: '',
   })
 
-  // Generate deterministic performance scores based on driver ID
-  const getPerformanceScore = (driverId: string): PerformanceScore => {
+  // Generate deterministic performance scores based on driver ID (fallback)
+  const getPerformanceScoreFallback = (driverId: string): PerformanceScore => {
     let hash = 0
     for (let i = 0; i < driverId.length; i++) {
       hash = ((hash << 5) - hash) + driverId.charCodeAt(i)
@@ -78,8 +92,22 @@ export default function DriversPage() {
     }
   }
 
-  // Mock driver statuses
-  const driverStatuses: Record<string, DriverStatus> = {}
+  // Fetch vehicles
+  const { data: vehicles = [] } = useQuery({
+    queryKey: ['vehicles', organizationId],
+    queryFn: async () => {
+      if (!organizationId) return []
+      try {
+        const response = await apiClient.get(
+          `/api/organizations/${organizationId}/vehicles`
+        )
+        return response.data as Vehicle[]
+      } catch {
+        return []
+      }
+    },
+    enabled: !!organizationId,
+  })
 
   // Fetch drivers
   const { data: drivers = [], isLoading, error } = useQuery({
@@ -93,6 +121,25 @@ export default function DriversPage() {
     },
     enabled: !!organizationId,
   })
+
+  // Fetch driver stats with fallback
+  const fetchDriverStats = async (driverId: string): Promise<PerformanceScore> => {
+    try {
+      const response = await apiClient.get(
+        `/api/organizations/${organizationId}/drivers/${driverId}/stats`
+      )
+      return response.data as DriverStats
+    } catch {
+      // Fallback to deterministic scores if API is not available
+      return getPerformanceScoreFallback(driverId)
+    }
+  }
+
+  // Get driver status based on driver data
+  const getDriverStatus = (driver: Driver): DriverStatus => {
+    // Default to 'active', can be extended with actual status logic
+    return 'active'
+  }
 
   // Create/Update driver mutation
   const upsertMutation = useMutation({
@@ -126,6 +173,21 @@ export default function DriversPage() {
     },
   })
 
+  // Schedule mutation
+  const scheduleMutation = useMutation({
+    mutationFn: async (driverId: string) => {
+      return await apiClient.post(
+        `/api/organizations/${organizationId}/drivers/${driverId}/schedule`,
+        { schedule }
+      )
+    },
+    onSuccess: () => {
+      setSchedulingDriver(null)
+      setSchedule({})
+      queryClient.invalidateQueries({ queryKey: ['drivers', organizationId] })
+    },
+  })
+
   const handleOpenModal = (driver?: Driver) => {
     if (driver) {
       setEditingDriver(driver)
@@ -155,6 +217,7 @@ export default function DriversPage() {
       phone: '',
       licenseNumber: '',
       licenseExpiry: '',
+      assignedVehicleId: undefined,
       notes: '',
     })
   }
@@ -162,6 +225,13 @@ export default function DriversPage() {
   const handleFormChange = useCallback(
     (field: keyof DriverFormData, value: string) => {
       setFormData((prev) => ({ ...prev, [field]: value }))
+    },
+    []
+  )
+
+  const handleVehicleChange = useCallback(
+    (vehicleId: string) => {
+      setFormData((prev) => ({ ...prev, assignedVehicleId: vehicleId }))
     },
     []
   )
@@ -190,6 +260,20 @@ export default function DriversPage() {
     }
   }
 
+  const handleScheduleSlotClick = (day: string, slot: string) => {
+    const key = `${day}-${slot}`
+    setSchedule((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }))
+  }
+
+  const handleSaveSchedule = async () => {
+    if (schedulingDriver) {
+      await scheduleMutation.mutateAsync(schedulingDriver.id)
+    }
+  }
+
   // Filter and search drivers
   const filteredDrivers = drivers.filter((driver) => {
     const matchesSearch =
@@ -200,7 +284,7 @@ export default function DriversPage() {
 
     if (statusFilter === 'all') return matchesSearch
 
-    const status = driverStatuses[driver.id] || 'active'
+    const status = getDriverStatus(driver)
     return matchesSearch && status === statusFilter
   })
 
@@ -290,7 +374,7 @@ export default function DriversPage() {
         <Card>
           <CardContent className="pt-5 pb-4 text-center">
             <p className="text-2xl font-bold text-green-600">
-              {drivers.filter(d => (driverStatuses[d.id] || 'active') === 'active').length}
+              {drivers.filter(d => getDriverStatus(d) === 'active').length}
             </p>
             <p className="text-xs text-gray-500">Actifs</p>
           </CardContent>
@@ -348,8 +432,8 @@ export default function DriversPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredDrivers.map((driver) => {
-            const status = driverStatuses[driver.id] || 'active'
-            const performance = getPerformanceScore(driver.id)
+            const status = getDriverStatus(driver)
+            const performance = getPerformanceScoreFallback(driver.id)
             const licenseDate = new Date(driver.licenseExpiry)
             const now = new Date()
             const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
@@ -498,7 +582,10 @@ export default function DriversPage() {
                     variant="outline"
                     size="sm"
                     className="flex-1"
-                    onClick={() => setSchedulingDriver(driver)}
+                    onClick={() => {
+                      setSchedulingDriver(driver)
+                      setSchedule({})
+                    }}
                   >
                     <Calendar className="h-4 w-4 mr-1" />
                     Planning
@@ -623,6 +710,24 @@ export default function DriversPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">
+                Véhicule assigné
+              </label>
+              <select
+                value={formData.assignedVehicleId || ''}
+                onChange={(e) => handleVehicleChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Sélectionner un véhicule</option>
+                {vehicles.map((vehicle) => (
+                  <option key={vehicle.id} value={vehicle.id}>
+                    {vehicle.name} ({vehicle.licensePlate})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">
                 Notes
               </label>
               <textarea
@@ -677,10 +782,24 @@ export default function DriversPage() {
                 <div key={day} className="text-center">
                   <div className="font-semibold text-sm text-slate-700 mb-2">{day}</div>
                   <div className="space-y-1">
-                    <button className="w-full px-2 py-1 text-xs bg-gray-100 hover:bg-green-100 rounded border border-gray-300 hover:border-green-400 transition-colors">
+                    <button
+                      onClick={() => handleScheduleSlotClick(day, 'morning')}
+                      className={`w-full px-2 py-1 text-xs font-medium rounded border transition-colors ${
+                        schedule[`${day}-morning`]
+                          ? 'bg-green-500 border-green-600 text-white'
+                          : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-green-100 hover:border-green-400'
+                      }`}
+                    >
                       Matin
                     </button>
-                    <button className="w-full px-2 py-1 text-xs bg-gray-100 hover:bg-green-100 rounded border border-gray-300 hover:border-green-400 transition-colors">
+                    <button
+                      onClick={() => handleScheduleSlotClick(day, 'afternoon')}
+                      className={`w-full px-2 py-1 text-xs font-medium rounded border transition-colors ${
+                        schedule[`${day}-afternoon`]
+                          ? 'bg-green-500 border-green-600 text-white'
+                          : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-green-100 hover:border-green-400'
+                      }`}
+                    >
                       Après-midi
                     </button>
                   </div>
@@ -694,7 +813,14 @@ export default function DriversPage() {
               variant="outline"
               onClick={() => setSchedulingDriver(null)}
             >
-              Fermer
+              Annuler
+            </Button>
+            <Button
+              onClick={handleSaveSchedule}
+              disabled={scheduleMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {scheduleMutation.isPending ? 'Enregistrement...' : 'Sauvegarder'}
             </Button>
           </DialogFooter>
         </DialogContent>

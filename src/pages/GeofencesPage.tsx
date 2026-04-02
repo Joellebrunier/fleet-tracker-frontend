@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useGeofences, useGeofenceStats, useCreateGeofence } from '@/hooks/useGeofences'
 import { GeofenceShape, GeofenceEvent, GeofenceFormData, Geofence } from '@/types/geofence'
@@ -18,7 +18,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { MapPin, Plus, Trash2, Edit2, Search, Circle, Pentagon, Square, Eye, EyeOff, Clock } from 'lucide-react'
+import { MapPin, Plus, Trash2, Edit2, Search, Circle, Pentagon, Square, Eye, EyeOff, Clock, X } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import GeofenceDrawMap from '@/components/geofences/GeofenceDrawMap'
 
@@ -47,6 +47,22 @@ interface GeofenceFormState {
   activeHours: { from: string; to: string } | null
   isTemporary: boolean
   temporaryUntil?: string
+  assignedVehicleIds: string[]
+}
+
+interface Vehicle {
+  id: string
+  name: string
+  registration: string
+}
+
+interface ViolationEvent {
+  id: string
+  type: 'entry' | 'exit'
+  vehicleId: string
+  vehicleName: string
+  timestamp: string
+  geofenceId: string
 }
 
 const defaultForm: GeofenceFormState = {
@@ -62,6 +78,7 @@ const defaultForm: GeofenceFormState = {
   activeHours: null,
   isTemporary: false,
   temporaryUntil: undefined,
+  assignedVehicleIds: [],
 }
 
 const triggerOptions = [
@@ -115,6 +132,10 @@ function getDayLabel(activeDays: boolean[]): string {
   return indices.join('/')
 }
 
+function getVehiclesInsideCount(geofence: Geofence): number {
+  return (geofence as any).vehiclesInside?.length || 0
+}
+
 export default function GeofencesPage() {
   const orgId = useAuthStore((s) => s.user?.organizationId) || ''
   const queryClient = useQueryClient()
@@ -126,6 +147,11 @@ export default function GeofencesPage() {
   const [formError, setFormError] = useState('')
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [showTemplates, setShowTemplates] = useState(false)
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [vehiclesLoading, setVehiclesLoading] = useState(false)
+  const [violations, setViolations] = useState<ViolationEvent[]>([])
+  const [violationsLoading, setViolationsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState<'details' | 'history'>('details')
 
   const { data: geofencesData, isLoading } = useGeofences(page)
   const { data: stats } = useGeofenceStats()
@@ -133,6 +159,44 @@ export default function GeofencesPage() {
 
   const geofences = geofencesData?.data || []
   const totalPages = geofencesData?.totalPages || 1
+
+  // Load vehicles
+  useEffect(() => {
+    if (orgId && (modalMode === 'create' || modalMode === 'edit')) {
+      const loadVehicles = async () => {
+        setVehiclesLoading(true)
+        try {
+          const response = await apiClient.get(`/api/organizations/${orgId}/vehicles`)
+          setVehicles(response.data || [])
+        } catch {
+          setVehicles([])
+        } finally {
+          setVehiclesLoading(false)
+        }
+      }
+      loadVehicles()
+    }
+  }, [orgId, modalMode])
+
+  // Load violations for view modal
+  useEffect(() => {
+    if (orgId && selectedGeofence && modalMode === 'view') {
+      const loadViolations = async () => {
+        setViolationsLoading(true)
+        try {
+          const response = await apiClient.get(
+            `/api/organizations/${orgId}/alerts?type=geofence_entry,geofence_exit&geofenceId=${selectedGeofence.id}`
+          )
+          setViolations((response.data || []).slice(0, 50)) // Show last 50
+        } catch {
+          setViolations([])
+        } finally {
+          setViolationsLoading(false)
+        }
+      }
+      loadViolations()
+    }
+  }, [orgId, selectedGeofence, modalMode])
 
   const filteredGeofences = search
     ? geofences.filter(
@@ -173,6 +237,7 @@ export default function GeofencesPage() {
       activeHours: (geofence as any).activeHours || null,
       isTemporary: (geofence as any).isTemporary || false,
       temporaryUntil: (geofence as any).temporaryUntil,
+      assignedVehicleIds: (geofence as any).assignedVehicleIds || [],
     })
     setFormError('')
     setSelectedGeofence(geofence)
@@ -189,6 +254,8 @@ export default function GeofencesPage() {
     setSelectedGeofence(null)
     setForm(defaultForm)
     setFormError('')
+    setActiveTab('details')
+    setViolations([])
   }, [])
 
   const handleShapeChange = useCallback((shape: GeofenceShape | null) => {
@@ -462,10 +529,27 @@ export default function GeofencesPage() {
                   </div>
                 )}
 
+                {/* Real-time detection feedback */}
+                {getVehiclesInsideCount(geofence) > 0 && (
+                  <div className="rounded-lg bg-green-50 px-3 py-2 flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-green-700">
+                      <span className="font-semibold">{getVehiclesInsideCount(geofence)}</span> véhicule{getVehiclesInsideCount(geofence) > 1 ? 's' : ''} à l'intérieur
+                    </span>
+                  </div>
+                )}
+
                 {/* Vehicle groups */}
                 {((geofence as any).groupCount ?? 0) > 0 && (
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">{(geofence as any).groupCount}</span> groupe{(geofence as any).groupCount > 1 ? 's' : ''} assigné{(geofence as any).groupCount > 1 ? 's' : ''}
+                  </div>
+                )}
+
+                {/* Assigned vehicles */}
+                {((geofence as any).assignedVehicleIds?.length ?? 0) > 0 && (
+                  <div className="text-xs text-gray-600">
+                    <span className="font-medium">{(geofence as any).assignedVehicleIds.length}</span> véhicule{(geofence as any).assignedVehicleIds.length > 1 ? 's' : ''} assigné{(geofence as any).assignedVehicleIds.length > 1 ? 's' : ''}
                   </div>
                 )}
 
@@ -766,6 +850,80 @@ export default function GeofencesPage() {
                   </div>
                 )}
               </div>
+
+              {/* Vehicle Assignment */}
+              <div className="sm:col-span-2">
+                <label className="mb-2 block text-sm font-medium text-gray-700">Assigner des véhicules</label>
+                <div className="space-y-2">
+                  {vehiclesLoading ? (
+                    <div className="text-sm text-gray-600">Chargement des véhicules...</div>
+                  ) : vehicles.length === 0 ? (
+                    <div className="text-sm text-gray-600">Aucun véhicule disponible</div>
+                  ) : (
+                    <div className="max-h-40 overflow-y-auto rounded-md border border-gray-300 bg-white">
+                      {vehicles.map((vehicle) => (
+                        <label
+                          key={vehicle.id}
+                          className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={form.assignedVehicleIds.includes(vehicle.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setForm((prev) => ({
+                                  ...prev,
+                                  assignedVehicleIds: [...prev.assignedVehicleIds, vehicle.id],
+                                }))
+                              } else {
+                                setForm((prev) => ({
+                                  ...prev,
+                                  assignedVehicleIds: prev.assignedVehicleIds.filter(
+                                    (id) => id !== vehicle.id
+                                  ),
+                                }))
+                              }
+                            }}
+                            className="rounded border-gray-300"
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium">{vehicle.name}</p>
+                            <p className="text-xs text-gray-500">{vehicle.registration}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {form.assignedVehicleIds.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs font-medium text-gray-700">Assignés ({form.assignedVehicleIds.length}):</p>
+                      <div className="flex flex-wrap gap-1">
+                        {form.assignedVehicleIds.map((vehicleId) => {
+                          const vehicle = vehicles.find((v) => v.id === vehicleId)
+                          return (
+                            <Badge key={vehicleId} variant="secondary" className="gap-1 text-xs">
+                              {vehicle?.name}
+                              <button
+                                onClick={() => {
+                                  setForm((prev) => ({
+                                    ...prev,
+                                    assignedVehicleIds: prev.assignedVehicleIds.filter(
+                                      (id) => id !== vehicleId
+                                    ),
+                                  }))
+                                }}
+                                className="ml-1"
+                              >
+                                <X size={12} />
+                              </button>
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {formError && (
@@ -795,7 +953,7 @@ export default function GeofencesPage() {
 
       {/* View Modal */}
       <Dialog open={modalMode === 'view'} onOpenChange={() => closeModal()}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedGeofence?.name}</DialogTitle>
             <DialogDescription>{selectedGeofence?.description || 'Pas de description'}</DialogDescription>
@@ -803,40 +961,123 @@ export default function GeofencesPage() {
 
           {selectedGeofence && (
             <div className="space-y-4">
-              <GeofenceDrawMap
-                key={`view-${selectedGeofence.id}`}
-                initialShape={selectedGeofence.shape}
-                onShapeChange={() => {}}
-              />
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500">Statut</p>
-                  <Badge variant={selectedGeofence.isActive ? 'default' : 'secondary'}>
-                    {selectedGeofence.isActive ? 'Actif' : 'Inactif'}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-gray-500">Forme</p>
-                  <p className="font-medium">{getShapeLabel(selectedGeofence.shape)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Déclencheur</p>
-                  <p className="font-medium capitalize">{selectedGeofence.triggerEvent}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Créé</p>
-                  <p className="font-medium">{formatDateTime(selectedGeofence.createdAt)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Alerte à l'entrée</p>
-                  <p className="font-medium">{selectedGeofence.alertOnEntry ? 'Oui' : 'Non'}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Alerte à la sortie</p>
-                  <p className="font-medium">{selectedGeofence.alertOnExit ? 'Oui' : 'Non'}</p>
-                </div>
+              {/* Tabs */}
+              <div className="flex gap-4 border-b border-gray-200">
+                <button
+                  onClick={() => setActiveTab('details')}
+                  className={`pb-2 px-1 text-sm font-medium transition-colors ${
+                    activeTab === 'details'
+                      ? 'border-b-2 border-blue-500 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Détails
+                </button>
+                <button
+                  onClick={() => setActiveTab('history')}
+                  className={`pb-2 px-1 text-sm font-medium transition-colors ${
+                    activeTab === 'history'
+                      ? 'border-b-2 border-blue-500 text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Historique
+                </button>
               </div>
+
+              {/* Details Tab */}
+              {activeTab === 'details' && (
+                <div className="space-y-4">
+                  <GeofenceDrawMap
+                    key={`view-${selectedGeofence.id}`}
+                    initialShape={selectedGeofence.shape}
+                    onShapeChange={() => {}}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500">Statut</p>
+                      <Badge variant={selectedGeofence.isActive ? 'default' : 'secondary'}>
+                        {selectedGeofence.isActive ? 'Actif' : 'Inactif'}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Forme</p>
+                      <p className="font-medium">{getShapeLabel(selectedGeofence.shape)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Déclencheur</p>
+                      <p className="font-medium capitalize">{selectedGeofence.triggerEvent}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Créé</p>
+                      <p className="font-medium">{formatDateTime(selectedGeofence.createdAt)}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Alerte à l'entrée</p>
+                      <p className="font-medium">{selectedGeofence.alertOnEntry ? 'Oui' : 'Non'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Alerte à la sortie</p>
+                      <p className="font-medium">{selectedGeofence.alertOnExit ? 'Oui' : 'Non'}</p>
+                    </div>
+                    {getVehiclesInsideCount(selectedGeofence) > 0 && (
+                      <div>
+                        <p className="text-gray-500">Véhicules à l'intérieur</p>
+                        <p className="font-medium text-green-600">{getVehiclesInsideCount(selectedGeofence)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* History Tab */}
+              {activeTab === 'history' && (
+                <div className="space-y-3">
+                  {violationsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="text-gray-600">Chargement de l'historique...</div>
+                    </div>
+                  ) : violations.length === 0 ? (
+                    <div className="rounded-lg bg-gray-50 px-4 py-6 text-center">
+                      <Clock className="mx-auto mb-2 text-gray-400" size={24} />
+                      <p className="text-sm text-gray-600">Aucun événement enregistré</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-96 overflow-y-auto space-y-2">
+                      {violations.map((violation) => (
+                        <div
+                          key={violation.id}
+                          className={`flex items-start justify-between rounded-lg px-3 py-2 ${
+                            violation.type === 'entry'
+                              ? 'bg-green-50 border border-green-200'
+                              : 'bg-orange-50 border border-orange-200'
+                          }`}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={violation.type === 'entry' ? 'default' : 'secondary'}
+                                className={`text-xs ${
+                                  violation.type === 'entry'
+                                    ? 'bg-green-600'
+                                    : 'bg-orange-600 text-white'
+                                }`}
+                              >
+                                {violation.type === 'entry' ? 'Entrée' : 'Sortie'}
+                              </Badge>
+                              <span className="font-medium text-sm">{violation.vehicleName}</span>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-1">
+                              {formatDateTime(violation.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

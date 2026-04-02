@@ -1,24 +1,44 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useVehicles } from '@/hooks/useVehicles'
+import { useVehicles, useCreateVehicle, useUpdateVehicle, useDeleteVehicle } from '@/hooks/useVehicles'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, Plus, Grid2X2, List, MapPin, Clock, Download, Trash2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Search, Plus, Grid2X2, List, MapPin, Clock, Download, Trash2, Edit2 } from 'lucide-react'
 import { VehicleStatus } from '@/types/vehicle'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 import type { Vehicle } from '@/types/vehicle'
+import { useAuthStore } from '@/stores/authStore'
+import { apiClient } from '@/lib/api'
 
 export default function VehiclesPage() {
   const navigate = useNavigate()
+  const organizationId = useAuthStore((s) => s.user?.organizationId) || ''
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStatus, setSelectedStatus] = useState<string>('')
   const [selectedGroup, setSelectedGroup] = useState<string>('')
   const [page, setPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  // Modal and form state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    plate: '',
+    vin: '',
+    type: 'car',
+    brand: '',
+    model: '',
+    year: new Date().getFullYear(),
+    notes: '',
+    driverId: '',
+  })
 
   const { data: vehiclesData, isLoading } = useVehicles({
     page,
@@ -27,6 +47,11 @@ export default function VehiclesPage() {
     search: searchTerm,
     groupId: selectedGroup || undefined,
   })
+
+  // Mutation hooks
+  const createVehicle = useCreateVehicle()
+  const updateVehicleMutation = useUpdateVehicle(editingVehicle?.id || '')
+  const deleteVehicleMutation = useDeleteVehicle(deleteConfirmId || '')
 
   const vehicles = vehiclesData?.data || []
   const totalPages = vehiclesData?.totalPages || 1
@@ -89,6 +114,57 @@ export default function VehiclesPage() {
     URL.revokeObjectURL(url)
   }
 
+  const openCreateModal = () => {
+    setEditingVehicle(null)
+    setFormData({ name: '', plate: '', vin: '', type: 'car', brand: '', model: '', year: new Date().getFullYear(), notes: '', driverId: '' })
+    setIsModalOpen(true)
+  }
+
+  const openEditModal = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle)
+    setFormData({
+      name: vehicle.name || '',
+      plate: vehicle.plate || '',
+      vin: vehicle.vin || '',
+      type: vehicle.type || 'car',
+      brand: vehicle.brand || '',
+      model: vehicle.model || '',
+      year: vehicle.year || new Date().getFullYear(),
+      notes: (vehicle.metadata as any)?.notes || '',
+      driverId: (vehicle as any).driverId || '',
+    })
+    setIsModalOpen(true)
+  }
+
+  const handleSubmitVehicle = async () => {
+    if (!formData.name || !formData.plate) return
+    const payload: any = {
+      name: formData.name,
+      registrationNumber: formData.plate,
+      vin: formData.vin,
+      type: formData.type,
+      manufacturer: formData.brand,
+      model: formData.model,
+      year: formData.year || undefined,
+      driverId: formData.driverId || undefined,
+      features: { hasGPS: true, hasFuelSensor: false, hasTemperatureSensor: false, hasCrashSensor: false },
+    }
+    if (editingVehicle) {
+      await updateVehicleMutation.mutateAsync(payload)
+    } else {
+      await createVehicle.mutateAsync(payload)
+    }
+    setIsModalOpen(false)
+    setEditingVehicle(null)
+  }
+
+  const handleDeleteVehicle = async () => {
+    if (!deleteConfirmId) return
+    await deleteVehicleMutation.mutateAsync()
+    setDeleteConfirmId(null)
+    setSelectedIds(prev => { const n = new Set(prev); n.delete(deleteConfirmId); return n })
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -104,7 +180,7 @@ export default function VehiclesPage() {
               Exporter
             </Button>
           )}
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={openCreateModal}>
             <Plus size={18} />
             Ajouter un véhicule
           </Button>
@@ -300,6 +376,17 @@ export default function VehiclesPage() {
                         >
                           <Clock size={16} />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openEditModal(vehicle)
+                          }}
+                          title="Modifier"
+                        >
+                          <Edit2 size={16} />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -375,6 +462,19 @@ export default function VehiclesPage() {
                         <Clock size={16} className="mr-2" />
                         <span className="text-xs">Historique</span>
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEditModal(vehicle)
+                        }}
+                        title="Modifier"
+                      >
+                        <Edit2 size={16} className="mr-2" />
+                        <span className="text-xs">Éditer</span>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -427,16 +527,101 @@ export default function VehiclesPage() {
             Exporter
           </Button>
           <Button
-            variant="outline"
+            variant="destructive"
             size="sm"
-            disabled
-            className="gap-2 text-red-600"
+            onClick={() => {
+              if (confirm('Supprimer ' + selectedIds.size + ' véhicules ?')) {
+                selectedIds.forEach(id => apiClient.delete(`/api/organizations/${organizationId}/vehicles/${id}`))
+                setSelectedIds(new Set())
+              }
+            }}
+            className="gap-2 text-white"
           >
             <Trash2 size={16} />
             Supprimer
           </Button>
         </div>
       )}
+
+      {/* Create/Edit Vehicle Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingVehicle ? 'Modifier le véhicule' : 'Nouveau véhicule'}</DialogTitle>
+            <DialogDescription>{editingVehicle ? 'Mettre à jour les informations du véhicule' : 'Ajouter un nouveau véhicule à votre flotte'}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Nom *</label>
+                <Input value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} placeholder="Camion A1" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Immatriculation *</label>
+                <Input value={formData.plate} onChange={(e) => setFormData(p => ({...p, plate: e.target.value}))} placeholder="AB-123-CD" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">VIN</label>
+              <Input value={formData.vin} onChange={(e) => setFormData(p => ({...p, vin: e.target.value}))} placeholder="WDB1234567F123456" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Type</label>
+                <select value={formData.type} onChange={(e) => setFormData(p => ({...p, type: e.target.value}))} className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+                  <option value="car">Voiture</option>
+                  <option value="truck">Camion</option>
+                  <option value="van">Fourgon</option>
+                  <option value="bus">Bus</option>
+                  <option value="motorcycle">Moto</option>
+                  <option value="trailer">Remorque</option>
+                  <option value="other">Autre</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Année</label>
+                <Input type="number" value={formData.year} onChange={(e) => setFormData(p => ({...p, year: parseInt(e.target.value) || 0}))} placeholder="2024" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Marque</label>
+                <Input value={formData.brand} onChange={(e) => setFormData(p => ({...p, brand: e.target.value}))} placeholder="Renault" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Modèle</label>
+                <Input value={formData.model} onChange={(e) => setFormData(p => ({...p, model: e.target.value}))} placeholder="Master" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Notes</label>
+              <textarea value={formData.notes} onChange={(e) => setFormData(p => ({...p, notes: e.target.value}))} placeholder="Informations supplémentaires..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Annuler</Button>
+            <Button onClick={handleSubmitVehicle} disabled={createVehicle.isPending || updateVehicleMutation.isPending}>
+              {(createVehicle.isPending || updateVehicleMutation.isPending) ? 'Enregistrement...' : editingVehicle ? 'Mettre à jour' : 'Créer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>Annuler</Button>
+            <Button variant="destructive" onClick={handleDeleteVehicle} disabled={deleteVehicleMutation.isPending}>
+              {deleteVehicleMutation.isPending ? 'Suppression...' : 'Supprimer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

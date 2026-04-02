@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import {
 import { useAuthStore } from '@/stores/authStore'
 import { apiClient } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Wifi, Zap, Clock, Locate, RotateCw, AlertCircle, Link as LinkIcon } from 'lucide-react'
+import { Search, Wifi, Zap, Clock, Locate, RotateCw, AlertCircle, Link as LinkIcon, Download, Upload } from 'lucide-react'
 import { formatTimeAgo } from '@/lib/utils'
 
 interface Device {
@@ -45,6 +45,10 @@ export default function DevicesPage() {
   const [assignmentDialog, setAssignmentDialog] = useState(false)
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null)
   const [selectedVehicleId, setSelectedVehicleId] = useState('')
+  const [importDialog, setImportDialog] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [parsedData, setParsedData] = useState<Array<{imei: string; model: string; provider: string; simNumber: string}>>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch devices
   const { data: devices = [], isLoading, error } = useQuery({
@@ -166,6 +170,87 @@ export default function DevicesPage() {
     }
   }
 
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImportFile(file)
+      parseCSV(file)
+    }
+  }
+
+  const parseCSV = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string
+      const lines = text.split('\n').filter(line => line.trim())
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+      const data = []
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim())
+        if (values.length >= 4) {
+          data.push({
+            imei: values[0] || '',
+            model: values[1] || '',
+            provider: values[2] || '',
+            simNumber: values[3] || ''
+          })
+        }
+      }
+      setParsedData(data)
+    }
+    reader.readAsText(file)
+  }
+
+  const handleImportDevices = async () => {
+    try {
+      if (parsedData.length === 0) return
+
+      for (const device of parsedData) {
+        await apiClient.post(`/api/organizations/${organizationId}/devices`, {
+          imei: device.imei,
+          model: device.model,
+          provider: device.provider,
+          simNumber: device.simNumber
+        })
+      }
+
+      setImportDialog(false)
+      setImportFile(null)
+      setParsedData([])
+      // Refresh devices list
+    } catch (error) {
+      console.error('Erreur lors de l\'importation:', error)
+    }
+  }
+
+  const handleExportDevices = () => {
+    if (devices.length === 0) return
+
+    const headers = ['IMEI', 'Modèle', 'Fournisseur', 'Numéro SIM', 'Statut', 'Batterie', 'Signal']
+    const rows = devices.map(d => [
+      d.imei,
+      d.model,
+      d.provider,
+      d.simNumber || '',
+      getStatusLabel(d.status),
+      d.batteryLevel || 0,
+      d.signalStrength || 0
+    ])
+
+    const csv = [headers, ...rows]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `appareils-${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -173,6 +258,24 @@ export default function DevicesPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Appareils GPS</h1>
           <p className="mt-2 text-gray-600">Gérez vos trackers et appareils GPS</p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setImportDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Upload size={16} />
+            Importateur
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportDevices}
+            className="flex items-center gap-2"
+          >
+            <Download size={16} />
+            Exportateur CSV
+          </Button>
         </div>
       </div>
 
@@ -283,7 +386,7 @@ export default function DevicesPage() {
                       {formatTimeAgo(device.lastSeen)}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={() => openAssignmentDialog(device)}
                           className="p-1.5 hover:bg-blue-100 rounded text-blue-600"
@@ -312,6 +415,24 @@ export default function DevicesPage() {
                         >
                           <AlertCircle size={16} />
                         </button>
+                        {device.provider === 'Echoes' && (
+                          <>
+                            <button
+                              onClick={() => sendDeviceCommand(device.id, 'echoes_sync')}
+                              className="p-1.5 hover:bg-indigo-100 rounded text-indigo-600"
+                              title="Synchroniser Echoes"
+                            >
+                              <Wifi size={16} />
+                            </button>
+                            <button
+                              onClick={() => sendDeviceCommand(device.id, 'echoes_update')}
+                              className="p-1.5 hover:bg-teal-100 rounded text-teal-600"
+                              title="Mettre à jour Echoes"
+                            >
+                              <Zap size={16} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -374,6 +495,95 @@ export default function DevicesPage() {
               disabled={!selectedVehicleId}
             >
               Assigner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Dialog */}
+      <Dialog open={importDialog} onOpenChange={setImportDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Importer des appareils</DialogTitle>
+            <DialogDescription>
+              Téléchargez un fichier CSV avec le format: IMEI, Modèle, Fournisseur, Numéro SIM
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleImportFileChange}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="text-gray-600 hover:text-gray-900"
+              >
+                <Upload className="mx-auto mb-2" size={32} />
+                <p className="font-medium">Cliquez pour sélectionner un fichier CSV</p>
+                <p className="text-sm text-gray-500 mt-1">ou glissez-déposez</p>
+              </button>
+            </div>
+
+            {importFile && (
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm font-medium text-gray-900">
+                  Fichier sélectionné: {importFile.name}
+                </p>
+              </div>
+            )}
+
+            {parsedData.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-900">
+                  Aperçu ({parsedData.length} appareils)
+                </p>
+                <div className="border border-gray-200 rounded-lg overflow-x-auto max-h-64 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-100 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-2 text-left">IMEI</th>
+                        <th className="px-4 py-2 text-left">Modèle</th>
+                        <th className="px-4 py-2 text-left">Fournisseur</th>
+                        <th className="px-4 py-2 text-left">Numéro SIM</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {parsedData.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2">{row.imei}</td>
+                          <td className="px-4 py-2">{row.model}</td>
+                          <td className="px-4 py-2">{row.provider}</td>
+                          <td className="px-4 py-2">{row.simNumber}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setImportDialog(false)
+                setImportFile(null)
+                setParsedData([])
+              }}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleImportDevices}
+              disabled={parsedData.length === 0}
+            >
+              Importer
             </Button>
           </DialogFooter>
         </DialogContent>

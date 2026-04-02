@@ -295,6 +295,30 @@ export default function SuperAdminPage() {
   const [whitelabelOrg, setWhitelabelOrg] = useState<string>('org-1')
   const [trackerStatusFilter, setTrackerStatusFilter] = useState<'all' | 'online' | 'offline' | 'maintenance'>('all')
 
+  // Organization CRUD states
+  const [showOrgModal, setShowOrgModal] = useState(false)
+  const [editingOrg, setEditingOrg] = useState<Organization | null>(null)
+  const [orgFormData, setOrgFormData] = useState({ name: '', plan: 'Starter', settings: '' })
+  const [orgToDelete, setOrgToDelete] = useState<string | null>(null)
+
+  // User CRUD states
+  const [showUserModal, setShowUserModal] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [userFormData, setUserFormData] = useState({ name: '', email: '', role: 'operator', organizationId: '' })
+  const [userToDelete, setUserToDelete] = useState<string | null>(null)
+
+  // Revenue and Billing data
+  const [revenueData, setRevenueData] = useState<RevenueStat[]>(mockRevenueData)
+  const [billingData, setBillingData] = useState<BillingRecord[]>(mockBillingRecords)
+
+  // Config state
+  const [configData, setConfigData] = useState({
+    gpsUpdateInterval: 30,
+    dataRetentionDays: 30,
+    maxVehiclesPerOrg: 1000,
+    enableRegistration: true,
+  })
+
   // Fetch system health
   const { data: health, isLoading: healthLoading, refetch: refetchHealth } = useQuery({
     queryKey: ['super-admin-health'],
@@ -374,6 +398,156 @@ export default function SuperAdminPage() {
     refetchStats()
     refetchOrgs()
     refetchUsers()
+  }
+
+  // Organization CRUD handlers
+  const openOrgModal = (org?: Organization) => {
+    if (org) {
+      setEditingOrg(org)
+      setOrgFormData({ name: org.name, plan: org.plan, settings: '' })
+    } else {
+      setEditingOrg(null)
+      setOrgFormData({ name: '', plan: 'Starter', settings: '' })
+    }
+    setShowOrgModal(true)
+  }
+
+  const closeOrgModal = () => {
+    setShowOrgModal(false)
+    setEditingOrg(null)
+    setOrgFormData({ name: '', plan: 'Starter', settings: '' })
+  }
+
+  const saveOrganization = async () => {
+    try {
+      if (editingOrg) {
+        await apiClient.put(`/api/organizations/${editingOrg.id}`, orgFormData)
+      } else {
+        await apiClient.post('/api/organizations', orgFormData)
+      }
+      refetchOrgs()
+      closeOrgModal()
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de l\'organisation:', error)
+      alert('Erreur lors de la sauvegarde')
+    }
+  }
+
+  const deleteOrganization = async (orgId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette organisation ?')) {
+      try {
+        await apiClient.delete(`/api/organizations/${orgId}`)
+        refetchOrgs()
+        setOrgToDelete(null)
+      } catch (error) {
+        console.error('Erreur lors de la suppression de l\'organisation:', error)
+        alert('Erreur lors de la suppression')
+      }
+    }
+  }
+
+  // User CRUD handlers
+  const openUserModal = (user?: User) => {
+    if (user) {
+      setEditingUser(user)
+      setUserFormData({ name: user.name, email: user.email, role: user.role, organizationId: user.organizationId })
+    } else {
+      setEditingUser(null)
+      setUserFormData({ name: '', email: '', role: 'operator', organizationId: organizations[0]?.id || '' })
+    }
+    setShowUserModal(true)
+  }
+
+  const closeUserModal = () => {
+    setShowUserModal(false)
+    setEditingUser(null)
+    setUserFormData({ name: '', email: '', role: 'operator', organizationId: '' })
+  }
+
+  const saveUser = async () => {
+    try {
+      if (editingUser) {
+        await apiClient.put(`/api/super-admin/users/${editingUser.id}`, userFormData)
+      } else {
+        await apiClient.post('/api/super-admin/users', userFormData)
+      }
+      refetchUsers()
+      closeUserModal()
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de l\'utilisateur:', error)
+      alert('Erreur lors de la sauvegarde')
+    }
+  }
+
+  const deleteUser = async (userId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+      try {
+        await apiClient.delete(`/api/super-admin/users/${userId}`)
+        refetchUsers()
+        setUserToDelete(null)
+      } catch (error) {
+        console.error('Erreur lors de la suppression de l\'utilisateur:', error)
+        alert('Erreur lors de la suppression')
+      }
+    }
+  }
+
+  // Revenue data handler
+  const fetchRevenueData = async () => {
+    try {
+      const response = await apiClient.get('/api/super-admin/revenue')
+      const data = response.data || mockRevenueData
+      setRevenueData(Array.isArray(data) ? data : mockRevenueData)
+    } catch (error) {
+      console.error('Erreur lors de la récupération des revenus:', error)
+      setRevenueData(mockRevenueData)
+    }
+  }
+
+  // Billing data handler
+  const fetchBillingData = async () => {
+    try {
+      const response = await apiClient.get('/api/super-admin/billing')
+      const data = response.data || mockBillingRecords
+      setBillingData(Array.isArray(data) ? data : mockBillingRecords)
+    } catch (error) {
+      console.error('Erreur lors de la récupération de la facturation:', error)
+      setBillingData(mockBillingRecords)
+    }
+  }
+
+  // Config save handler
+  const saveSystemConfig = async () => {
+    try {
+      await apiClient.post('/api/super-admin/config', configData)
+      alert('Configuration système enregistrée')
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde de la configuration:', error)
+      alert('Erreur lors de la sauvegarde de la configuration')
+    }
+  }
+
+  // Support ticket handlers
+  const closeTicket = async () => {
+    if (!selectedTicket) return
+    try {
+      await apiClient.put(`/api/super-admin/tickets/${selectedTicket.id}`, { status: 'résolu' })
+      setSelectedTicket(null)
+    } catch (error) {
+      console.error('Erreur lors de la fermeture du ticket:', error)
+    }
+  }
+
+  const submitTicketReply = async () => {
+    if (!selectedTicket || !ticketReply.trim()) return
+    try {
+      await apiClient.post(`/api/super-admin/tickets/${selectedTicket.id}/reply`, { message: ticketReply })
+      setTicketReply('')
+      // Refresh ticket details
+      setSelectedTicket(null)
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de la réponse:', error)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -836,9 +1010,9 @@ export default function SuperAdminPage() {
               onChange={e => setSearchOrg(e.target.value)}
               className="flex-1"
             />
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => openOrgModal()}>
               <Plus className="h-4 w-4" />
-              Nouvelle organisation
+              Créer une organisation
             </Button>
           </div>
 
@@ -931,9 +1105,13 @@ export default function SuperAdminPage() {
                               >
                                 {isSuspended ? 'Suspendu' : org.status}
                               </Badge>
-                              <Button variant="outline" size="sm" className="gap-1">
+                              <Button variant="outline" size="sm" className="gap-1" onClick={() => openOrgModal(org)}>
                                 <Eye className="h-4 w-4" />
-                                Gérer
+                                Éditer
+                              </Button>
+                              <Button variant="outline" size="sm" className="gap-1 text-red-600 hover:bg-red-50" onClick={() => deleteOrganization(org.id)}>
+                                <AlertTriangle className="h-4 w-4" />
+                                Supprimer
                               </Button>
                             </div>
                           </div>
@@ -959,6 +1137,10 @@ export default function SuperAdminPage() {
               onChange={e => setSearchUser(e.target.value)}
               className="flex-1"
             />
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => openUserModal()}>
+              <Plus className="h-4 w-4" />
+              Créer un utilisateur
+            </Button>
           </div>
 
           <div className="flex gap-2 flex-wrap">
@@ -1011,9 +1193,13 @@ export default function SuperAdminPage() {
                           >
                             {user.status}
                           </Badge>
-                          <Button variant="outline" size="sm" className="gap-1">
+                          <Button variant="outline" size="sm" className="gap-1" onClick={() => openUserModal(user)}>
                             <Eye className="h-4 w-4" />
-                            Voir
+                            Éditer
+                          </Button>
+                          <Button variant="outline" size="sm" className="gap-1 text-red-600 hover:bg-red-50" onClick={() => deleteUser(user.id)}>
+                            <AlertTriangle className="h-4 w-4" />
+                            Supprimer
                           </Button>
                         </div>
                       </div>
@@ -1044,82 +1230,70 @@ export default function SuperAdminPage() {
                     <label className="block text-sm font-medium text-gray-900 mb-2">
                       Intervalle max. de mise à jour GPS
                     </label>
-                    <Input type="number" placeholder="30" defaultValue="30" />
+                    <Input
+                      type="number"
+                      value={configData.gpsUpdateInterval}
+                      onChange={e => setConfigData({ ...configData, gpsUpdateInterval: parseInt(e.target.value) })}
+                    />
                     <p className="text-xs text-gray-600 mt-1">en secondes</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Période de conservation des alertes
+                      Période de conservation des données
                     </label>
-                    <Input type="number" placeholder="30" defaultValue="30" />
+                    <Input
+                      type="number"
+                      value={configData.dataRetentionDays}
+                      onChange={e => setConfigData({ ...configData, dataRetentionDays: parseInt(e.target.value) })}
+                    />
                     <p className="text-xs text-gray-600 mt-1">en jours</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Connexions simultanées max.
+                      Véhicules max. par organisation
                     </label>
-                    <Input type="number" placeholder="1000" defaultValue="1000" />
+                    <Input
+                      type="number"
+                      value={configData.maxVehiclesPerOrg}
+                      onChange={e => setConfigData({ ...configData, maxVehiclesPerOrg: parseInt(e.target.value) })}
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
-                      Fréquence des notifications email
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={configData.enableRegistration}
+                        onChange={e => setConfigData({ ...configData, enableRegistration: e.target.checked })}
+                        className="rounded"
+                      />
+                      <span className="text-sm text-gray-700">Activer les nouvelles inscriptions</span>
                     </label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                      <option>Immédiat</option>
-                      <option>Résumé horaire</option>
-                      <option>Résumé quotidien</option>
-                      <option>Désactivé</option>
-                    </select>
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-gray-50 p-4">
-                  <h4 className="font-medium text-gray-900 mb-3">Fonctionnalités</h4>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" defaultChecked />
-                      <span className="text-sm text-gray-700">Suivi GPS en temps réel</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" defaultChecked />
-                      <span className="text-sm text-gray-700">Alertes automatisées</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" defaultChecked />
-                      <span className="text-sm text-gray-700">Analyses avancées</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-sm text-gray-700">Mode maintenance</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-sm text-gray-700">Notifications WhatsApp</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" defaultChecked />
-                      <span className="text-sm text-gray-700">Export programmé</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-sm text-gray-700">Widgets personnalisables</span>
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" className="rounded" defaultChecked />
-                      <span className="text-sm text-gray-700">API publique</span>
-                    </label>
-                  </div>
+                <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
+                  <h4 className="font-medium text-gray-900 mb-3">À propos</h4>
+                  <p className="text-sm text-gray-700">
+                    Ces paramètres affectent le comportement global du système pour toutes les organisations.
+                  </p>
                 </div>
 
                 <div className="flex gap-2 pt-4">
-                  <Button className="gap-2">
+                  <Button className="gap-2" onClick={saveSystemConfig}>
                     <Settings className="h-4 w-4" />
                     Enregistrer la configuration
                   </Button>
-                  <Button variant="outline">Réinitialiser</Button>
+                  <Button variant="outline" onClick={() => setConfigData({
+                    gpsUpdateInterval: 30,
+                    dataRetentionDays: 30,
+                    maxVehiclesPerOrg: 1000,
+                    enableRegistration: true,
+                  })}>
+                    Réinitialiser
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -1292,10 +1466,14 @@ export default function SuperAdminPage() {
                 Revenus mensuels
               </CardTitle>
               <CardDescription>Tendance des revenus sur les 12 derniers mois</CardDescription>
+              <Button variant="link" size="sm" onClick={fetchRevenueData} className="mt-2 gap-1">
+                <RefreshCw className="h-3 w-3" />
+                Actualiser
+              </Button>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={mockRevenueData}>
+                <AreaChart data={revenueData}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
@@ -1520,6 +1698,27 @@ export default function SuperAdminPage() {
                           <p className="font-medium">{formatTimeAgo(new Date(selectedTicket.lastUpdate))}</p>
                         </div>
                       </div>
+                      {selectedTicket.status !== 'résolu' && (
+                        <div className="flex gap-2 mt-4">
+                          <select
+                            value={selectedTicket.status}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as 'ouvert' | 'en cours' | 'résolu'
+                              const updated = { ...selectedTicket, status: newStatus }
+                              setSelectedTicket(updated)
+                            }}
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          >
+                            <option value="ouvert">Ouvert</option>
+                            <option value="en cours">En cours</option>
+                            <option value="résolu">Résolu</option>
+                          </select>
+                          <Button size="sm" onClick={closeTicket} className="gap-1">
+                            <CheckCircle className="h-4 w-4" />
+                            Fermer
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -1546,7 +1745,7 @@ export default function SuperAdminPage() {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           rows={3}
                         />
-                        <Button className="mt-2 gap-2">
+                        <Button className="mt-2 gap-2" onClick={submitTicketReply}>
                           <Send className="h-4 w-4" />
                           Envoyer la réponse
                         </Button>
@@ -1686,6 +1885,10 @@ export default function SuperAdminPage() {
             <CardHeader>
               <CardTitle>Historique de facturation</CardTitle>
               <CardDescription>Les 12 dernières factures</CardDescription>
+              <Button variant="link" size="sm" onClick={fetchBillingData} className="mt-2 gap-1">
+                <RefreshCw className="h-3 w-3" />
+                Actualiser
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -1699,7 +1902,7 @@ export default function SuperAdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {mockBillingRecords.map(record => (
+                    {billingData.map(record => (
                       <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="py-3 px-4">{new Date(record.date).toLocaleDateString('fr-FR')}</td>
                         <td className="py-3 px-4">{record.description}</td>
@@ -2035,6 +2238,139 @@ export default function SuperAdminPage() {
                   <p className="text-sm text-gray-600 mb-2">Synchronisation</p>
                   <p className="font-medium text-gray-900">À jour</p>
                   <p className="text-xs text-gray-600 mt-2">Dernière sync: à l'instant</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ORGANIZATION MODAL */}
+      {showOrgModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>{editingOrg ? 'Éditer organisation' : 'Créer une organisation'}</CardTitle>
+              <CardDescription>
+                {editingOrg ? 'Modifiez les détails de l\'organisation' : 'Créez une nouvelle organisation'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Nom</label>
+                  <Input
+                    value={orgFormData.name}
+                    onChange={e => setOrgFormData({ ...orgFormData, name: e.target.value })}
+                    placeholder="Nom de l'organisation"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Plan</label>
+                  <select
+                    value={orgFormData.plan}
+                    onChange={e => setOrgFormData({ ...orgFormData, plan: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value="Starter">Starter</option>
+                    <option value="Pro">Pro</option>
+                    <option value="Enterprise">Enterprise</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Paramètres</label>
+                  <Input
+                    value={orgFormData.settings}
+                    onChange={e => setOrgFormData({ ...orgFormData, settings: e.target.value })}
+                    placeholder="Paramètres additionnels (JSON)"
+                  />
+                </div>
+
+                <div className="flex gap-2 justify-end pt-4">
+                  <Button variant="outline" onClick={closeOrgModal}>
+                    Annuler
+                  </Button>
+                  <Button onClick={saveOrganization}>
+                    {editingOrg ? 'Mettre à jour' : 'Créer'}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* USER MODAL */}
+      {showUserModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>{editingUser ? 'Éditer utilisateur' : 'Créer un utilisateur'}</CardTitle>
+              <CardDescription>
+                {editingUser ? 'Modifiez les détails de l\'utilisateur' : 'Créez un nouvel utilisateur'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Nom</label>
+                  <Input
+                    value={userFormData.name}
+                    onChange={e => setUserFormData({ ...userFormData, name: e.target.value })}
+                    placeholder="Nom complet"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
+                  <Input
+                    value={userFormData.email}
+                    onChange={e => setUserFormData({ ...userFormData, email: e.target.value })}
+                    placeholder="email@example.com"
+                    type="email"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Rôle</label>
+                  <select
+                    value={userFormData.role}
+                    onChange={e => setUserFormData({ ...userFormData, role: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value="super_admin">Super Admin</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="operator">Opérateur</option>
+                    <option value="driver">Conducteur</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Organisation</label>
+                  <select
+                    value={userFormData.organizationId}
+                    onChange={e => setUserFormData({ ...userFormData, organizationId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  >
+                    <option value="">-- Sélectionner une organisation --</option>
+                    {organizations.map(org => (
+                      <option key={org.id} value={org.id}>
+                        {org.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex gap-2 justify-end pt-4">
+                  <Button variant="outline" onClick={closeUserModal}>
+                    Annuler
+                  </Button>
+                  <Button onClick={saveUser}>
+                    {editingUser ? 'Mettre à jour' : 'Créer'}
+                  </Button>
                 </div>
               </div>
             </CardContent>

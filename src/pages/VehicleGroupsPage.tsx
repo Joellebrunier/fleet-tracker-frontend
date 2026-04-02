@@ -197,7 +197,7 @@ export default function VehicleGroupsPage() {
   }
 
   const handleDelete = async (groupId: string) => {
-    if (confirm('Are you sure you want to delete this group?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) {
       await deleteMutation.mutateAsync(groupId)
     }
   }
@@ -233,9 +233,9 @@ export default function VehicleGroupsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Vehicle Groups</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Groupes de véhicules</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Organize your fleet vehicles into groups and manage assignments
+            Organisez les véhicules de votre flotte en groupes et gérez les attributions
           </p>
         </div>
         <Button
@@ -243,7 +243,7 @@ export default function VehicleGroupsPage() {
           className="flex items-center gap-2"
         >
           <FolderPlus className="h-4 w-4" />
-          New Group
+          Nouveau groupe
         </Button>
       </div>
 
@@ -251,7 +251,7 @@ export default function VehicleGroupsPage() {
       <div className="relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
         <Input
-          placeholder="Search groups by name or description..."
+          placeholder="Rechercher des groupes..."
           className="pl-10"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -284,8 +284,8 @@ export default function VehicleGroupsPage() {
             <Folder className="mb-4 h-12 w-12 text-slate-300" />
             <p className="text-slate-600">
               {searchQuery
-                ? 'No groups match your search'
-                : 'No vehicle groups yet. Create one to organize your fleet.'}
+                ? 'Aucun groupe ne correspond à votre recherche'
+                : 'Aucun groupe de véhicules. Créez-en un pour organiser votre flotte.'}
             </p>
           </CardContent>
         </Card>
@@ -347,16 +347,16 @@ export default function VehicleGroupsPage() {
                     <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 mb-4">
                       <div className="flex items-center gap-1">
                         <Hash className="h-4 w-4" />
-                        <span>{group.vehicleCount} vehicle{group.vehicleCount !== 1 ? 's' : ''}</span>
+                        <span>{group.vehicleCount} véhicule{group.vehicleCount !== 1 ? 's' : ''}</span>
                       </div>
                       {childGroups.length > 0 && (
                         <div className="flex items-center gap-1">
                           <Folder className="h-4 w-4" />
-                          <span>{childGroups.length} subgroup{childGroups.length !== 1 ? 's' : ''}</span>
+                          <span>{childGroups.length} sous-groupe{childGroups.length !== 1 ? 's' : ''}</span>
                         </div>
                       )}
                       <div className="text-xs text-slate-500">
-                        Created {new Date(group.createdAt).toLocaleDateString()}
+                        Créé le {new Date(group.createdAt).toLocaleDateString('fr-FR')}
                       </div>
                     </div>
 
@@ -368,7 +368,7 @@ export default function VehicleGroupsPage() {
                         onClick={() => handleOpenModal(group)}
                       >
                         <Edit2 className="h-4 w-4 mr-1" />
-                        Edit
+                        Modifier
                       </Button>
                       <Button
                         variant="outline"
@@ -378,7 +378,7 @@ export default function VehicleGroupsPage() {
                         disabled={deleteMutation.isPending}
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
+                        Supprimer
                       </Button>
                     </div>
                   </CardContent>
@@ -391,7 +391,7 @@ export default function VehicleGroupsPage() {
                     {childGroups.length > 0 && (
                       <div className="space-y-2">
                         <h4 className="text-xs font-semibold text-slate-700 uppercase">
-                          Subgroups
+                          Sous-groupes
                         </h4>
                         {childGroups.map((childGroup) => (
                           <Card key={childGroup.id} className="bg-slate-50">
@@ -419,7 +419,7 @@ export default function VehicleGroupsPage() {
                     {group.vehicleCount > 0 && (
                       <div className="space-y-2">
                         <h4 className="text-xs font-semibold text-slate-700 uppercase">
-                          Vehicles
+                          Véhicules
                         </h4>
                         {vehicles.length > 0 ? (
                           <div className="space-y-2">
@@ -443,7 +443,7 @@ export default function VehicleGroupsPage() {
                                         {vehicle.vin}
                                       </div>
                                       <div>
-                                        <span className="font-semibold">Plate:</span>{' '}
+                                        <span className="font-semibold">Immatriculation:</span>{' '}
                                         {vehicle.licensePlate}
                                       </div>
                                     </div>
@@ -454,7 +454,7 @@ export default function VehicleGroupsPage() {
                           </div>
                         ) : (
                           <p className="text-sm text-slate-500 italic">
-                            No vehicles assigned yet
+                            Aucun véhicule assigné pour le moment
                           </p>
                         )}
                       </div>
@@ -472,24 +472,24 @@ export default function VehicleGroupsPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
-              {editingGroup ? 'Edit Vehicle Group' : 'Create New Vehicle Group'}
+              {editingGroup ? 'Modifier le groupe de véhicules' : 'Créer un nouveau groupe de véhicules'}
             </DialogTitle>
             <DialogDescription>
               {editingGroup
-                ? 'Update group information and settings'
-                : 'Create a new vehicle group to organize your fleet'}
+                ? 'Mettez à jour les informations et paramètres du groupe'
+                : 'Créez un nouveau groupe de véhicules pour organiser votre flotte'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">
-                Group Name
+                Nom du groupe
               </label>
               <Input
                 value={formData.name}
                 onChange={(e) => handleFormChange('name', e.target.value)}
-                placeholder="e.g., Delivery Fleet, Service Vehicles"
+                placeholder="Ex: Flotte de livraison, Véhicules de service"
               />
             </div>
 
@@ -502,16 +502,16 @@ export default function VehicleGroupsPage() {
                 onChange={(e) =>
                   handleFormChange('description', e.target.value)
                 }
-                placeholder="Optional description for this group"
+                placeholder="Description optionnelle pour ce groupe"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700">
-                Color
+                Couleur
               </label>
               <p className="text-xs text-slate-600 mb-3">
-                Select a color to visually distinguish this group
+                Choisissez une couleur pour distinguer visuellement ce groupe
               </p>
               <div className="grid grid-cols-6 gap-2">
                 {COLOR_OPTIONS.map((color) => (
@@ -532,7 +532,7 @@ export default function VehicleGroupsPage() {
             {groups.length > 0 && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">
-                  Parent Group (Optional)
+                  Groupe parent (Optionnel)
                 </label>
                 <select
                   value={formData.parentGroupId || ''}
@@ -541,7 +541,7 @@ export default function VehicleGroupsPage() {
                   }
                   className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 >
-                  <option value="">None (Root Group)</option>
+                  <option value="">Aucun (Groupe racine)</option>
                   {groups
                     .filter((g) => g.id !== editingGroup?.id)
                     .map((group) => (
@@ -560,17 +560,17 @@ export default function VehicleGroupsPage() {
               onClick={handleCloseModal}
               disabled={upsertMutation.isPending}
             >
-              Cancel
+              Annuler
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={upsertMutation.isPending}
             >
               {upsertMutation.isPending
-                ? 'Saving...'
+                ? 'Enregistrement...'
                 : editingGroup
-                  ? 'Update Group'
-                  : 'Create Group'}
+                  ? 'Mettre à jour le groupe'
+                  : 'Créer le groupe'}
             </Button>
           </DialogFooter>
         </DialogContent>

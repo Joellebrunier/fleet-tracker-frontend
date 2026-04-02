@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaf
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useVehicle, useVehicleHistory } from '@/hooks/useVehicles'
+import { useAuthStore } from '@/stores/authStore'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,7 @@ import {
   Camera,
   Plus,
   X,
+  Repeat2,
 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer'
@@ -44,9 +46,27 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 })
 
+interface Trip {
+  id?: string
+  startTime: Date
+  endTime: Date
+  startLat: number
+  startLng: number
+  endLat: number
+  endLng: number
+  startAddress?: string
+  endAddress?: string
+  distance: number
+  duration: number
+  averageSpeed: number
+  maxSpeed: number
+  points: Array<{ lat: number; lng: number; timestamp: Date; speed: number }>
+}
+
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const organizationId = useAuthStore((s) => s.user?.organizationId) || ''
   const [showReplay, setShowReplay] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [currentAddress, setCurrentAddress] = useState<string | null>(null)
@@ -55,6 +75,12 @@ export default function VehicleDetailPage() {
   const [showAddField, setShowAddField] = useState(false)
   const [newFieldForm, setNewFieldForm] = useState({ key: '', value: '' })
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'gps' | 'trips'>('gps')
+  const [trips, setTrips] = useState<Trip[]>([])
+  const [tripsLoading, setTripsLoading] = useState(false)
+  const [dateFrom, setDateFrom] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+  const [dateTo, setDateTo] = useState<string>(new Date().toISOString().split('T')[0])
+  const [replayingTrip, setReplayingTrip] = useState<Trip | null>(null)
   const { data: vehicle, isLoading: vehicleLoading } = useVehicle(id || '')
   const { data: history } = useVehicleHistory(id || '')
 
@@ -85,6 +111,136 @@ export default function VehicleDetailPage() {
         .catch(() => setCurrentAddress(null))
     }
   }, [vehicle?.currentLat, vehicle?.currentLng])
+
+  // Fetch trips when date range changes
+  useEffect(() => {
+    if (!id || !organizationId) return
+
+    const fetchTrips = async () => {
+      try {
+        setTripsLoading(true)
+        const dateFromISO = new Date(dateFrom).toISOString()
+        const dateToISO = new Date(new Date(dateTo).getTime() + 24 * 60 * 60 * 1000).toISOString()
+
+        const response = await fetch(
+          `/api/organizations/${organizationId}/gps-history?vehicleId=${id}&dateFrom=${encodeURIComponent(dateFromISO)}&dateTo=${encodeURIComponent(dateToISO)}`
+        )
+
+        if (!response.ok) throw new Error('Failed to fetch GPS history')
+
+        const data = await response.json()
+        const positions = Array.isArray(data) ? data : data.data || data.positions || []
+
+        // Parse trips from GPS positions
+        const parsedTrips = parseTripsFromPositions(positions)
+        setTrips(parsedTrips)
+      } catch (error) {
+        console.error('Error fetching trips:', error)
+        setTrips([])
+      } finally {
+        setTripsLoading(false)
+      }
+    }
+
+    fetchTrips()
+  }, [id, organizationId, dateFrom, dateTo])
+
+  // Parse trips from GPS positions
+  const parseTripsFromPositions = (positions: any[]): Trip[] => {
+    if (!Array.isArray(positions) || positions.length === 0) return []
+
+    const sortedPositions = [...positions].sort((a, b) => {
+      const timeA = new Date(a.createdAt || a.timestamp).getTime()
+      const timeB = new Date(b.createdAt || b.timestamp).getTime()
+      return timeA - timeB
+    })
+
+    const trips: Trip[] = []
+    let currentTrip: Partial<Trip> | null = null
+    const SPEED_THRESHOLD = 2 // km/h
+    const TIME_GAP_THRESHOLD = 5 * 60 * 1000 // 5 minutes
+
+    for (let i = 0; i < sortedPositions.length; i++) {
+      const pos = sortedPositions[i]
+      const posTime = new Date(pos.createdAt || pos.timestamp)
+      const speed = pos.speed || 0
+
+      // Start a new trip if vehicle is moving
+      if (!currentTrip && speed > SPEED_THRESHOLD) {
+        currentTrip = {
+          startTime: posTime,
+          startLat: pos.lat,
+          startLng: pos.lng,
+          points: [{ lat: pos.lat, lng: pos.lng, timestamp: posTime, speed }],
+          distance: 0,
+          duration: 0,
+          averageSpeed: 0,
+          maxSpeed: speed,
+        }
+      } else if (currentTrip) {
+        // Add point to current trip
+        const prevPos = sortedPositions[i - 1]
+        const prevTime = new Date(prevPos.createdAt || prevPos.timestamp)
+        const timeDiff = (posTime.getTime() - prevTime.getTime()) / 1000 / 3600 // hours
+        const distance = calculateDistance(prevPos.lat, prevPos.lng, pos.lat, pos.lng)
+
+        currentTrip.points!.push({ lat: pos.lat, lng: pos.lng, timestamp: posTime, speed })
+        currentTrip.distance! += distance
+        currentTrip.maxSpeed = Math.max(currentTrip.maxSpeed || 0, speed)
+
+        // Check if trip ended (vehicle stopped or time gap)
+        if (i === sortedPositions.length - 1) {
+          // End of data
+          finalizeTripIfValid(currentTrip, posTime)
+          trips.push(currentTrip as Trip)
+          currentTrip = null
+        } else {
+          const nextPos = sortedPositions[i + 1]
+          const nextTime = new Date(nextPos.createdAt || nextPos.timestamp)
+          const nextSpeed = nextPos.speed || 0
+          const timeGap = nextTime.getTime() - posTime.getTime()
+
+          if (nextSpeed <= SPEED_THRESHOLD || timeGap > TIME_GAP_THRESHOLD) {
+            // Trip ended
+            finalizeTripIfValid(currentTrip, posTime)
+            trips.push(currentTrip as Trip)
+            currentTrip = null
+          }
+        }
+      }
+    }
+
+    return trips
+  }
+
+  const finalizeTripIfValid = (trip: Partial<Trip>, endTime: Date) => {
+    trip.endTime = endTime
+    trip.endLat = trip.points?.[trip.points.length - 1]?.lat || 0
+    trip.endLng = trip.points?.[trip.points.length - 1]?.lng || 0
+    trip.duration = Math.round((endTime.getTime() - trip.startTime!.getTime()) / 1000) // seconds
+
+    if (trip.points && trip.points.length > 0) {
+      const totalSpeed = trip.points.reduce((sum, p) => sum + p.speed, 0)
+      trip.averageSpeed = Math.round((totalSpeed / trip.points.length) * 10) / 10
+    }
+  }
+
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 6371 // Earth radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLng = ((lng2 - lng1) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+  }
+
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+  }
 
   if (vehicleLoading) {
     return (
@@ -167,7 +323,32 @@ export default function VehicleDetailPage() {
         onClose={() => setShowExport(false)}
       />
 
+      {/* Tabs */}
+      <div className="flex gap-2 border-b">
+        <button
+          onClick={() => setActiveTab('gps')}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'gps'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          GPS
+        </button>
+        <button
+          onClick={() => setActiveTab('trips')}
+          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'trips'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Trajets
+        </button>
+      </div>
+
       {/* Top row: Mini map + Current Status */}
+      {activeTab === 'gps' && (
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Mini map */}
         <Card className="lg:col-span-2 overflow-hidden">
@@ -289,8 +470,212 @@ export default function VehicleDetailPage() {
           </CardContent>
         </Card>
       </div>
+      )}
 
-      {/* Vehicle info cards */}
+      {/* Trips Tab */}
+      {activeTab === 'trips' && (
+        <div className="space-y-6">
+          {/* Date Range Selector */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Filtre par date</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    À partir du
+                  </label>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Jusqu'au
+                  </label>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Trips List */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Trajets ({trips.length})</CardTitle>
+              <CardDescription>
+                {tripsLoading ? 'Chargement...' : `${trips.length} trajet(s) trouvé(s)`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {tripsLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-20" />
+                  <Skeleton className="h-20" />
+                  <Skeleton className="h-20" />
+                </div>
+              ) : trips.length === 0 ? (
+                <div className="text-center py-8">
+                  <Route size={32} className="mx-auto text-gray-400 mb-2" />
+                  <p className="text-gray-500">Aucun trajet trouvé pour cette période</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {trips.map((trip, idx) => (
+                    <div key={idx} className="border rounded-lg p-4 hover:bg-gray-50 transition">
+                      <div className="grid grid-cols-2 gap-4 mb-3">
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Départ</p>
+                          <p className="font-medium text-sm">
+                            {trip.startAddress || `${trip.startLat.toFixed(4)}, ${trip.startLng.toFixed(4)}`}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {formatDateTime(trip.startTime)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Arrivée</p>
+                          <p className="font-medium text-sm">
+                            {trip.endAddress || `${trip.endLat.toFixed(4)}, ${trip.endLng.toFixed(4)}`}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {formatDateTime(trip.endTime)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 text-sm">
+                        <div className="bg-blue-50 rounded p-2">
+                          <p className="text-xs text-gray-600">Durée</p>
+                          <p className="font-semibold text-gray-900">
+                            {formatDuration(trip.duration)}
+                          </p>
+                        </div>
+                        <div className="bg-green-50 rounded p-2">
+                          <p className="text-xs text-gray-600">Distance</p>
+                          <p className="font-semibold text-gray-900">
+                            {trip.distance.toFixed(1)} km
+                          </p>
+                        </div>
+                        <div className="bg-purple-50 rounded p-2">
+                          <p className="text-xs text-gray-600">Moy. vitesse</p>
+                          <p className="font-semibold text-gray-900">
+                            {trip.averageSpeed.toFixed(0)} km/h
+                          </p>
+                        </div>
+                        <div className="bg-orange-50 rounded p-2">
+                          <p className="text-xs text-gray-600">Max vitesse</p>
+                          <p className="font-semibold text-gray-900">
+                            {trip.maxSpeed.toFixed(0)} km/h
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full gap-2"
+                        onClick={() => setReplayingTrip(trip)}
+                      >
+                        <Repeat2 size={14} />
+                        Rejouer le trajet
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Trip Replay Modal */}
+          {replayingTrip && (
+            <Card className="border-2 border-blue-500">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">Relecture du trajet</CardTitle>
+                  <button
+                    onClick={() => setReplayingTrip(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="h-96">
+                  <MapContainer
+                    center={[replayingTrip.startLat, replayingTrip.startLng]}
+                    zoom={12}
+                    className="h-full w-full rounded"
+                    zoomControl={true}
+                  >
+                    <TileLayer
+                      url={MAPBOX_TILE_URL('streets-v12')}
+                      tileSize={512}
+                      zoomOffset={-1}
+                    />
+                    {/* Start marker */}
+                    <Marker position={[replayingTrip.startLat, replayingTrip.startLng]}>
+                      <Popup>
+                        <strong>Départ</strong>
+                        <br />
+                        {formatDateTime(replayingTrip.startTime)}
+                      </Popup>
+                    </Marker>
+
+                    {/* End marker */}
+                    <Marker position={[replayingTrip.endLat, replayingTrip.endLng]}>
+                      <Popup>
+                        <strong>Arrivée</strong>
+                        <br />
+                        {formatDateTime(replayingTrip.endTime)}
+                      </Popup>
+                    </Marker>
+
+                    {/* Trip path */}
+                    {replayingTrip.points && replayingTrip.points.map((pt, idx) => (
+                      <CircleMarker
+                        key={idx}
+                        center={[pt.lat, pt.lng]}
+                        radius={2}
+                        pathOptions={{
+                          color: '#3b82f6',
+                          fillColor: '#3b82f6',
+                          fillOpacity: 0.6 - (idx / replayingTrip.points!.length) * 0.5,
+                          weight: 1,
+                        }}
+                      />
+                    ))}
+                  </MapContainer>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="bg-gray-50 rounded p-2">
+                    <p className="text-xs text-gray-600">Durée</p>
+                    <p className="font-semibold">{formatDuration(replayingTrip.duration)}</p>
+                  </div>
+                  <div className="bg-gray-50 rounded p-2">
+                    <p className="text-xs text-gray-600">Distance</p>
+                    <p className="font-semibold">{replayingTrip.distance.toFixed(1)} km</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'gps' && (
+      <div>
+        {/* Vehicle info cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="pt-5 pb-4">
@@ -601,6 +986,8 @@ export default function VehicleDetailPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
+      )}
     </div>
   )
 }
