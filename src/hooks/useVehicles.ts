@@ -20,7 +20,9 @@ const vehicleKeys = {
 
 // Get vehicles list
 export function useVehicles(filters: VehicleListQuery = {}) {
-  const orgId = useAuthStore.getState().user?.organizationId || ''
+  const orgId = useAuthStore.getState().user?.organizationId
+    || (useAuthStore.getState().user as any)?.organization_id
+    || ''
   const {
     page = PAGINATION_DEFAULTS.DEFAULT_PAGE,
     limit = PAGINATION_DEFAULTS.DEFAULT_PAGE_SIZE,
@@ -28,19 +30,56 @@ export function useVehicles(filters: VehicleListQuery = {}) {
   } = filters
 
   return useQuery({
-    queryKey: vehicleKeys.list(filters),
+    queryKey: vehicleKeys.list({ ...filters, _orgId: orgId } as any),
     queryFn: async () => {
+      if (!orgId) return { data: [], total: 0, page: 1, limit: 20, totalPages: 0 } as any
+
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
         ...otherFilters,
       } as any)
 
-      const response = await apiClient.get<PaginatedResponse<Vehicle>>(
-        `${API_ROUTES.VEHICLES(orgId)}?${params}`
-      )
-      return response.data
+      try {
+        const response = await apiClient.get(
+          `${API_ROUTES.VEHICLES(orgId)}?${params}`
+        )
+        const raw = response.data
+
+        // Handle different response formats:
+        // 1. Already a PaginatedResponse: { data: [...], total, page, totalPages }
+        if (raw && typeof raw === 'object' && !Array.isArray(raw) && Array.isArray(raw.data)) {
+          return raw as any
+        }
+        // 2. Flat array of vehicles (backend returned array directly)
+        if (Array.isArray(raw)) {
+          return {
+            data: raw as Vehicle[],
+            total: raw.length,
+            page: page,
+            limit: limit,
+            totalPages: Math.ceil(raw.length / limit) || 1,
+          } as any
+        }
+        // 3. Nested: { vehicles: [...] } or { items: [...] }
+        if (raw && typeof raw === 'object') {
+          const arr = raw.vehicles || raw.items || raw.results || []
+          return {
+            data: Array.isArray(arr) ? arr : [],
+            total: raw.total || raw.count || (Array.isArray(arr) ? arr.length : 0),
+            page: raw.page || page,
+            limit: raw.limit || limit,
+            totalPages: raw.totalPages || Math.ceil((raw.total || 0) / limit) || 1,
+          } as any
+        }
+        // 4. Fallback
+        return { data: [], total: 0, page: 1, limit: 20, totalPages: 0 } as any
+      } catch (err) {
+        console.error('useVehicles fetch error:', err)
+        return { data: [], total: 0, page: 1, limit: 20, totalPages: 0 } as any
+      }
     },
+    enabled: !!orgId,
     staleTime: 1000 * 30, // 30 seconds
   })
 }

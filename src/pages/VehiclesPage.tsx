@@ -53,7 +53,7 @@ export default function VehiclesPage() {
   const updateVehicleMutation = useUpdateVehicle(editingVehicle?.id || '')
   const deleteVehicleMutation = useDeleteVehicle(deleteConfirmId || '')
 
-  const vehicles = vehiclesData?.data || []
+  const vehicles: Vehicle[] = vehiclesData?.data || []
   const totalPages = vehiclesData?.totalPages || 1
 
   const getStatusBadgeVariant = (status: string) => {

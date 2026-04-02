@@ -48,12 +48,10 @@ export function useAuth() {
         const wrapped = response.data
         const authData = wrapped.data || (wrapped as any)
 
-        const accessToken = authData.accessToken
+        const accessToken = authData.accessToken || (authData as any).access_token || (authData as any).token
         const userData = authData.user
 
-        localStorage.setItem(STORAGE_KEYS.TOKEN, accessToken)
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData))
-
+        // login() in the store normalizes snake_case fields and stores to localStorage
         login(userData, accessToken)
         setError(null)
 
@@ -77,12 +75,10 @@ export function useAuth() {
         const wrapped = response.data
         const authData = wrapped.data || (wrapped as any)
 
-        const accessToken = authData.accessToken
+        const accessToken = authData.accessToken || (authData as any).access_token || (authData as any).token
         const userData = authData.user
 
-        localStorage.setItem(STORAGE_KEYS.TOKEN, accessToken)
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData))
-
+        // login() in the store normalizes snake_case fields and stores to localStorage
         login(userData, accessToken)
         setError(null)
 

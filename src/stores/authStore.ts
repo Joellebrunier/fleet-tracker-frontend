@@ -29,7 +29,13 @@ function getInitialAuthState() {
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN)
     const userStr = localStorage.getItem(STORAGE_KEYS.USER)
     if (token && userStr) {
-      const user = JSON.parse(userStr) as User
+      const raw = JSON.parse(userStr)
+      // Normalize: backend may return snake_case (organization_id) or camelCase (organizationId)
+      const user: User = {
+        ...raw,
+        organizationId: raw.organizationId || raw.organization_id || '',
+        role: raw.role ? (raw.role.toUpperCase() as any) : raw.role,
+      }
       return { user, token, isAuthenticated: true }
     }
   } catch {
@@ -68,10 +74,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setError: (error) => set({ error }),
 
   login: (user, token) => {
+    // Normalize snake_case fields from backend
+    const normalizedUser: User = {
+      ...user,
+      organizationId: (user as any).organizationId || (user as any).organization_id || '',
+      role: user.role ? (user.role.toUpperCase() as any) : user.role,
+    }
     localStorage.setItem(STORAGE_KEYS.TOKEN, token)
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user))
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(normalizedUser))
     set({
-      user,
+      user: normalizedUser,
       token,
       isAuthenticated: true,
       error: null,
@@ -97,7 +109,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     if (token && userStr) {
       try {
-        const user = JSON.parse(userStr)
+        const raw = JSON.parse(userStr)
+        const user: User = {
+          ...raw,
+          organizationId: raw.organizationId || raw.organization_id || '',
+          role: raw.role ? (raw.role.toUpperCase() as any) : raw.role,
+        }
         set({
           user,
           token,
