@@ -34,14 +34,17 @@ export default function StatusBar() {
   }
 
   return (
-    <div className="bg-slate-900 text-white">
+    <div className="bg-black text-white">
       <div className="px-6 py-3">
         <div className="flex items-center justify-between gap-6">
           {/* Left: Logo and Title */}
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
-              <h1 className="text-lg font-bold tracking-wider">TRACKZONE</h1>
-              <p className="text-xs text-slate-400 font-semibold">GÉOLOCALISATION TEMPS RÉEL</p>
+              <div className="flex items-baseline gap-2">
+                <h1 className="text-lg font-bold tracking-wider">TRACKZONE</h1>
+                <p className="text-xs text-slate-500 font-semibold">by MATÉRIEL TECH+</p>
+              </div>
+              <p className="text-xs text-slate-400 font-semibold">FLEET MANAGEMENT — GÉOLOCALISATION</p>
             </div>
           </div>
 
@@ -50,7 +53,7 @@ export default function StatusBar() {
             {/* Total Vehicles */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-300">VÉHICULES</span>
-              <span className="bg-slate-700 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="border border-slate-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                 {totalVehicles}
               </span>
             </div>
@@ -58,7 +61,7 @@ export default function StatusBar() {
             {/* Moving - Green */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-300">EN MOUVEMENT</span>
-              <span className="bg-green-600 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="border border-green-500 text-green-400 px-3 py-1 rounded-full text-sm font-semibold">
                 {movingVehicles}
               </span>
             </div>
@@ -66,7 +69,7 @@ export default function StatusBar() {
             {/* Stopped - Amber */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-300">À L'ARRÊT</span>
-              <span className="bg-amber-500 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="border border-amber-500 text-amber-400 px-3 py-1 rounded-full text-sm font-semibold">
                 {stoppedVehicles}
               </span>
             </div>
@@ -74,7 +77,7 @@ export default function StatusBar() {
             {/* Not Located - Red */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-300">NON LOCALISÉS</span>
-              <span className="bg-red-600 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="border border-red-500 text-red-400 px-3 py-1 rounded-full text-sm font-semibold">
                 {notLocatedVehicles}
               </span>
             </div>
@@ -85,7 +88,7 @@ export default function StatusBar() {
             {/* Alerts Button */}
             <button
               onClick={() => navigate('/alerts')}
-              className="relative inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 transition-colors"
+              className="relative inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-white/10 transition-colors"
             >
               <Bell size={18} />
               <span>Alertes</span>
@@ -99,7 +102,7 @@ export default function StatusBar() {
             {/* Refresh Button */}
             <button
               onClick={handleRefresh}
-              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-slate-800 transition-colors"
+              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-white/10 transition-colors"
               title="Rafraîchir les données"
             >
               <RefreshCw size={18} />
@@ -108,7 +111,7 @@ export default function StatusBar() {
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-slate-800 transition-colors"
+              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-white/10 transition-colors"
               title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -117,7 +120,7 @@ export default function StatusBar() {
             {/* Settings Icon */}
             <button
               onClick={() => navigate('/settings')}
-              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-slate-800 transition-colors"
+              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-white/10 transition-colors"
               title="Paramètres"
             >
               <Settings size={18} />

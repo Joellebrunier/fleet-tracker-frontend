@@ -21,6 +21,7 @@ export default function VehiclesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSource, setSelectedSource] = useState<string>('')
   const [selectedStatus, setSelectedStatus] = useState<string>('')
+  const [selectedType, setSelectedType] = useState<string>('')
   const [page, setPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
@@ -32,7 +33,7 @@ export default function VehiclesPage() {
     name: '',
     plate: '',
     vin: '',
-    type: 'car',
+    type: 'voiture',
     brand: '',
     model: '',
     year: new Date().getFullYear(),
@@ -115,7 +116,7 @@ export default function VehiclesPage() {
 
   const openCreateModal = () => {
     setEditingVehicle(null)
-    setFormData({ name: '', plate: '', vin: '', type: 'car', brand: '', model: '', year: new Date().getFullYear(), notes: '', driverId: '' })
+    setFormData({ name: '', plate: '', vin: '', type: 'voiture', brand: '', model: '', year: new Date().getFullYear(), notes: '', driverId: '' })
     setIsModalOpen(true)
   }
 
@@ -169,7 +170,8 @@ export default function VehiclesPage() {
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Administration</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Catalogue Véhicules</h1>
+          <p className="text-sm text-gray-600 mt-1">Gestion de la flotte Matériel Tech+</p>
         </div>
       </div>
 
@@ -180,7 +182,7 @@ export default function VehiclesPage() {
             onClick={() => setActiveTab('vehicles')}
             className={`py-3 px-1 border-b-2 font-semibold text-sm transition-colors ${
               activeTab === 'vehicles'
-                ? 'border-blue-600 text-gray-900'
+                ? 'border-gray-900 text-gray-900'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -190,7 +192,7 @@ export default function VehiclesPage() {
             onClick={() => setActiveTab('groups')}
             className={`py-3 px-1 border-b-2 font-semibold text-sm transition-colors ${
               activeTab === 'groups'
-                ? 'border-blue-600 text-gray-900'
+                ? 'border-gray-900 text-gray-900'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -238,6 +240,23 @@ export default function VehiclesPage() {
           </div>
         </div>
         <select
+          value={selectedType}
+          onChange={(e) => {
+            setSelectedType(e.target.value)
+            setPage(1)
+          }}
+          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
+        >
+          <option value="">Tous types</option>
+          <option value="voiture">Voiture</option>
+          <option value="camion">Camion</option>
+          <option value="utilitaire">Véhicule utilitaire</option>
+          <option value="engin">Engin de chantier</option>
+          <option value="moto">Moto</option>
+          <option value="bateau">Bateau</option>
+          <option value="divers">Divers</option>
+        </select>
+        <select
           value={selectedSource}
           onChange={(e) => {
             setSelectedSource(e.target.value)
@@ -269,7 +288,7 @@ export default function VehiclesPage() {
 
       {/* Add Tracker Button */}
       <div className="flex justify-end">
-        <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white" onClick={openCreateModal}>
+        <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white" onClick={openCreateModal}>
           <Plus size={18} />
           AJOUTER UN TRACEUR
         </Button>
@@ -295,8 +314,8 @@ export default function VehiclesPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200 bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 w-12">
+                    <tr className="border-b border-gray-200 bg-gray-900 text-white">
+                      <th className="px-4 py-3 text-left text-sm font-semibold w-12">
                         <input
                           type="checkbox"
                           checked={selectedIds.size === vehicles.length && vehicles.length > 0}
@@ -304,13 +323,14 @@ export default function VehiclesPage() {
                           className="rounded"
                         />
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">NOM</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">VIN</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">PLAQUE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">CATÉGORIE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">ÉTAT</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">SOURCE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">ACTIONS</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">NOM</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">VIN</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">PLAQUE</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">CATÉGORIE</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">ÉTAT</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">DISPONIBILITÉ</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">SOURCE</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">ACTIONS</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -337,13 +357,33 @@ export default function VehiclesPage() {
                           {vehicle.plate || '—'}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 capitalize">
-                          {vehicle.type || '—'}
+                          {vehicle.type ? (
+                            <>
+                              {vehicle.type === 'voiture' && 'Voiture'}
+                              {vehicle.type === 'camion' && 'Camion'}
+                              {vehicle.type === 'utilitaire' && 'Véhicule utilitaire'}
+                              {vehicle.type === 'engin' && 'Engin de chantier'}
+                              {vehicle.type === 'moto' && 'Moto'}
+                              {vehicle.type === 'bateau' && 'Bateau'}
+                              {vehicle.type === 'divers' && 'Divers'}
+                              {!['voiture', 'camion', 'utilitaire', 'engin', 'moto', 'bateau', 'divers'].includes(vehicle.type) && vehicle.type}
+                            </>
+                          ) : '—'}
                         </td>
                         <td className="px-6 py-4 text-sm">
                           {vehicle.status === 'active' ? (
                             <span className="text-green-600 font-semibold">ACTIF</span>
                           ) : (
                             <span className="text-gray-500 font-semibold">HORS LIGNE</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm">
+                          {vehicle.status === 'active' ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Disponible</span>
+                          ) : vehicle.status === 'maintenance' ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">En maintenance</span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Indisponible</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm">
@@ -485,13 +525,13 @@ export default function VehiclesPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-900">Type</label>
                 <select value={formData.type} onChange={(e) => setFormData(p => ({...p, type: e.target.value}))} className="w-full rounded-md border border-gray-300 bg-white text-gray-900 px-3 py-2 text-sm">
-                  <option value="car">Voiture</option>
-                  <option value="truck">Camion</option>
-                  <option value="van">Fourgon</option>
-                  <option value="bus">Bus</option>
-                  <option value="motorcycle">Moto</option>
-                  <option value="trailer">Remorque</option>
-                  <option value="other">Autre</option>
+                  <option value="voiture">Voiture</option>
+                  <option value="camion">Camion</option>
+                  <option value="utilitaire">Véhicule utilitaire</option>
+                  <option value="engin">Engin de chantier</option>
+                  <option value="moto">Moto</option>
+                  <option value="bateau">Bateau</option>
+                  <option value="divers">Divers</option>
                 </select>
               </div>
               <div className="space-y-2">

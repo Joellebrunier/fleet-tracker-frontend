@@ -141,7 +141,7 @@ export default function Sidebar() {
       {/* Mobile Toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed left-4 top-4 z-40 rounded-md bg-blue-600 p-2 text-white lg:hidden"
+        className="fixed left-4 top-4 z-40 rounded-md bg-gray-900 p-2 text-white lg:hidden"
       >
         {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
@@ -149,14 +149,15 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-30 w-64 border-r border-gray-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-30 w-64 border-r border-slate-800 bg-gray-950 transition-transform duration-300 ease-in-out lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Logo */}
-        <div className="border-b border-gray-200 p-6">
-          <h1 className="text-2xl font-bold text-blue-600">TrackZone</h1>
-          <p className="text-xs text-gray-500">Fleet Management System</p>
+        <div className="border-b border-slate-800 p-6">
+          <h1 className="text-2xl font-bold text-white">TRACKZONE</h1>
+          <p className="text-xs text-slate-400 mt-1">MATÉRIEL TECH+</p>
+          <p className="text-xs text-slate-500 mt-1">Fleet Management</p>
         </div>
 
         {/* Navigation */}
@@ -171,8 +172,8 @@ export default function Sidebar() {
                 className={cn(
                   'flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors',
                   isActive(item.path)
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'border-l-2 border-white bg-white/10 text-white'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
                 )}
               >
                 <Icon size={18} />
@@ -184,7 +185,7 @@ export default function Sidebar() {
           {/* Divider */}
           {visibleAdminItems.length > 0 && (
             <>
-              <div className="my-3 border-t border-gray-200"></div>
+              <div className="my-3 border-t border-slate-700/50"></div>
               {visibleAdminItems.map((item) => {
                 const Icon = item.icon
                 return (
@@ -195,8 +196,8 @@ export default function Sidebar() {
                     className={cn(
                       'flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors',
                       isActive(item.path)
-                        ? 'bg-red-50 text-red-600'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'border-l-2 border-white bg-white/10 text-white'
+                        : 'text-slate-400 hover:bg-white/5 hover:text-white'
                     )}
                   >
                     <Icon size={18} />
@@ -209,15 +210,15 @@ export default function Sidebar() {
         </nav>
 
         {/* Settings & Help */}
-        <div className="absolute bottom-0 w-full border-t border-gray-200 p-3 space-y-1">
+        <div className="absolute bottom-0 w-full border-t border-slate-800 p-3 space-y-1">
           <Link
             to="/help"
             onClick={() => setSidebarOpen(false)}
             className={cn(
               'flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors',
               isActive('/help')
-                ? 'bg-blue-50 text-blue-600'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'border-l-2 border-white bg-white/10 text-white'
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
             )}
           >
             <HelpCircle size={18} />
@@ -229,8 +230,8 @@ export default function Sidebar() {
             className={cn(
               'flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors',
               isActive('/settings')
-                ? 'bg-blue-50 text-blue-600'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'border-l-2 border-white bg-white/10 text-white'
+                : 'text-slate-400 hover:bg-white/5 hover:text-white'
             )}
           >
             <Settings size={18} />
