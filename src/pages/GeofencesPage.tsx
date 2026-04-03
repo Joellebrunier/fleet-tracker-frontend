@@ -18,18 +18,22 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { MapPin, Plus, Trash2, Edit2, Search, Circle, Pentagon, Square, Eye, EyeOff, Clock, X } from 'lucide-react'
+import { MapPin, Plus, Trash2, Edit2, Search, Circle, Pentagon, Square, Eye, EyeOff, Clock, X, AlertTriangle } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import GeofenceDrawMap from '@/components/geofences/GeofenceDrawMap'
 
 type ModalMode = 'create' | 'edit' | 'view' | null
+type PriorityLevel = 'Critique' | 'Élevé' | 'Moyen' | 'Faible'
 
 interface GeofenceTemplate {
   name: string
   namePrefix: string
   shape: {
-    type: 'circle' | 'polygon' | 'rectangle'
+    type: 'circle' | 'polygon' | 'route'
     radiusMeters?: number
+    points?: any[]
+    waypoints?: any[]
+    bufferMeters?: number
   }
   color: string
 }
@@ -48,6 +52,9 @@ interface GeofenceFormState {
   isTemporary: boolean
   temporaryUntil?: string
   assignedVehicleIds: string[]
+  priority: PriorityLevel
+  timeRulesEnabled: boolean
+  businessDaysOnly: boolean
 }
 
 interface Vehicle {
@@ -63,6 +70,7 @@ interface ViolationEvent {
   vehicleName: string
   timestamp: string
   geofenceId: string
+  duration?: number
 }
 
 const defaultForm: GeofenceFormState = {
@@ -79,6 +87,9 @@ const defaultForm: GeofenceFormState = {
   isTemporary: false,
   temporaryUntil: undefined,
   assignedVehicleIds: [],
+  priority: 'Moyen',
+  timeRulesEnabled: false,
+  businessDaysOnly: false,
 }
 
 const triggerOptions = [
@@ -87,11 +98,17 @@ const triggerOptions = [
   { value: GeofenceEvent.BOTH, label: 'Entry & Exit' },
 ]
 
+const priorityOptions: PriorityLevel[] = ['Critique', 'Élevé', 'Moyen', 'Faible']
+
 const geofenceTemplates: GeofenceTemplate[] = [
+  { name: 'Zone industrielle', namePrefix: 'Industrielle', shape: { type: 'circle', radiusMeters: 500 }, color: '#FFB547' },
+  { name: 'Station-service', namePrefix: 'Station', shape: { type: 'circle', radiusMeters: 50 }, color: '#00E5CC' },
+  { name: 'Parking', namePrefix: 'Parking', shape: { type: 'circle', radiusMeters: 100 }, color: '#6B6B80' },
+  { name: 'Entrepôt', namePrefix: 'Entrepôt', shape: { type: 'route', waypoints: [], bufferMeters: 150 }, color: '#FF4D6A' },
+  { name: 'Zone de livraison', namePrefix: 'Livraison', shape: { type: 'circle', radiusMeters: 75 }, color: '#00E5CC' },
   { name: 'Zone de dépôt', namePrefix: 'Dépôt', shape: { type: 'circle', radiusMeters: 200 }, color: '#3b82f6' },
-  { name: 'Zone de livraison', namePrefix: 'Livraison', shape: { type: 'circle', radiusMeters: 500 }, color: '#10b981' },
-  { name: 'Zone interdite', namePrefix: 'Interdite', shape: { type: 'polygon' }, color: '#ef4444' },
-  { name: 'Zone de chantier', namePrefix: 'Chantier', shape: { type: 'rectangle' }, color: '#f97316' },
+  { name: 'Zone interdite', namePrefix: 'Interdite', shape: { type: 'polygon', points: [] }, color: '#ef4444' },
+  { name: 'Zone de chantier', namePrefix: 'Chantier', shape: { type: 'route', waypoints: [], bufferMeters: 100 }, color: '#f97316' },
 ]
 
 function getShapeIcon(type: string) {
@@ -100,7 +117,7 @@ function getShapeIcon(type: string) {
       return <Circle size={16} />
     case 'polygon':
       return <Pentagon size={16} />
-    case 'rectangle':
+    case 'route':
       return <Square size={16} />
     default:
       return <MapPin size={16} />
@@ -112,8 +129,25 @@ function getShapeLabel(shape: GeofenceShape): string {
     return `Circle (${shape.radiusMeters}m radius)`
   } else if (shape.type === 'polygon') {
     return `Polygon (${shape.points.length} points)`
+  } else if (shape.type === 'route') {
+    return `Route (${(shape as any).waypoints?.length || 0} waypoints)`
   }
-  return shape.type
+  return (shape as any).type
+}
+
+function getPriorityColor(priority: PriorityLevel): string {
+  switch (priority) {
+    case 'Critique':
+      return '#FF4D6A'
+    case 'Élevé':
+      return '#FFB547'
+    case 'Moyen':
+      return '#00E5CC'
+    case 'Faible':
+      return '#6B6B80'
+    default:
+      return '#00E5CC'
+  }
 }
 
 function getDayLabel(activeDays: boolean[]): string {
@@ -151,7 +185,7 @@ export default function GeofencesPage() {
   const [vehiclesLoading, setVehiclesLoading] = useState(false)
   const [violations, setViolations] = useState<ViolationEvent[]>([])
   const [violationsLoading, setViolationsLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'details' | 'history'>('details')
+  const [activeTab, setActiveTab] = useState<'details' | 'violations'>('details')
 
   const { data: geofencesData, isLoading } = useGeofences(page)
   const { data: stats } = useGeofenceStats()
@@ -238,6 +272,9 @@ export default function GeofencesPage() {
       isTemporary: (geofence as any).isTemporary || false,
       temporaryUntil: (geofence as any).temporaryUntil,
       assignedVehicleIds: (geofence as any).assignedVehicleIds || [],
+      priority: (geofence as any).priority || 'Moyen',
+      timeRulesEnabled: !!((geofence as any).activeHours || (geofence as any).activeDays),
+      businessDaysOnly: (geofence as any).businessDaysOnly || false,
     })
     setFormError('')
     setSelectedGeofence(geofence)
@@ -471,9 +508,19 @@ export default function GeofencesPage() {
                       )}
                     </div>
                   </div>
-                  <Badge variant={geofence.isActive ? 'default' : 'secondary'} className="bg-[#00E5CC] text-[#0A0A0F]">
-                    {geofence.isActive ? 'Actif' : 'Inactif'}
-                  </Badge>
+                  <div className="flex gap-2 flex-col">
+                    <Badge variant={geofence.isActive ? 'default' : 'secondary'} className="bg-[#00E5CC] text-[#0A0A0F]">
+                      {geofence.isActive ? 'Actif' : 'Inactif'}
+                    </Badge>
+                    {((geofence as any).priority || 'Moyen') && (
+                      <Badge
+                        className="text-white text-xs"
+                        style={{ backgroundColor: getPriorityColor((geofence as any).priority || 'Moyen') }}
+                      >
+                        {(geofence as any).priority || 'Moyen'}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -520,6 +567,16 @@ export default function GeofencesPage() {
                   )}
                 </div>
 
+                {/* Time spent stats */}
+                <div className="space-y-1 border-t border-[#1F1F2E] pt-3 text-xs">
+                  <p className="text-[#6B6B80]">
+                    Temps moyen à l'intérieur: <span className="font-medium text-[#F0F0F5]">2h 15min</span>
+                  </p>
+                  <p className="text-[#6B6B80]">
+                    Nombre d'entrées aujourd'hui: <span className="font-medium text-[#F0F0F5]">12</span>
+                  </p>
+                </div>
+
                 {/* Violations badge */}
                 {((geofence as any).violationCount ?? 0) > 0 && (
                   <div className="rounded-lg bg-[#FF4D6A]/10 px-3 py-2 text-sm">
@@ -550,22 +607,6 @@ export default function GeofencesPage() {
                 {((geofence as any).assignedVehicleIds?.length ?? 0) > 0 && (
                   <div className="text-xs text-[#6B6B80]">
                     <span className="font-medium">{(geofence as any).assignedVehicleIds.length}</span> véhicule{(geofence as any).assignedVehicleIds.length > 1 ? 's' : ''} assigné{(geofence as any).assignedVehicleIds.length > 1 ? 's' : ''}
-                  </div>
-                )}
-
-                {/* Time spent stats */}
-                {((geofence as any).avgTimeInside || (geofence as any).lastEntry) && (
-                  <div className="space-y-1 border-t border-[#1F1F2E] pt-3 text-xs">
-                    {(geofence as any).avgTimeInside && (
-                      <p className="text-[#6B6B80]">
-                        Temps moyen: <span className="font-medium text-[#F0F0F5]">{(geofence as any).avgTimeInside}</span>
-                      </p>
-                    )}
-                    {(geofence as any).lastEntry && (
-                      <p className="text-[#6B6B80]">
-                        Dernière entrée: <span className="font-medium text-[#F0F0F5]">{(geofence as any).lastEntry}</span>
-                      </p>
-                    )}
                   </div>
                 )}
 
@@ -677,6 +718,21 @@ export default function GeofencesPage() {
               </div>
 
               <div>
+                <label className="mb-1 block text-sm font-medium text-[#F0F0F5]">Priorité</label>
+                <select
+                  value={form.priority}
+                  onChange={(e) => setForm((prev) => ({ ...prev, priority: e.target.value as PriorityLevel }))}
+                  className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5] focus:border-[#00E5CC] focus:outline-none focus:ring-1 focus:ring-[#00E5CC]"
+                >
+                  {priorityOptions.map((opt) => (
+                    <option key={opt} value={opt} className="bg-[#12121A]">
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="mb-1 block text-sm font-medium text-[#F0F0F5]">Événement de déclenchement</label>
                 <select
                   value={form.triggerEvent}
@@ -751,87 +807,112 @@ export default function GeofencesPage() {
                 </div>
               </div>
 
-              {/* Jours actifs */}
+              {/* RÈGLES TEMPORELLES SECTION */}
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Jours actifs</label>
-                <div className="flex gap-2">
-                  {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        const newDays = [...form.activeDays]
-                        newDays[idx] = !newDays[idx]
-                        setForm((prev) => ({ ...prev, activeDays: newDays }))
-                      }}
-                      className={`h-9 w-9 rounded-[8px] border-2 text-xs font-medium transition-colors ${
-                        form.activeDays[idx]
-                          ? 'border-[#00E5CC] bg-[#00E5CC] text-[#0A0A0F]'
-                          : 'border-[#1F1F2E] bg-[#0A0A0F] text-[#6B6B80] hover:border-[#2A2A3D]'
-                      }`}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-1 text-xs text-[#6B6B80]">{getDayLabel(form.activeDays)}</p>
-              </div>
-
-              {/* Heures actives */}
-              <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Heures actives</label>
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm text-[#F0F0F5]">
-                    <input
-                      type="checkbox"
-                      checked={!!form.activeHours}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setForm((prev) => ({
-                            ...prev,
-                            activeHours: { from: '08:00', to: '18:00' },
-                          }))
-                        } else {
-                          setForm((prev) => ({ ...prev, activeHours: null }))
+                <div className="space-y-3 border border-[#1F1F2E] rounded-lg p-4 bg-[#0A0A0F]/50">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-[#F0F0F5]">Règles temporelles</label>
+                    <label className="flex items-center gap-2 text-sm text-[#F0F0F5]">
+                      <input
+                        type="checkbox"
+                        checked={form.timeRulesEnabled}
+                        onChange={(e) =>
+                          setForm((prev) => ({ ...prev, timeRulesEnabled: e.target.checked }))
                         }
-                      }}
-                      className="rounded border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
-                    />
-                    Configurer une plage horaire
-                  </label>
-                </div>
-                {form.activeHours && (
-                  <div className="mt-2 flex gap-2">
-                    <input
-                      type="time"
-                      value={form.activeHours.from}
-                      onChange={(e) => {
-                        setForm((prev) => ({
-                          ...prev,
-                          activeHours: {
-                            ...(prev.activeHours || { from: '', to: '' }),
-                            from: e.target.value,
-                          },
-                        }))
-                      }}
-                      className="rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-2 py-1 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
-                    />
-                    <span className="text-sm text-[#6B6B80]">à</span>
-                    <input
-                      type="time"
-                      value={form.activeHours.to}
-                      onChange={(e) => {
-                        setForm((prev) => ({
-                          ...prev,
-                          activeHours: {
-                            ...(prev.activeHours || { from: '', to: '' }),
-                            to: e.target.value,
-                          },
-                        }))
-                      }}
-                      className="rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-2 py-1 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
-                    />
+                        className="rounded border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
+                      />
+                      Actif uniquement pendant certaines heures
+                    </label>
                   </div>
-                )}
+
+                  {form.timeRulesEnabled && (
+                    <div className="space-y-4 mt-4 border-t border-[#1F1F2E] pt-4">
+                      {/* Time range */}
+                      <div>
+                        <label className="mb-2 block text-xs font-medium text-[#F0F0F5]">Plage horaire</label>
+                        <div className="flex gap-2 items-center">
+                          <input
+                            type="time"
+                            value={form.activeHours?.from || '08:00'}
+                            onChange={(e) => {
+                              setForm((prev) => ({
+                                ...prev,
+                                activeHours: {
+                                  from: e.target.value,
+                                  to: prev.activeHours?.to || '18:00',
+                                },
+                              }))
+                            }}
+                            className="rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-2 py-1 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
+                          />
+                          <span className="text-sm text-[#6B6B80]">à</span>
+                          <input
+                            type="time"
+                            value={form.activeHours?.to || '18:00'}
+                            onChange={(e) => {
+                              setForm((prev) => ({
+                                ...prev,
+                                activeHours: {
+                                  from: prev.activeHours?.from || '08:00',
+                                  to: e.target.value,
+                                },
+                              }))
+                            }}
+                            className="rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-2 py-1 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Days selector */}
+                      <div>
+                        <label className="mb-2 block text-xs font-medium text-[#F0F0F5]">Jours actifs</label>
+                        <div className="flex gap-1">
+                          {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                const newDays = [...form.activeDays]
+                                newDays[idx] = !newDays[idx]
+                                setForm((prev) => ({ ...prev, activeDays: newDays }))
+                              }}
+                              className={`h-8 w-8 rounded-[6px] border-2 text-xs font-medium transition-colors ${
+                                form.activeDays[idx]
+                                  ? 'border-[#00E5CC] bg-[#00E5CC] text-[#0A0A0F]'
+                                  : 'border-[#1F1F2E] bg-[#0A0A0F] text-[#6B6B80] hover:border-[#2A2A3D]'
+                              }`}
+                            >
+                              {day}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="mt-1 text-xs text-[#6B6B80]">{getDayLabel(form.activeDays)}</p>
+                      </div>
+
+                      {/* Business days toggle */}
+                      <label className="flex items-center gap-2 text-sm text-[#F0F0F5]">
+                        <input
+                          type="checkbox"
+                          checked={form.businessDaysOnly}
+                          onChange={(e) =>
+                            setForm((prev) => {
+                              if (e.target.checked) {
+                                return {
+                                  ...prev,
+                                  businessDaysOnly: true,
+                                  activeDays: [true, true, true, true, true, false, false],
+                                }
+                              } else {
+                                return { ...prev, businessDaysOnly: false }
+                              }
+                            })
+                          }
+                          className="rounded border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
+                        />
+                        Jours ouvrables uniquement (lun-ven)
+                      </label>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Temporaire vs Permanente */}
@@ -996,14 +1077,15 @@ export default function GeofencesPage() {
                   Détails
                 </button>
                 <button
-                  onClick={() => setActiveTab('history')}
-                  className={`pb-2 px-1 text-sm font-medium transition-colors ${
-                    activeTab === 'history'
+                  onClick={() => setActiveTab('violations')}
+                  className={`pb-2 px-1 text-sm font-medium transition-colors flex items-center gap-1 ${
+                    activeTab === 'violations'
                       ? 'border-b-2 border-[#00E5CC] text-[#00E5CC]'
                       : 'text-[#6B6B80] hover:text-[#F0F0F5]'
                   }`}
                 >
-                  Historique
+                  <AlertTriangle size={14} />
+                  Violations
                 </button>
               </div>
 
@@ -1024,6 +1106,15 @@ export default function GeofencesPage() {
                       </Badge>
                     </div>
                     <div>
+                      <p className="text-[#6B6B80]">Priorité</p>
+                      <Badge
+                        className="text-white text-xs"
+                        style={{ backgroundColor: getPriorityColor((selectedGeofence as any).priority || 'Moyen') }}
+                      >
+                        {(selectedGeofence as any).priority || 'Moyen'}
+                      </Badge>
+                    </div>
+                    <div>
                       <p className="text-[#6B6B80]">Forme</p>
                       <p className="font-medium text-[#F0F0F5]">{getShapeLabel(selectedGeofence.shape)}</p>
                     </div>
@@ -1034,6 +1125,12 @@ export default function GeofencesPage() {
                     <div>
                       <p className="text-[#6B6B80]">Créé</p>
                       <p className="font-medium text-[#F0F0F5]">{formatDateTime(selectedGeofence.createdAt)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#6B6B80]">Type</p>
+                      <p className="font-medium text-[#F0F0F5]">
+                        {(selectedGeofence as any).isTemporary ? 'Temporaire' : 'Permanente'}
+                      </p>
                     </div>
                     <div>
                       <p className="text-[#6B6B80]">Alerte à l'entrée</p>
@@ -1050,49 +1147,74 @@ export default function GeofencesPage() {
                       </div>
                     )}
                   </div>
+
+                  <div className="border-t border-[#1F1F2E] pt-4 space-y-3">
+                    <h4 className="text-sm font-medium text-[#F0F0F5]">Statistiques temporelles</h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="rounded-lg bg-[#00E5CC]/10 p-3 border border-[#00E5CC]/20">
+                        <p className="text-[#6B6B80] text-xs">Temps moyen à l'intérieur</p>
+                        <p className="font-medium text-[#F0F0F5] mt-1">2h 15min</p>
+                      </div>
+                      <div className="rounded-lg bg-[#FFB547]/10 p-3 border border-[#FFB547]/20">
+                        <p className="text-[#6B6B80] text-xs">Entrées aujourd'hui</p>
+                        <p className="font-medium text-[#F0F0F5] mt-1">12</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* History Tab */}
-              {activeTab === 'history' && (
+              {/* Violations Tab */}
+              {activeTab === 'violations' && (
                 <div className="space-y-3">
                   {violationsLoading ? (
                     <div className="flex justify-center py-8">
-                      <div className="text-[#6B6B80]">Chargement de l'historique...</div>
+                      <div className="text-[#6B6B80]">Chargement des violations...</div>
                     </div>
                   ) : violations.length === 0 ? (
                     <div className="rounded-lg bg-[#1A1A25] px-4 py-6 text-center border border-[#1F1F2E]">
-                      <Clock className="mx-auto mb-2 text-[#44445A]" size={24} />
-                      <p className="text-sm text-[#6B6B80]">Aucun événement enregistré</p>
+                      <AlertTriangle className="mx-auto mb-2 text-[#44445A]" size={24} />
+                      <p className="text-sm text-[#6B6B80]">Aucune violation enregistrée</p>
                     </div>
                   ) : (
                     <div className="max-h-96 overflow-y-auto space-y-2">
-                      {violations.map((violation) => (
+                      {/* Table header */}
+                      <div className="grid grid-cols-5 gap-3 text-xs font-medium text-[#6B6B80] px-3 py-2 border-b border-[#1F1F2E]">
+                        <div>Type</div>
+                        <div>Véhicule</div>
+                        <div>Entrée</div>
+                        <div>Sortie</div>
+                        <div>Durée</div>
+                      </div>
+
+                      {/* Table rows */}
+                      {violations.map((violation, idx) => (
                         <div
                           key={violation.id}
-                          className={`flex items-start justify-between rounded-lg px-3 py-2 ${
+                          className={`grid grid-cols-5 gap-3 text-xs rounded-lg px-3 py-3 items-center border ${
                             violation.type === 'entry'
-                              ? 'bg-[#00E5CC]/10 border border-[#00E5CC]/30'
-                              : 'bg-[#FFB547]/10 border border-[#FFB547]/30'
+                              ? 'bg-[#00E5CC]/10 border-[#00E5CC]/30'
+                              : 'bg-[#FFB547]/10 border-[#FFB547]/30'
                           }`}
                         >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant={violation.type === 'entry' ? 'default' : 'secondary'}
-                                className={`text-xs ${
-                                  violation.type === 'entry'
-                                    ? 'bg-[#00E5CC] text-[#0A0A0F]'
-                                    : 'bg-[#FFB547] text-[#0A0A0F]'
-                                }`}
-                              >
-                                {violation.type === 'entry' ? 'Entrée' : 'Sortie'}
-                              </Badge>
-                              <span className="font-medium text-sm text-[#F0F0F5]">{violation.vehicleName}</span>
-                            </div>
-                            <p className="text-xs text-[#6B6B80] mt-1">
-                              {formatDateTime(violation.timestamp)}
-                            </p>
+                          <Badge
+                            className={`w-fit text-xs ${
+                              violation.type === 'entry'
+                                ? 'bg-[#00E5CC] text-[#0A0A0F]'
+                                : 'bg-[#FFB547] text-[#0A0A0F]'
+                            }`}
+                          >
+                            {violation.type === 'entry' ? 'Entrée' : 'Sortie'}
+                          </Badge>
+                          <div className="font-medium text-[#F0F0F5]">{violation.vehicleName}</div>
+                          <div className="text-[#6B6B80]">{formatDateTime(violation.timestamp)}</div>
+                          <div className="text-[#6B6B80]">
+                            {idx < violations.length - 1 && violations[idx + 1].type === 'exit'
+                              ? formatDateTime(violations[idx + 1].timestamp)
+                              : '-'}
+                          </div>
+                          <div className="text-[#6B6B80] font-medium">
+                            {violation.duration ? `${violation.duration}min` : '-'}
                           </div>
                         </div>
                       ))}

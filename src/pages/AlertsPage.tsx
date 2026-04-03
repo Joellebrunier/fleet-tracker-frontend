@@ -50,9 +50,13 @@ import {
   Trash2,
   TrendingUp,
   Save,
+  Download,
+  X,
+  PauseCircle,
+  Archive,
 } from 'lucide-react'
 import { formatDateTime, getSeverityColor, formatTimeAgo } from '@/lib/utils'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 
 // Alert type configuration for the rule builder
 const alertTypeConfig: Record<
@@ -129,6 +133,15 @@ const severityOptions = [
   { value: AlertSeverity.INFO, label: 'Info', color: 'text-gray-600' },
 ]
 
+interface MultiCondition {
+  id: string
+  field: 'vitesse' | 'géoclôture' | 'batterie' | 'contact' | 'GPS'
+  operator: '>' | '<' | '=' | 'entre'
+  value: string
+  value2?: string
+  logicOperator?: 'ET' | 'OU'
+}
+
 interface RuleFormState {
   name: string
   description: string
@@ -136,11 +149,13 @@ interface RuleFormState {
   severity: AlertSeverity
   conditionValue: string
   conditionDuration: string
+  conditions: MultiCondition[]
   actions: AlertAction[]
   enabled: boolean
   escalationEnabled: boolean
   escalationDelay: '5min' | '15min' | '30min' | '1h'
   escalationTarget: 'Manager' | 'Admin' | 'Super Admin'
+  escalationEmail?: string
   parentRuleId?: string
   silentHoursEnabled: boolean
   silentHoursFrom: string
@@ -161,11 +176,13 @@ const defaultRuleForm: RuleFormState = {
   severity: AlertSeverity.MEDIUM,
   conditionValue: '',
   conditionDuration: '',
+  conditions: [],
   actions: [],
   enabled: true,
   escalationEnabled: false,
   escalationDelay: '15min',
   escalationTarget: 'Manager',
+  escalationEmail: '',
   parentRuleId: undefined,
   silentHoursEnabled: false,
   silentHoursFrom: '22:00',
@@ -179,7 +196,56 @@ const defaultRuleForm: RuleFormState = {
   },
 }
 
-type TabView = 'alerts' | 'rules' | 'trends'
+// Alert templates
+const alertTemplates = [
+  {
+    id: 'overspeed-highway',
+    name: 'Excès de vitesse autoroute',
+    description: 'Alerte quand la vitesse dépasse 130 km/h',
+    type: AlertType.OVERSPEED,
+    severity: AlertSeverity.CRITICAL,
+    conditionValue: '130',
+    conditions: [],
+  },
+  {
+    id: 'overspeed-city',
+    name: 'Excès de vitesse ville',
+    description: 'Alerte quand la vitesse dépasse 50 km/h',
+    type: AlertType.OVERSPEED,
+    severity: AlertSeverity.HIGH,
+    conditionValue: '50',
+    conditions: [],
+  },
+  {
+    id: 'low-battery',
+    name: 'Batterie faible',
+    description: 'Alerte quand la batterie descend en dessous de 20%',
+    type: AlertType.LOW_BATTERY,
+    severity: AlertSeverity.MEDIUM,
+    conditionValue: '20',
+    conditions: [],
+  },
+  {
+    id: 'geofence-exit',
+    name: 'Sortie zone de travail',
+    description: 'Alerte quand le véhicule quitte la zone',
+    type: AlertType.GEOFENCE_EXIT,
+    severity: AlertSeverity.HIGH,
+    conditionValue: '',
+    conditions: [],
+  },
+  {
+    id: 'idle-timeout',
+    name: 'Véhicule immobile >2h',
+    description: 'Alerte après 2 heures d\'inactivité',
+    type: AlertType.IDLE_TIMEOUT,
+    severity: AlertSeverity.LOW,
+    conditionValue: '120',
+    conditions: [],
+  },
+]
+
+type TabView = 'alerts' | 'rules' | 'trends' | 'archives'
 
 export default function AlertsPage() {
   const [tab, setTab] = useState<TabView>('alerts')
@@ -209,6 +275,10 @@ export default function AlertsPage() {
   const [groupBy, setGroupBy] = useState<'none' | 'type' | 'vehicle' | 'severity'>('none')
   const [quickFilterSeverity, setQuickFilterSeverity] = useState<AlertSeverity | 'all'>('all')
   const [quickFilterTime, setQuickFilterTime] = useState<'all' | 'today' | 'week'>('all')
+  // Snooze/Archive features
+  const [snoozedAlerts, setSnoozedAlerts] = useState<Record<string, number>>({})
+  const [archivedAlerts, setArchivedAlerts] = useState<Set<string>>(new Set())
+  const [showSnoozeMenu, setShowSnoozeMenu] = useState<string | null>(null)
 
   const organizationId = useAuthStore((s: any) => s.user?.organizationId) || ''
 
@@ -222,6 +292,15 @@ export default function AlertsPage() {
   const totalPages = alertsData?.totalPages || 1
 
   const filteredAlerts = alerts.filter((a) => {
+    // Exclude archived alerts unless on archives tab
+    if (tab !== 'archives' && archivedAlerts.has(a.id)) {
+      return false
+    }
+    // Only show archived alerts on archives tab
+    if (tab === 'archives' && !archivedAlerts.has(a.id)) {
+      return false
+    }
+
     // Keyword search filter - search by vehicle name, alert type, and message
     if (search) {
       const searchLower = search.toLowerCase()
@@ -373,6 +452,7 @@ export default function AlertsPage() {
       severity: rule.severity,
       conditionValue: String(condition?.value || ''),
       conditionDuration: String(condition?.duration || ''),
+      conditions: [],
       actions: rule.actions || [],
       enabled: rule.enabled,
       escalationEnabled: (rule as any).escalationEnabled || false,
@@ -407,6 +487,53 @@ export default function AlertsPage() {
     } catch (err) {
       console.error('Failed to delete rule:', err)
     }
+  }
+
+  const handleSnoozeAlert = (alertId: string, minutes: number) => {
+    const snoozeUntil = Date.now() + minutes * 60 * 1000
+    setSnoozedAlerts((prev) => ({ ...prev, [alertId]: snoozeUntil }))
+    setShowSnoozeMenu(null)
+  }
+
+  const handleArchiveAlert = (alertId: string) => {
+    setArchivedAlerts((prev) => new Set([...prev, alertId]))
+  }
+
+  const handleUnarchiveAlert = (alertId: string) => {
+    setArchivedAlerts((prev) => {
+      const newSet = new Set(prev)
+      newSet.delete(alertId)
+      return newSet
+    })
+  }
+
+  const handleExportAlerts = () => {
+    const dataToExport = filteredAlerts.map((alert) => ({
+      'Date': formatDateTime(alert.createdAt),
+      'Titre': alert.title,
+      'Message': alert.message,
+      'Sévérité': alert.severity,
+      'Type': alert.type,
+      'Statut': alert.isAcknowledged ? 'Reconnu' : 'Non reconnu',
+      'Véhicule': (alert as any).vehicleName || 'N/A',
+    }))
+
+    const csv = [
+      Object.keys(dataToExport[0] || {}).join(','),
+      ...dataToExport.map((row) =>
+        Object.values(row)
+          .map((val) => `"${val}"`)
+          .join(',')
+      ),
+    ].join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `alerts-${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const handleSaveGlobalSilentHours = async () => {
@@ -516,6 +643,19 @@ export default function AlertsPage() {
   ])
   const [trendsLoading, setTrendsLoading] = useState(false)
 
+  // Generate heatmap data (24 hours)
+  const heatmapData = Array.from({ length: 24 }, (_, hour) => {
+    const alertsInHour = alerts.filter((a) => {
+      const alertHour = new Date(a.createdAt).getHours()
+      return alertHour === hour
+    }).length
+    return {
+      hour: `${hour.toString().padStart(2, '0')}:00`,
+      count: alertsInHour,
+      intensity: Math.min((alertsInHour / 10) * 100, 100),
+    }
+  })
+
   useEffect(() => {
     const fetchTrendsData = async () => {
       if (!organizationId) return
@@ -537,6 +677,8 @@ export default function AlertsPage() {
   }, [organizationId])
 
   const assignmentOptions = ['Admin', 'Manager', 'Opérateur']
+
+  const generateConditionId = () => `cond-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   return (
     <div className="space-y-6" style={{ backgroundColor: '#0A0A0F' }}>
@@ -659,6 +801,17 @@ export default function AlertsPage() {
           Tendances
         </button>
         <button
+          onClick={() => setTab('archives')}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors`}
+          style={{
+            backgroundColor: tab === 'archives' ? '#1A1A25' : 'transparent',
+            color: tab === 'archives' ? '#F0F0F5' : '#6B6B80',
+            borderBottom: tab === 'archives' ? '2px solid #00E5CC' : 'none',
+          }}
+        >
+          Archives ({archivedAlerts.size})
+        </button>
+        <button
           onClick={() => setTab('rules')}
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors`}
           style={{
@@ -674,6 +827,20 @@ export default function AlertsPage() {
       {/* Alerts Tab */}
       {tab === 'alerts' && (
         <>
+          {/* Export Button */}
+          {filteredAlerts.length > 0 && (
+            <div className="flex justify-end">
+              <Button
+                className="gap-2"
+                onClick={handleExportAlerts}
+                style={{ backgroundColor: 'transparent', color: '#00E5CC', borderColor: '#00E5CC', border: '1px solid' }}
+              >
+                <Download size={16} />
+                Exporter CSV
+              </Button>
+            </div>
+          )}
+
           {/* Filters */}
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -897,9 +1064,9 @@ export default function AlertsPage() {
                     {groupAlerts.map((alert) => (
                       <Card
                         key={alert.id}
-                        className={`transition-all cursor-pointer`}
+                        className={`transition-all cursor-pointer ${snoozedAlerts[alert.id] ? 'opacity-60' : ''}`}
                         style={{
-                          backgroundColor: '#12121A',
+                          backgroundColor: snoozedAlerts[alert.id] ? '#0F0F14' : '#12121A',
                           borderColor: selectedAlerts.includes(alert.id) ? '#00E5CC' : selectedAlertId === alert.id ? '#00E5CC' : '#1F1F2E',
                           borderWidth: '1px',
                         }}
@@ -907,6 +1074,7 @@ export default function AlertsPage() {
                           setSelectedAlertId(selectedAlertId === alert.id ? null : alert.id)
                           setShowNoteForm(false)
                           setShowAssignDropdown(false)
+                          setShowSnoozeMenu(null)
                         }}
                       >
                         <CardContent className="py-4">
@@ -932,6 +1100,11 @@ export default function AlertsPage() {
                                 <div className="flex-1">
                                   <h3 className="font-medium font-syne" style={{ color: '#F0F0F5' }}>{alert.title}</h3>
                                   <p className="mt-0.5 text-sm line-clamp-1" style={{ color: '#6B6B80' }}>{alert.message}</p>
+                              {snoozedAlerts[alert.id] && (
+                                <p className="mt-1 text-xs" style={{ color: '#00E5CC' }}>
+                                  Reporté jusqu'à {new Date(snoozedAlerts[alert.id]).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              )}
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                                   <span
@@ -978,6 +1151,57 @@ export default function AlertsPage() {
                                     </div>
                                   )}
                                   <div className="flex gap-2 flex-wrap">
+                                    <div className="relative">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="gap-1 text-xs"
+                                        style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          setShowSnoozeMenu(showSnoozeMenu === alert.id ? null : alert.id)
+                                        }}
+                                      >
+                                        <PauseCircle size={12} />
+                                        Reporter
+                                      </Button>
+                                      {showSnoozeMenu === alert.id && (
+                                        <div
+                                          className="absolute top-full mt-1 left-0 z-10 rounded-lg border bg-[#1A1A25] border-[#1F1F2E]"
+                                          style={{ minWidth: '120px' }}
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {[
+                                            { label: '15 min', minutes: 15 },
+                                            { label: '30 min', minutes: 30 },
+                                            { label: '1h', minutes: 60 },
+                                            { label: '4h', minutes: 240 },
+                                            { label: '24h', minutes: 1440 },
+                                          ].map((option) => (
+                                            <button
+                                              key={option.minutes}
+                                              onClick={() => handleSnoozeAlert(alert.id, option.minutes)}
+                                              className="w-full text-left px-3 py-2 text-xs hover:bg-[#1F1F2E] text-[#F0F0F5]"
+                                            >
+                                              {option.label}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="gap-1 text-xs"
+                                      style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleArchiveAlert(alert.id)
+                                      }}
+                                    >
+                                      <Archive size={12} />
+                                      Archiver
+                                    </Button>
                                     <Button
                                       size="sm"
                                       variant="outline"
@@ -1122,6 +1346,79 @@ export default function AlertsPage() {
         </>
       )}
 
+      {/* Archives Tab */}
+      {tab === 'archives' && (
+        <>
+          {filteredAlerts.length === 0 ? (
+            <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }} className="text-center">
+              <CardContent className="py-12">
+                <Archive className="mx-auto mb-4" size={48} style={{ color: '#44445A' }} />
+                <h3 className="text-lg font-medium font-syne" style={{ color: '#F0F0F5' }}>Aucune alerte archivée</h3>
+                <p className="mt-1 text-sm" style={{ color: '#6B6B80' }}>
+                  Les alertes que vous archivez apparaîtront ici.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-2">
+              {filteredAlerts.map((alert) => (
+                <Card
+                  key={alert.id}
+                  className="transition-all"
+                  style={{
+                    backgroundColor: '#12121A',
+                    borderColor: '#1F1F2E',
+                    borderWidth: '1px',
+                  }}
+                >
+                  <CardContent className="py-4">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`rounded-lg p-2 ${getSeverityBadgeClass(alert.severity)}`}
+                      >
+                        {getPriorityDot(alert.type)}
+                        <AlertCircle size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            <h3 className="font-medium font-syne" style={{ color: '#F0F0F5' }}>{alert.title}</h3>
+                            <p className="mt-0.5 text-sm line-clamp-1" style={{ color: '#6B6B80' }}>{alert.message}</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${getSeverityBadgeClass(
+                                alert.severity
+                              )}`}
+                            >
+                              {alert.severity}
+                            </span>
+                            <Badge style={{ backgroundColor: '#6B6B80', color: '#F0F0F5' }} className="text-xs">
+                              Archivé
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1 text-xs"
+                              style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                              onClick={() => handleUnarchiveAlert(alert.id)}
+                            >
+                              <X size={12} />
+                              Restaurer
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="mt-1 text-xs" style={{ color: '#44445A' }}>{formatTimeAgo(alert.createdAt)}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
       {/* Trends Tab */}
       {tab === 'trends' && (
         <div className="space-y-4">
@@ -1183,12 +1480,94 @@ export default function AlertsPage() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+
+          {/* Heatmap - Alert concentration by time of day */}
+          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 font-syne" style={{ color: '#F0F0F5' }}>
+                <Clock size={20} />
+                Concentration des alertes par heure
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-1 items-end justify-between h-40">
+                {heatmapData.map((data, idx) => {
+                  const getHeatColor = (intensity: number) => {
+                    if (intensity === 0) return '#1F1F2E'
+                    if (intensity < 25) return '#6B6B80'
+                    if (intensity < 50) return '#00E5CC'
+                    if (intensity < 75) return '#FFB547'
+                    return '#FF4D6A'
+                  }
+                  return (
+                    <div
+                      key={idx}
+                      className="flex-1 rounded-t-sm transition-all hover:opacity-80 cursor-pointer"
+                      style={{
+                        backgroundColor: getHeatColor(data.intensity),
+                        height: `${Math.max(10, (data.count / Math.max(...heatmapData.map((d) => d.count))) * 100)}%`,
+                        minHeight: '8px',
+                      }}
+                      title={`${data.hour}: ${data.count} alertes`}
+                    />
+                  )
+                })}
+              </div>
+              <div className="flex justify-between mt-3 text-xs" style={{ color: '#6B6B80' }}>
+                <span>00:00</span>
+                <span>12:00</span>
+                <span>23:00</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Rules Tab */}
       {tab === 'rules' && (
         <div className="space-y-4">
+          {/* Alert Templates */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold" style={{ color: '#F0F0F5' }}>Modèles d'alerte</h3>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {alertTemplates.map((template) => (
+                <Card
+                  key={template.id}
+                  style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}
+                  className="cursor-pointer hover:border-[#00E5CC] transition-colors"
+                >
+                  <CardContent className="py-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-sm font-medium" style={{ color: '#F0F0F5' }}>{template.name}</h4>
+                        <p className="text-xs mt-1 line-clamp-2" style={{ color: '#6B6B80' }}>{template.description}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="gap-1 text-xs shrink-0 ml-2"
+                        style={{ backgroundColor: '#00E5CC', color: '#0A0A0F' }}
+                        onClick={() => {
+                          setRuleForm((prev) => ({
+                            ...prev,
+                            name: template.name,
+                            description: template.description,
+                            type: template.type,
+                            severity: template.severity,
+                            conditionValue: template.conditionValue,
+                          }))
+                          setRuleStep(1)
+                          setShowRuleModal(true)
+                        }}
+                      >
+                        Utiliser
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
           {/* Silent Hours Configuration Card */}
           <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid', backgroundImage: 'linear-gradient(135deg, rgba(0, 229, 204, 0.1) 0%, rgba(0, 229, 204, 0.05) 100%)' }}>
             <CardHeader>
@@ -1538,6 +1917,161 @@ export default function AlertsPage() {
                 </p>
               </div>
 
+              {/* Multi-Conditions */}
+              <div className="rounded-lg border p-4" style={{ borderColor: '#1F1F2E' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-sm" style={{ color: '#F0F0F5' }}>Conditions supplémentaires</h4>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 text-xs"
+                    style={{ borderColor: '#00E5CC', color: '#00E5CC' }}
+                    onClick={() => {
+                      setRuleForm((prev) => ({
+                        ...prev,
+                        conditions: [
+                          ...prev.conditions,
+                          {
+                            id: generateConditionId(),
+                            field: 'vitesse',
+                            operator: '>',
+                            value: '',
+                            logicOperator: prev.conditions.length > 0 ? 'ET' : undefined,
+                          },
+                        ],
+                      }))
+                    }}
+                  >
+                    <Plus size={12} />
+                    Ajouter condition
+                  </Button>
+                </div>
+
+                {ruleForm.conditions.length > 0 && (
+                  <div className="space-y-3">
+                    {ruleForm.conditions.map((cond, idx) => (
+                      <div key={cond.id} className="space-y-2 pb-3 border-b" style={{ borderColor: '#1F1F2E' }}>
+                        {idx > 0 && (
+                          <select
+                            value={cond.logicOperator || 'ET'}
+                            onChange={(e) => {
+                              const newConds = [...ruleForm.conditions]
+                              newConds[idx].logicOperator = e.target.value as 'ET' | 'OU'
+                              setRuleForm((prev) => ({ ...prev, conditions: newConds }))
+                            }}
+                            style={{
+                              backgroundColor: '#1A1A25',
+                              borderColor: '#1F1F2E',
+                              color: '#F0F0F5',
+                              border: '1px solid',
+                            }}
+                            className="rounded-md px-2 py-1 text-xs font-medium w-16"
+                          >
+                            <option value="ET">ET</option>
+                            <option value="OU">OU</option>
+                          </select>
+                        )}
+                        <div className="flex gap-2">
+                          <select
+                            value={cond.field}
+                            onChange={(e) => {
+                              const newConds = [...ruleForm.conditions]
+                              newConds[idx].field = e.target.value as any
+                              setRuleForm((prev) => ({ ...prev, conditions: newConds }))
+                            }}
+                            style={{
+                              backgroundColor: '#1A1A25',
+                              borderColor: '#1F1F2E',
+                              color: '#F0F0F5',
+                              border: '1px solid',
+                            }}
+                            className="rounded-md px-2 py-1 text-xs flex-1"
+                          >
+                            <option value="vitesse">Vitesse</option>
+                            <option value="géoclôture">Géoclôture</option>
+                            <option value="batterie">Batterie</option>
+                            <option value="contact">Contact</option>
+                            <option value="GPS">GPS</option>
+                          </select>
+
+                          <select
+                            value={cond.operator}
+                            onChange={(e) => {
+                              const newConds = [...ruleForm.conditions]
+                              newConds[idx].operator = e.target.value as any
+                              setRuleForm((prev) => ({ ...prev, conditions: newConds }))
+                            }}
+                            style={{
+                              backgroundColor: '#1A1A25',
+                              borderColor: '#1F1F2E',
+                              color: '#F0F0F5',
+                              border: '1px solid',
+                            }}
+                            className="rounded-md px-2 py-1 text-xs"
+                          >
+                            <option value=">">Supérieur à</option>
+                            <option value="<">Inférieur à</option>
+                            <option value="=">=</option>
+                            <option value="entre">Entre</option>
+                          </select>
+
+                          <Input
+                            type="text"
+                            value={cond.value}
+                            onChange={(e) => {
+                              const newConds = [...ruleForm.conditions]
+                              newConds[idx].value = e.target.value
+                              setRuleForm((prev) => ({ ...prev, conditions: newConds }))
+                            }}
+                            placeholder="Valeur"
+                            style={{
+                              backgroundColor: '#1A1A25',
+                              borderColor: '#1F1F2E',
+                              color: '#F0F0F5',
+                            }}
+                            className="flex-1"
+                          />
+
+                          {cond.operator === 'entre' && (
+                            <Input
+                              type="text"
+                              value={cond.value2 || ''}
+                              onChange={(e) => {
+                                const newConds = [...ruleForm.conditions]
+                                newConds[idx].value2 = e.target.value
+                                setRuleForm((prev) => ({ ...prev, conditions: newConds }))
+                              }}
+                              placeholder="Valeur 2"
+                              style={{
+                                backgroundColor: '#1A1A25',
+                                borderColor: '#1F1F2E',
+                                color: '#F0F0F5',
+                              }}
+                              className="flex-1"
+                            />
+                          )}
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0"
+                            style={{ color: '#FF4D6A' }}
+                            onClick={() => {
+                              setRuleForm((prev) => ({
+                                ...prev,
+                                conditions: prev.conditions.filter((c) => c.id !== cond.id),
+                              }))
+                            }}
+                          >
+                            <X size={14} />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <label className="flex items-center gap-2 text-sm" style={{ color: '#F0F0F5' }}>
                 <input
                   type="checkbox"
@@ -1686,7 +2220,7 @@ export default function AlertsPage() {
                   {ruleForm.escalationEnabled && (
                     <div className="ml-6 space-y-3">
                       <div>
-                        <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Délai avant escalade</label>
+                        <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Si non acquittée après (minutes)</label>
                         <select
                           value={ruleForm.escalationDelay}
                           onChange={(e) =>
@@ -1711,7 +2245,27 @@ export default function AlertsPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Escalader vers</label>
+                        <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Envoyer à</label>
+                        <Input
+                          type="email"
+                          value={ruleForm.escalationEmail || ''}
+                          onChange={(e) =>
+                            setRuleForm((prev) => ({
+                              ...prev,
+                              escalationEmail: e.target.value,
+                            }))
+                          }
+                          placeholder="email@example.com"
+                          style={{
+                            backgroundColor: '#1A1A25',
+                            borderColor: '#1F1F2E',
+                            color: '#F0F0F5',
+                          }}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Ou escalader vers</label>
                         <select
                           value={ruleForm.escalationTarget}
                           onChange={(e) =>

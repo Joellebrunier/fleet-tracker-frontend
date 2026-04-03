@@ -30,13 +30,20 @@ import {
   Mail,
   Clock as ClockIcon,
   AlertCircle,
+  TrendingUp,
+  Share2,
+  Copy,
+  Plus,
+  X,
+  ToggleLeft,
 } from 'lucide-react'
-import { format, subDays, startOfWeek, startOfMonth, endOfMonth } from 'date-fns'
+import { format, subDays, startOfWeek, startOfMonth, endOfMonth, addDays, addWeeks, addMonths } from 'date-fns'
 import { formatDateTime } from '@/lib/utils'
 import { apiClient } from '@/lib/api'
 import { API_ROUTES } from '@/lib/constants'
 import { useAuthStore } from '@/stores/authStore'
 import { useVehicles } from '@/hooks/useVehicles'
+import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
 type ReportType = 'trip' | 'fuel' | 'driver' | 'fleet' | 'maintenance' | 'compliance'
 type ReportFormat = 'pdf' | 'excel' | 'csv'
@@ -64,10 +71,38 @@ interface ReportTemplate {
   icon: typeof FileText
 }
 
+interface ScheduledReport {
+  id: string
+  type: ReportType
+  frequency: ScheduleFrequency
+  nextRun: Date
+  isActive: boolean
+  recipients: string[]
+  dayOfWeek?: number
+  timeOfDay?: string
+}
+
 interface Vehicle {
   id: string
   name: string
   plate: string
+}
+
+interface TrendData {
+  date: string
+  mileage?: number
+  speed?: number
+  alerts?: number
+  utilization?: number
+}
+
+interface VehicleComparison {
+  vehicleId: string
+  vehicleName: string
+  km: number
+  trips: number
+  alerts: number
+  avgSpeed: number
 }
 
 const REPORT_TYPE_CONFIG: Record<
@@ -112,32 +147,72 @@ const FORMAT_ICONS: Record<ReportFormat, typeof File> = {
   csv: File,
 }
 
-const reportTemplates: ReportTemplate[] = [
+const ENHANCED_TEMPLATES: ReportTemplate[] = [
   {
-    name: 'Rapport hebdomadaire flotte',
-    description: 'Rapport hebdomadaire, tous les véhicules, PDF',
-    type: 'fleet',
+    name: 'Rapport kilométrage mensuel',
+    description: 'Kilométrage mensuel par véhicule',
+    type: 'trip',
+    frequency: 'monthly',
+    format: 'excel',
+    icon: FileSpreadsheet,
+  },
+  {
+    name: 'Rapport activité conducteurs',
+    description: 'Résumé de l\'activité des conducteurs',
+    type: 'driver',
+    frequency: 'monthly',
+    format: 'pdf',
+    icon: FileText,
+  },
+  {
+    name: 'Rapport violations géoclôtures',
+    description: 'Violations de géoclôture détectées',
+    type: 'compliance',
     frequency: 'weekly',
     format: 'pdf',
     icon: BarChart3,
   },
   {
-    name: 'Rapport mensuel conducteurs',
-    description: 'Rapport mensuel, performance des conducteurs, Excel',
-    type: 'driver',
+    name: 'Rapport consommation carburant',
+    description: 'Estimation de consommation carburant',
+    type: 'fuel',
     frequency: 'monthly',
     format: 'excel',
-    icon: FileText,
+    icon: FileSpreadsheet,
   },
   {
-    name: 'Rapport quotidien alertes',
-    description: 'Rapport quotidien, résumé des alertes, Email',
+    name: 'Rapport alertes hebdomadaire',
+    description: 'Résumé hebdomadaire des alertes',
     type: 'compliance',
-    frequency: 'daily',
+    frequency: 'weekly',
     format: 'pdf',
     icon: BarChart3,
   },
+  {
+    name: 'Rapport utilisation flotte',
+    description: 'Pourcentage utilisation flotte',
+    type: 'fleet',
+    frequency: 'weekly',
+    format: 'excel',
+    icon: FileSpreadsheet,
+  },
 ]
+
+// Mock trend data generator
+const generateTrendData = (): TrendData[] => {
+  const data: TrendData[] = []
+  for (let i = 29; i >= 0; i--) {
+    const date = subDays(new Date(), i)
+    data.push({
+      date: format(date, 'MMM dd'),
+      mileage: Math.floor(Math.random() * 500) + 200,
+      speed: Math.floor(Math.random() * 40) + 40,
+      alerts: Math.floor(Math.random() * 10),
+      utilization: Math.floor(Math.random() * 40) + 50,
+    })
+  }
+  return data
+}
 
 export default function ReportsPage() {
   const orgId = useAuthStore((s) => s.user?.organizationId) || ''
@@ -145,6 +220,7 @@ export default function ReportsPage() {
   // State for report generation dialog
   const [selectedReportType, setSelectedReportType] = useState<ReportType | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<'generate' | 'scheduled' | 'trends' | 'comparison'>('generate')
   const [showScheduleForm, setShowScheduleForm] = useState(false)
   const [showEmailDialog, setShowEmailDialog] = useState(false)
 
@@ -160,11 +236,18 @@ export default function ReportsPage() {
   // Schedule state
   const [scheduleFrequency, setScheduleFrequency] = useState<ScheduleFrequency>('weekly')
   const [scheduleEmail, setScheduleEmail] = useState('')
+  const [emailRecipients, setEmailRecipients] = useState<string[]>([])
+  const [newRecipient, setNewRecipient] = useState('')
+  const [sendCopyToMe, setSendCopyToMe] = useState(false)
+  const [scheduleTimeOfDay, setScheduleTimeOfDay] = useState('09:00')
+  const [scheduleDayOfWeek, setScheduleDayOfWeek] = useState<number>(1)
   const [isScheduling, setIsScheduling] = useState(false)
   const [scheduleError, setScheduleError] = useState('')
+  const [scheduledReports, setScheduledReports] = useState<ScheduledReport[]>([])
 
   // Email state
   const [emailRecipient, setEmailRecipient] = useState('')
+  const [emailRecipientsList, setEmailRecipientsList] = useState<string[]>([])
   const [emailSubject, setEmailSubject] = useState('')
   const [emailMessage, setEmailMessage] = useState('')
   const [isSendingEmail, setIsSendingEmail] = useState(false)
@@ -173,8 +256,14 @@ export default function ReportsPage() {
   // Error state
   const [generationError, setGenerationError] = useState('')
 
-  // Generated reports state — starts empty, populated via API
+  // Generated reports state
   const [generatedReports, setGeneratedReports] = useState<GeneratedReport[]>([])
+
+  // Trends and comparison state
+  const [trendData, setTrendData] = useState<TrendData[]>([])
+  const [comparisonVehicles, setComparisonVehicles] = useState<string[]>([])
+  const [comparisonData, setComparisonData] = useState<VehicleComparison[]>([])
+  const [copiedShareLink, setCopiedShareLink] = useState(false)
 
   // Load report history from API
   useEffect(() => {
@@ -196,6 +285,9 @@ export default function ReportsPage() {
       }
     }
     loadReportHistory()
+
+    // Generate mock trend data
+    setTrendData(generateTrendData())
   }, [orgId])
 
   // Fetch real vehicles from API
@@ -217,6 +309,8 @@ export default function ReportsPage() {
     setDialogOpen(false)
     setSelectedReportType(null)
     setGenerationError('')
+    setShowScheduleForm(false)
+    setShowEmailDialog(false)
   }, [])
 
   const applyDateRange = useCallback((range: 'today' | 'week' | 'month' | 'lastMonth') => {
@@ -253,6 +347,39 @@ export default function ReportsPage() {
     )
   }, [])
 
+  const handleComparisonVehicleToggle = useCallback((vehicleId: string) => {
+    setComparisonVehicles((prev) => {
+      if (prev.includes(vehicleId)) {
+        return prev.filter((id) => id !== vehicleId)
+      }
+      if (prev.length < 4) {
+        return [...prev, vehicleId]
+      }
+      return prev
+    })
+  }, [])
+
+  const generateComparisonData = useCallback(() => {
+    if (comparisonVehicles.length === 0) return
+
+    const data = comparisonVehicles.map((vehicleId) => {
+      const vehicle = vehicles.find((v) => v.id === vehicleId)
+      return {
+        vehicleId,
+        vehicleName: vehicle?.name || 'Unknown',
+        km: Math.floor(Math.random() * 5000) + 1000,
+        trips: Math.floor(Math.random() * 100) + 20,
+        alerts: Math.floor(Math.random() * 20),
+        avgSpeed: Math.floor(Math.random() * 40) + 40,
+      }
+    })
+    setComparisonData(data)
+  }, [comparisonVehicles, vehicles])
+
+  useEffect(() => {
+    generateComparisonData()
+  }, [comparisonVehicles, generateComparisonData])
+
   const handleGenerateReport = useCallback(async () => {
     if (!selectedReportType || !orgId) {
       setGenerationError('Type de rapport non sélectionné')
@@ -274,7 +401,6 @@ export default function ReportsPage() {
       const response = await apiClient.post(API_ROUTES.REPORTS_GENERATE(orgId), payload)
       const result = response.data || {}
 
-      // Add new report to the list
       const newReport: GeneratedReport = {
         id: result.id || `report-${Date.now()}`,
         type: selectedReportType,
@@ -322,8 +448,27 @@ export default function ReportsPage() {
     window.print()
   }, [])
 
+  const addEmailRecipient = useCallback(() => {
+    if (emailRecipient && !emailRecipientsList.includes(emailRecipient)) {
+      setEmailRecipientsList((prev) => [...prev, emailRecipient])
+      setEmailRecipient('')
+    }
+  }, [emailRecipient, emailRecipientsList])
+
+  const removeEmailRecipient = useCallback((email: string) => {
+    setEmailRecipientsList((prev) => prev.filter((e) => e !== email))
+  }, [])
+
   const handleSendEmail = useCallback(async () => {
-    if (!emailRecipient || !emailSubject || !orgId) {
+    const finalRecipients = [...emailRecipientsList]
+    if (sendCopyToMe) {
+      const userEmail = useAuthStore((s) => s.user?.email)
+      if (userEmail && !finalRecipients.includes(userEmail)) {
+        finalRecipients.push(userEmail)
+      }
+    }
+
+    if (finalRecipients.length === 0 || !emailSubject || !orgId) {
       setEmailError('Veuillez remplir tous les champs requis')
       return
     }
@@ -333,7 +478,7 @@ export default function ReportsPage() {
 
     try {
       const payload = {
-        recipient: emailRecipient,
+        recipients: finalRecipients,
         subject: emailSubject,
         message: emailMessage,
         reportType: selectedReportType,
@@ -346,9 +491,10 @@ export default function ReportsPage() {
       await apiClient.post(`${API_ROUTES.ORGANIZATIONS}/${orgId}/reports/email`, payload)
 
       setShowEmailDialog(false)
-      setEmailRecipient('')
+      setEmailRecipientsList([])
       setEmailSubject('')
       setEmailMessage('')
+      setSendCopyToMe(false)
     } catch (error) {
       console.error('Failed to send email:', error)
       setEmailError(
@@ -359,11 +505,22 @@ export default function ReportsPage() {
     } finally {
       setIsSendingEmail(false)
     }
-  }, [emailRecipient, emailSubject, orgId, selectedReportType, dateFrom, dateTo, selectedVehicles, reportFormat])
+  }, [emailRecipientsList, sendCopyToMe, emailSubject, orgId, selectedReportType, dateFrom, dateTo, selectedVehicles, reportFormat])
+
+  const addScheduleEmailRecipient = useCallback(() => {
+    if (scheduleEmail && !emailRecipients.includes(scheduleEmail)) {
+      setEmailRecipients((prev) => [...prev, scheduleEmail])
+      setScheduleEmail('')
+    }
+  }, [scheduleEmail, emailRecipients])
+
+  const removeScheduleEmailRecipient = useCallback((email: string) => {
+    setEmailRecipients((prev) => prev.filter((e) => e !== email))
+  }, [])
 
   const handleScheduleReport = useCallback(async () => {
-    if (!scheduleEmail || !selectedReportType || !orgId) {
-      setScheduleError('Veuillez remplir tous les champs requis')
+    if (emailRecipients.length === 0 || !selectedReportType || !orgId) {
+      setScheduleError('Veuillez ajouter au moins une adresse e-mail')
       return
     }
 
@@ -371,10 +528,22 @@ export default function ReportsPage() {
     setScheduleError('')
 
     try {
+      // Calculate next run date
+      let nextRun = new Date()
+      if (scheduleFrequency === 'daily') {
+        nextRun = addDays(nextRun, 1)
+      } else if (scheduleFrequency === 'weekly') {
+        nextRun = addWeeks(nextRun, 1)
+      } else if (scheduleFrequency === 'monthly') {
+        nextRun = addMonths(nextRun, 1)
+      }
+
       const payload = {
         reportType: selectedReportType,
         frequency: scheduleFrequency,
-        recipientEmail: scheduleEmail,
+        recipientEmails: emailRecipients,
+        dayOfWeek: scheduleFrequency === 'weekly' ? scheduleDayOfWeek : undefined,
+        timeOfDay: scheduleTimeOfDay,
         dateFrom: dateFrom,
         dateTo: dateTo,
         vehicleIds: selectedVehicles.length > 0 ? selectedVehicles : undefined,
@@ -383,8 +552,24 @@ export default function ReportsPage() {
 
       await apiClient.post(`${API_ROUTES.ORGANIZATIONS}/${orgId}/reports/schedule`, payload)
 
+      // Add to scheduled reports list
+      const newScheduledReport: ScheduledReport = {
+        id: `scheduled-${Date.now()}`,
+        type: selectedReportType,
+        frequency: scheduleFrequency,
+        nextRun: nextRun,
+        isActive: true,
+        recipients: emailRecipients,
+        dayOfWeek: scheduleFrequency === 'weekly' ? scheduleDayOfWeek : undefined,
+        timeOfDay: scheduleTimeOfDay,
+      }
+      setScheduledReports((prev) => [newScheduledReport, ...prev])
+
       setShowScheduleForm(false)
+      setEmailRecipients([])
       setScheduleEmail('')
+      setScheduleTimeOfDay('09:00')
+      setScheduleDayOfWeek(1)
     } catch (error) {
       console.error('Failed to schedule report:', error)
       setScheduleError(
@@ -395,84 +580,532 @@ export default function ReportsPage() {
     } finally {
       setIsScheduling(false)
     }
-  }, [scheduleEmail, selectedReportType, orgId, scheduleFrequency, dateFrom, dateTo, selectedVehicles, reportFormat])
+  }, [emailRecipients, selectedReportType, orgId, scheduleFrequency, scheduleDayOfWeek, scheduleTimeOfDay, dateFrom, dateTo, selectedVehicles, reportFormat])
+
+  const handleToggleScheduledReport = useCallback((reportId: string) => {
+    setScheduledReports((prev) =>
+      prev.map((r) =>
+        r.id === reportId ? { ...r, isActive: !r.isActive } : r
+      )
+    )
+  }, [])
+
+  const generateShareLink = useCallback(() => {
+    if (!selectedReportType) return
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${baseUrl}/reports/share?type=${selectedReportType}&from=${dateFrom}&to=${dateTo}&vehicles=${selectedVehicles.join(',')}`
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopiedShareLink(true)
+      setTimeout(() => setCopiedShareLink(false), 2000)
+    })
+  }, [selectedReportType, dateFrom, dateTo, selectedVehicles])
 
   const reportTypes = Object.entries(REPORT_TYPE_CONFIG).map(([key, config]) => ({
     type: key as ReportType,
     ...config,
   }))
 
+  const dayOfWeekNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-[#F0F0F5]">Rapports</h1>
-        <p className="mt-2 text-[#6B6B80]">Générer et télécharger les rapports de flotte</p>
+        <p className="mt-2 text-[#6B6B80]">Générer, programmer et analyser les rapports de flotte</p>
       </div>
 
-      {/* Report Templates Section */}
-      <div>
-        <h2 className="text-lg font-semibold text-[#F0F0F5] mb-3">Modèles de rapports</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {reportTemplates.map((template) => {
-            const Icon = template.icon
-            return (
-              <Card
-                key={template.name}
-                className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D] transition-colors cursor-pointer"
-                onClick={() => applyTemplate(template)}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-base text-[#F0F0F5]">{template.name}</CardTitle>
-                      <CardDescription className="text-xs text-[#6B6B80]">{template.description}</CardDescription>
-                    </div>
-                    <Icon className="text-[#00E5CC] flex-shrink-0" size={20} />
-                  </div>
-                </CardHeader>
-              </Card>
-            )
-          })}
-        </div>
+      {/* Tab Navigation */}
+      <div className="flex gap-2 border-b border-[#1F1F2E] overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('generate')}
+          className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+            activeTab === 'generate'
+              ? 'border-[#00E5CC] text-[#00E5CC]'
+              : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
+          }`}
+        >
+          Générer
+        </button>
+        <button
+          onClick={() => setActiveTab('scheduled')}
+          className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+            activeTab === 'scheduled'
+              ? 'border-[#00E5CC] text-[#00E5CC]'
+              : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
+          }`}
+        >
+          Programmés
+        </button>
+        <button
+          onClick={() => setActiveTab('trends')}
+          className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+            activeTab === 'trends'
+              ? 'border-[#00E5CC] text-[#00E5CC]'
+              : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
+          }`}
+        >
+          Tendances
+        </button>
+        <button
+          onClick={() => setActiveTab('comparison')}
+          className={`px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+            activeTab === 'comparison'
+              ? 'border-[#00E5CC] text-[#00E5CC]'
+              : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
+          }`}
+        >
+          Comparaison
+        </button>
       </div>
 
-      {/* Report Types Grid */}
-      <div>
-        <h2 className="text-lg font-semibold text-[#F0F0F5] mb-3">Créer un rapport personnalisé</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {reportTypes.map((report) => {
-          const Icon = report.icon
-          return (
-            <Card
-              key={report.type}
-              className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D] transition-colors cursor-pointer"
-              onClick={() => handleOpenDialog(report.type)}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg text-[#F0F0F5]">{report.title}</CardTitle>
-                    <CardDescription className="text-sm text-[#6B6B80]">{report.description}</CardDescription>
-                  </div>
-                  <Icon className="text-[#00E5CC] flex-shrink-0" size={24} />
+      {/* Tab Content */}
+      {activeTab === 'generate' && (
+        <>
+          {/* Report Templates Section */}
+          <div>
+            <h2 className="text-lg font-semibold text-[#F0F0F5] mb-3">Modèles de rapports</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {ENHANCED_TEMPLATES.map((template) => {
+                const Icon = template.icon
+                return (
+                  <Card
+                    key={template.name}
+                    className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D] transition-colors cursor-pointer"
+                    onClick={() => applyTemplate(template)}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-base text-[#F0F0F5]">{template.name}</CardTitle>
+                          <CardDescription className="text-xs text-[#6B6B80]">{template.description}</CardDescription>
+                        </div>
+                        <Icon className="text-[#00E5CC] flex-shrink-0" size={20} />
+                      </div>
+                    </CardHeader>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Report Types Grid */}
+          <div>
+            <h2 className="text-lg font-semibold text-[#F0F0F5] mb-3">Créer un rapport personnalisé</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {reportTypes.map((report) => {
+                const Icon = report.icon
+                return (
+                  <Card
+                    key={report.type}
+                    className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D] transition-colors cursor-pointer"
+                    onClick={() => handleOpenDialog(report.type)}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-lg text-[#F0F0F5]">{report.title}</CardTitle>
+                          <CardDescription className="text-sm text-[#6B6B80]">{report.description}</CardDescription>
+                        </div>
+                        <Icon className="text-[#00E5CC] flex-shrink-0" size={24} />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#00E5CC] hover:bg-[#1F1F2E] hover:border-[#2A2A3D] rounded-[8px]"
+                        onClick={() => handleOpenDialog(report.type)}
+                      >
+                        <Download size={16} />
+                        Générer le rapport
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Generated Reports Section */}
+          <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-[#F0F0F5]">Rapports générés</CardTitle>
+                <Badge variant="secondary" className="bg-[#1A1A25] text-[#F0F0F5] border border-[#1F1F2E]">{generatedReports.length}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {generatedReports.length === 0 ? (
+                <div className="space-y-3 text-center py-12">
+                  <p className="text-[#6B6B80]">Aucun rapport généré encore</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleOpenDialog('trip')}
+                    className="gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#00E5CC] hover:bg-[#1F1F2E] hover:border-[#2A2A3D] rounded-[8px]"
+                  >
+                    <Download size={16} />
+                    Générer votre premier rapport
+                  </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#1F1F2E]">
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">
+                          Type de rapport
+                        </th>
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">
+                          Période
+                        </th>
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">
+                          Format
+                        </th>
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">Statut</th>
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">
+                          Généré
+                        </th>
+                        <th className="px-4 py-3 text-right font-semibold text-[#F0F0F5]">
+                          Action
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {generatedReports.map((report) => {
+                        const reportConfig = REPORT_TYPE_CONFIG[report.type]
+                        const formatIcon = FORMAT_ICONS[report.format]
+
+                        return (
+                          <tr
+                            key={report.id}
+                            className="border-b border-[#1A1A25] hover:bg-[#1A1A25] transition-colors"
+                          >
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <reportConfig.icon
+                                  size={16}
+                                  className="text-[#6B6B80] flex-shrink-0"
+                                />
+                                <span className="font-medium text-[#F0F0F5]">
+                                  {reportConfig.title}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-[#6B6B80]">
+                              {format(report.dateFrom, 'dd MMM, yyyy')} -{' '}
+                              {format(report.dateTo, 'dd MMM, yyyy')}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                {formatIcon && React.createElement(formatIcon, { size: 16, className: 'text-[#6B6B80]' })}
+                                <span className="capitalize text-[#6B6B80]">{report.format}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              {report.status === 'completed' && (
+                                <Badge className="bg-[#00E5CC]/10 text-[#00E5CC] border border-[#00E5CC]/30 flex w-fit gap-1">
+                                  <CheckCircle size={14} />
+                                  Complété
+                                </Badge>
+                              )}
+                              {report.status === 'pending' && (
+                                <Badge className="bg-[#FFB547]/10 text-[#FFB547] border border-[#FFB547]/30 flex w-fit gap-1">
+                                  <Loader2 size={14} className="animate-spin" />
+                                  En attente
+                                </Badge>
+                              )}
+                              {report.status === 'failed' && (
+                                <Badge className="bg-[#FF4D6A]/10 text-[#FF4D6A] border border-[#FF4D6A]/30">Échoué</Badge>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-[#6B6B80] text-xs">
+                              <div className="flex items-center gap-1">
+                                <Clock size={14} />
+                                {formatDateTime(report.generatedAt)}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={report.status !== 'completed'}
+                                onClick={() => handleDownloadReport(report)}
+                                className="gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1F1F2E] hover:border-[#2A2A3D] rounded-[6px] disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <Download size={14} />
+                                Télécharger
+                              </Button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {activeTab === 'scheduled' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-[#F0F0F5]">Rapports programmés</h2>
+            <Button
+              onClick={() => {
+                setShowScheduleForm(true)
+                setSelectedReportType('fleet')
+              }}
+              className="gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00C4B0] rounded-[8px]"
+            >
+              <Plus size={16} />
+              Programmer un rapport
+            </Button>
+          </div>
+
+          {scheduledReports.length === 0 ? (
+            <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+              <CardContent className="py-12 text-center">
+                <p className="text-[#6B6B80] mb-4">Aucun rapport programmé</p>
                 <Button
-                  variant="outline"
-                  className="w-full gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#00E5CC] hover:bg-[#1F1F2E] hover:border-[#2A2A3D] rounded-[8px]"
-                  onClick={() => handleOpenDialog(report.type)}
+                  onClick={() => {
+                    setShowScheduleForm(true)
+                    setSelectedReportType('fleet')
+                  }}
+                  className="gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00C4B0] rounded-[8px]"
                 >
-                  <Download size={16} />
-                  Générer le rapport
+                  <Plus size={16} />
+                  Créer la première programmation
                 </Button>
               </CardContent>
             </Card>
-          )
-        })}
+          ) : (
+            <div className="grid gap-4">
+              {scheduledReports.map((report) => {
+                const reportConfig = REPORT_TYPE_CONFIG[report.type]
+                return (
+                  <Card key={report.id} className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex gap-4 flex-1">
+                          <div className="text-[#00E5CC] mt-1">
+                            {React.createElement(reportConfig.icon, { size: 24 })}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-[#F0F0F5]">{reportConfig.title}</h3>
+                            <p className="text-sm text-[#6B6B80] mt-1">
+                              Fréquence: {report.frequency === 'daily' ? 'Quotidien' : report.frequency === 'weekly' ? 'Hebdomadaire' : 'Mensuel'}
+                              {report.frequency === 'weekly' && ` - ${dayOfWeekNames[report.dayOfWeek || 0]}`}
+                            </p>
+                            <p className="text-sm text-[#6B6B80]">
+                              Prochain envoi: {format(report.nextRun, 'dd MMM yyyy')} à {report.timeOfDay}
+                            </p>
+                            <p className="text-sm text-[#6B6B80] mt-1">
+                              Destinataires: {report.recipients.join(', ')}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleToggleScheduledReport(report.id)}
+                          className={`p-2 rounded-lg transition-colors ${
+                            report.isActive
+                              ? 'bg-[#00E5CC]/10 text-[#00E5CC]'
+                              : 'bg-[#FF4D6A]/10 text-[#FF4D6A]'
+                          }`}
+                        >
+                          <ToggleLeft size={20} />
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {activeTab === 'trends' && (
+        <div className="space-y-6">
+          <h2 className="text-lg font-semibold text-[#F0F0F5]">Tendances (30 derniers jours)</h2>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Mileage Trend */}
+            <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+              <CardHeader>
+                <CardTitle className="text-[#F0F0F5]">Kilométrage moyen quotidien</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={trendData}>
+                    <defs>
+                      <linearGradient id="colorMileage" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00E5CC" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#00E5CC" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                    <XAxis dataKey="date" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#12121A', border: '1px solid #1F1F2E' }}
+                      labelStyle={{ color: '#F0F0F5' }}
+                    />
+                    <Area type="monotone" dataKey="mileage" stroke="#00E5CC" fillOpacity={1} fill="url(#colorMileage)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Speed Trend */}
+            <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+              <CardHeader>
+                <CardTitle className="text-[#F0F0F5]">Vitesse moyenne (km/h)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                    <XAxis dataKey="date" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#12121A', border: '1px solid #1F1F2E' }}
+                      labelStyle={{ color: '#F0F0F5' }}
+                    />
+                    <Line type="monotone" dataKey="speed" stroke="#FFB547" dot={false} strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Alerts Trend */}
+            <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+              <CardHeader>
+                <CardTitle className="text-[#F0F0F5]">Fréquence des alertes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={trendData}>
+                    <defs>
+                      <linearGradient id="colorAlerts" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#FF4D6A" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#FF4D6A" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                    <XAxis dataKey="date" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#12121A', border: '1px solid #1F1F2E' }}
+                      labelStyle={{ color: '#F0F0F5' }}
+                    />
+                    <Area type="monotone" dataKey="alerts" stroke="#FF4D6A" fillOpacity={1} fill="url(#colorAlerts)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Utilization Trend */}
+            <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+              <CardHeader>
+                <CardTitle className="text-[#F0F0F5]">Utilisation flotte (%)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={trendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                    <XAxis dataKey="date" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} domain={[0, 100]} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#12121A', border: '1px solid #1F1F2E' }}
+                      labelStyle={{ color: '#F0F0F5' }}
+                    />
+                    <Line type="monotone" dataKey="utilization" stroke="#00E5CC" dot={false} strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'comparison' && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold text-[#F0F0F5] mb-3">Sélectionner des véhicules à comparer</h2>
+            <p className="text-sm text-[#6B6B80] mb-4">Sélectionnez 2 à 4 véhicules pour les comparer côte à côte</p>
+            <div className="grid gap-3 max-h-64 overflow-y-auto">
+              {vehicles.map((vehicle) => (
+                <label
+                  key={vehicle.id}
+                  className="flex items-center gap-3 p-3 border border-[#1F1F2E] rounded-lg bg-[#1A1A25] hover:bg-[#1F1F2E] hover:border-[#2A2A3D] cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={comparisonVehicles.includes(vehicle.id)}
+                    onChange={() => handleComparisonVehicleToggle(vehicle.id)}
+                    className="rounded border-[#1F1F2E] accent-[#00E5CC]"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-[#F0F0F5]">{vehicle.name}</p>
+                    <p className="text-xs text-[#6B6B80]">{vehicle.plate}</p>
+                  </div>
+                  {comparisonVehicles.includes(vehicle.id) && (
+                    <Badge className="bg-[#00E5CC]/10 text-[#00E5CC] border border-[#00E5CC]/30">
+                      Sélectionné
+                    </Badge>
+                  )}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {comparisonData.length > 0 && (
+            <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+              <CardHeader>
+                <CardTitle className="text-[#F0F0F5]">Comparaison véhicules</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#1F1F2E]">
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">Véhicule</th>
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">Km</th>
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">Trajets</th>
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">Alertes</th>
+                        <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">Vit. moy.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {comparisonData.map((item) => (
+                        <tr key={item.vehicleId} className="border-b border-[#1A1A25] hover:bg-[#1A1A25] transition-colors">
+                          <td className="px-4 py-3 font-medium text-[#F0F0F5]">{item.vehicleName}</td>
+                          <td className="px-4 py-3 text-[#6B6B80]">{item.km.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-[#6B6B80]">{item.trips}</td>
+                          <td className="px-4 py-3">
+                            <Badge className={`${
+                              item.alerts > 15
+                                ? 'bg-[#FF4D6A]/10 text-[#FF4D6A]'
+                                : 'bg-[#00E5CC]/10 text-[#00E5CC]'
+                            }`}>
+                              {item.alerts}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-[#6B6B80]">{item.avgSpeed} km/h</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
 
       {/* Report Configuration Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -502,7 +1135,6 @@ export default function ReportsPage() {
                 <h3 className="font-semibold text-[#F0F0F5]">Période</h3>
               </div>
 
-              {/* Quick select buttons */}
               <div className="flex gap-2 flex-wrap">
                 <Button
                   variant="outline"
@@ -647,6 +1279,14 @@ export default function ReportsPage() {
               Email
             </Button>
             <Button
+              variant="outline"
+              onClick={generateShareLink}
+              className="gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1F1F2E] hover:border-[#2A2A3D] rounded-[8px]"
+            >
+              <Share2 size={16} />
+              {copiedShareLink ? 'Copié!' : 'Partager'}
+            </Button>
+            <Button
               onClick={handleGenerateReport}
               disabled={isGenerating}
               className="gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00C4B0] rounded-[8px]"
@@ -699,24 +1339,86 @@ export default function ReportsPage() {
                 </select>
               </div>
 
+              {scheduleFrequency === 'weekly' && (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Jour de la semaine</label>
+                  <select
+                    value={scheduleDayOfWeek}
+                    onChange={(e) => setScheduleDayOfWeek(Number(e.target.value))}
+                    className="w-full rounded-md border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5] focus:border-[#00E5CC] focus:outline-none focus:ring-1 focus:ring-[#00E5CC]/50"
+                  >
+                    <option value={0}>Lundi</option>
+                    <option value={1}>Mardi</option>
+                    <option value={2}>Mercredi</option>
+                    <option value={3}>Jeudi</option>
+                    <option value={4}>Vendredi</option>
+                    <option value={5}>Samedi</option>
+                    <option value={6}>Dimanche</option>
+                  </select>
+                </div>
+              )}
+
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Email de livraison *</label>
+                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Heure de l'envoi</label>
                 <Input
-                  type="email"
-                  value={scheduleEmail}
-                  onChange={(e) => setScheduleEmail(e.target.value)}
-                  placeholder="votre.email@exemple.com"
-                  disabled={isScheduling}
-                  className="bg-[#0A0A0F] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] rounded-[8px] focus:border-[#00E5CC] focus:ring-1 focus:ring-[#00E5CC]/50"
+                  type="time"
+                  value={scheduleTimeOfDay}
+                  onChange={(e) => setScheduleTimeOfDay(e.target.value)}
+                  className="bg-[#0A0A0F] border border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] focus:ring-1 focus:ring-[#00E5CC]/50"
                 />
               </div>
 
               <div>
+                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Destinataires</label>
+                <div className="flex gap-2 mb-2">
+                  <Input
+                    type="email"
+                    value={scheduleEmail}
+                    onChange={(e) => setScheduleEmail(e.target.value)}
+                    placeholder="email@exemple.com"
+                    className="flex-1 bg-[#0A0A0F] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] rounded-[8px] focus:border-[#00E5CC] focus:ring-1 focus:ring-[#00E5CC]/50"
+                  />
+                  <Button
+                    onClick={addScheduleEmailRecipient}
+                    className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00C4B0] rounded-[8px]"
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {emailRecipients.map((email) => (
+                    <div key={email} className="flex items-center justify-between p-2 bg-[#1A1A25] rounded-lg">
+                      <span className="text-sm text-[#F0F0F5]">{email}</span>
+                      <button
+                        onClick={() => removeScheduleEmailRecipient(email)}
+                        className="text-[#FF4D6A] hover:bg-[#FF4D6A]/10 p-1 rounded"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="sendCopyToMe"
+                  checked={sendCopyToMe}
+                  onChange={(e) => setSendCopyToMe(e.target.checked)}
+                  className="rounded border-[#1F1F2E] accent-[#00E5CC]"
+                />
+                <label htmlFor="sendCopyToMe" className="text-sm text-[#F0F0F5] cursor-pointer">
+                  M'envoyer une copie
+                </label>
+              </div>
+
+              <div>
                 <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Prochain envoi</label>
-                <div className="text-sm text-[#6B6B80]">
-                  {scheduleFrequency === 'daily' && 'Demain à 08:00'}
-                  {scheduleFrequency === 'weekly' && 'Lundi prochain à 09:00'}
-                  {scheduleFrequency === 'monthly' && '1er du mois prochain à 09:00'}
+                <div className="text-sm text-[#6B6B80] p-2 bg-[#1A1A25] rounded-lg">
+                  {scheduleFrequency === 'daily' && 'Demain à ' + scheduleTimeOfDay}
+                  {scheduleFrequency === 'weekly' && `${dayOfWeekNames[scheduleDayOfWeek]} prochain à ${scheduleTimeOfDay}`}
+                  {scheduleFrequency === 'monthly' && '1er du mois prochain à ' + scheduleTimeOfDay}
                 </div>
               </div>
             </div>
@@ -768,19 +1470,53 @@ export default function ReportsPage() {
             )}
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Destinataire *</label>
-              <Input
-                type="email"
-                value={emailRecipient}
-                onChange={(e) => setEmailRecipient(e.target.value)}
-                placeholder="destinataire@exemple.com"
-                disabled={isSendingEmail}
-                className="bg-[#0A0A0F] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] rounded-[8px] focus:border-[#00E5CC] focus:ring-1 focus:ring-[#00E5CC]/50"
+              <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Destinataires</label>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  type="email"
+                  value={emailRecipient}
+                  onChange={(e) => setEmailRecipient(e.target.value)}
+                  placeholder="email@exemple.com"
+                  disabled={isSendingEmail}
+                  className="flex-1 bg-[#0A0A0F] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] rounded-[8px] focus:border-[#00E5CC] focus:ring-1 focus:ring-[#00E5CC]/50"
+                />
+                <Button
+                  onClick={addEmailRecipient}
+                  className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00C4B0] rounded-[8px]"
+                >
+                  <Plus size={16} />
+                </Button>
+              </div>
+              <div className="space-y-2 max-h-24 overflow-y-auto">
+                {emailRecipientsList.map((email) => (
+                  <div key={email} className="flex items-center justify-between p-2 bg-[#1A1A25] rounded-lg">
+                    <span className="text-sm text-[#F0F0F5]">{email}</span>
+                    <button
+                      onClick={() => removeEmailRecipient(email)}
+                      className="text-[#FF4D6A] hover:bg-[#FF4D6A]/10 p-1 rounded"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="sendCopyToMe2"
+                checked={sendCopyToMe}
+                onChange={(e) => setSendCopyToMe(e.target.checked)}
+                className="rounded border-[#1F1F2E] accent-[#00E5CC]"
               />
+              <label htmlFor="sendCopyToMe2" className="text-sm text-[#F0F0F5] cursor-pointer">
+                M'envoyer une copie
+              </label>
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Objet *</label>
+              <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Objet</label>
               <Input
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
@@ -800,6 +1536,29 @@ export default function ReportsPage() {
                 rows={3}
                 disabled={isSendingEmail}
               />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Format</label>
+              <div className="flex gap-2">
+                {(['pdf', 'excel', 'csv'] as ReportFormat[]).map((format) => {
+                  const Icon = FORMAT_ICONS[format]
+                  return (
+                    <button
+                      key={format}
+                      onClick={() => setReportFormat(format)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-sm ${
+                        reportFormat === format
+                          ? 'border-[#00E5CC] bg-[#00E5CC]/10 text-[#00E5CC]'
+                          : 'border-[#1F1F2E] text-[#6B6B80] hover:border-[#2A2A3D]'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      <span className="capitalize">{format}</span>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           </div>
 
@@ -828,127 +1587,7 @@ export default function ReportsPage() {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
-
-      {/* Generated Reports Section */}
-      <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-[#F0F0F5]">Rapports générés</CardTitle>
-            <Badge variant="secondary" className="bg-[#1A1A25] text-[#F0F0F5] border border-[#1F1F2E]">{generatedReports.length}</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {generatedReports.length === 0 ? (
-            <div className="space-y-3 text-center py-12">
-              <p className="text-[#6B6B80]">Aucun rapport généré encore</p>
-              <Button
-                variant="outline"
-                onClick={() => handleOpenDialog('trip')}
-                className="gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#00E5CC] hover:bg-[#1F1F2E] hover:border-[#2A2A3D] rounded-[8px]"
-              >
-                <Download size={16} />
-                Générer votre premier rapport
-              </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#1F1F2E]">
-                    <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">
-                      Type de rapport
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">
-                      Période
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">
-                      Format
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">Statut</th>
-                    <th className="px-4 py-3 text-left font-semibold text-[#F0F0F5]">
-                      Généré
-                    </th>
-                    <th className="px-4 py-3 text-right font-semibold text-[#F0F0F5]">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {generatedReports.map((report) => {
-                    const reportConfig = REPORT_TYPE_CONFIG[report.type]
-                    const formatIcon = FORMAT_ICONS[report.format]
-
-                    return (
-                      <tr
-                        key={report.id}
-                        className="border-b border-[#1A1A25] hover:bg-[#1A1A25] transition-colors"
-                      >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <reportConfig.icon
-                              size={16}
-                              className="text-[#6B6B80] flex-shrink-0"
-                            />
-                            <span className="font-medium text-[#F0F0F5]">
-                              {reportConfig.title}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-[#6B6B80]">
-                          {format(report.dateFrom, 'dd MMM, yyyy')} -{' '}
-                          {format(report.dateTo, 'dd MMM, yyyy')}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            {formatIcon && React.createElement(formatIcon, { size: 16, className: 'text-[#6B6B80]' })}
-                            <span className="capitalize text-[#6B6B80]">{report.format}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          {report.status === 'completed' && (
-                            <Badge className="bg-[#00E5CC]/10 text-[#00E5CC] border border-[#00E5CC]/30 flex w-fit gap-1">
-                              <CheckCircle size={14} />
-                              Complété
-                            </Badge>
-                          )}
-                          {report.status === 'pending' && (
-                            <Badge className="bg-[#FFB547]/10 text-[#FFB547] border border-[#FFB547]/30 flex w-fit gap-1">
-                              <Loader2 size={14} className="animate-spin" />
-                              En attente
-                            </Badge>
-                          )}
-                          {report.status === 'failed' && (
-                            <Badge className="bg-[#FF4D6A]/10 text-[#FF4D6A] border border-[#FF4D6A]/30">Échoué</Badge>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-[#6B6B80] text-xs">
-                          <div className="flex items-center gap-1">
-                            <Clock size={14} />
-                            {formatDateTime(report.generatedAt)}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={report.status !== 'completed'}
-                            onClick={() => handleDownloadReport(report)}
-                            className="gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1F1F2E] hover:border-[#2A2A3D] rounded-[6px] disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Download size={14} />
-                            Télécharger
-                          </Button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        </Dialog>
     </div>
   )
 }

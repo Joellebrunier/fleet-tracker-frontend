@@ -6,12 +6,13 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useVehicle, useVehicleHistory } from '@/hooks/useVehicles';
 import { useAuthStore } from '@/stores/authStore';
+import { apiClient } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateTime, formatTimeAgo } from '@/lib/utils';
-import { ArrowLeft, Gauge, Navigation, MapPin, Clock, Cpu, Car, Compass, Play, Download, Power, Battery, Route, Zap, Signal, Activity, Camera, Plus, X, } from 'lucide-react';
+import { ArrowLeft, Gauge, Navigation, MapPin, Clock, Cpu, Car, Compass, Play, Download, Power, Battery, Route, Zap, Signal, Activity, Camera, Plus, X, AlertCircle, ChevronDown, AlertTriangle, } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer';
 import { GpsDataExport } from '@/components/vehicles/GpsDataExport';
@@ -42,6 +43,14 @@ export default function VehicleDetailPage() {
     const [dateFrom, setDateFrom] = useState(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
     const [dateTo, setDateTo] = useState(new Date().toISOString().split('T')[0]);
     const [replayingTrip, setReplayingTrip] = useState(null);
+    const [photos, setPhotos] = useState([]);
+    const [notesLoading, setNotesLoading] = useState(false);
+    const [exportMenuOpen, setExportMenuOpen] = useState(false);
+    const [exportError, setExportError] = useState(null);
+    const [maintenanceInfo, setMaintenanceInfo] = useState({
+        type: 'Service',
+        isOverdue: false,
+    });
     const { data: vehicle, isLoading: vehicleLoading } = useVehicle(id || '');
     const { data: history } = useVehicleHistory(id || '');
     const positions = useMemo(() => {
@@ -60,6 +69,24 @@ export default function VehicleDetailPage() {
                     : Object.entries(vehicle.customFields).map(([key, value]) => ({ key, value: String(value) }));
                 setCustomFields(fieldsArray);
             }
+            // Load maintenance info from vehicle metadata
+            const meta = vehicle.metadata || {};
+            if (meta.nextMaintenanceDate || meta.nextMaintenanceKm) {
+                const nextDate = meta.nextMaintenanceDate ? new Date(meta.nextMaintenanceDate) : undefined;
+                const isOverdue = nextDate && nextDate < new Date();
+                setMaintenanceInfo({
+                    nextDate,
+                    nextKm: meta.nextMaintenanceKm,
+                    lastDate: meta.lastMaintenanceDate ? new Date(meta.lastMaintenanceDate) : undefined,
+                    lastKm: meta.lastMaintenanceKm,
+                    type: meta.maintenanceType || 'Service',
+                    isOverdue: isOverdue || false,
+                });
+            }
+            // Load photos if stored in metadata
+            if (meta.photos && Array.isArray(meta.photos)) {
+                setPhotos(meta.photos);
+            }
         }
     }, [vehicle]);
     // Reverse geocode current position when lat/lng changes
@@ -74,6 +101,12 @@ export default function VehicleDetailPage() {
     useEffect(() => {
         if (!id || !organizationId)
             return;
+        // Validate date range
+        if (new Date(dateTo) < new Date(dateFrom)) {
+            setExportError('La date de fin doit être après la date de début');
+            return;
+        }
+        setExportError(null);
         const fetchTrips = async () => {
             try {
                 setTripsLoading(true);
@@ -184,6 +217,188 @@ export default function VehicleDetailPage() {
         const minutes = Math.floor((seconds % 3600) / 60);
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     };
+    // Export functions
+    const generateGpsPoints = () => {
+        if (!trips || trips.length === 0)
+            return [];
+        const points = [];
+        trips.forEach(trip => {
+            if (trip.points) {
+                points.push(...trip.points);
+            }
+        });
+        return points.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    };
+    const exportToCSV = () => {
+        const points = generateGpsPoints();
+        if (points.length === 0) {
+            setExportError('Aucun point GPS à exporter');
+            return;
+        }
+        const headers = ['Date', 'Heure', 'Latitude', 'Longitude', 'Vitesse', 'Cap', 'Adresse'];
+        const rows = points.map(p => {
+            const dt = new Date(p.timestamp);
+            const date = dt.toLocaleDateString('fr-FR');
+            const time = dt.toLocaleTimeString('fr-FR');
+            return [
+                date,
+                time,
+                p.lat.toFixed(6),
+                p.lng.toFixed(6),
+                (p.speed || 0).toFixed(1),
+                (p.heading || 0).toFixed(1),
+                'GPS Track',
+            ];
+        });
+        const csv = [headers, ...rows].map(r => r.map(cell => `"${cell}"`).join(',')).join('\n');
+        downloadFile(csv, `${vehicle?.name || 'vehicle'}_gps_export.csv`, 'text/csv');
+        setExportMenuOpen(false);
+    };
+    const exportToKML = () => {
+        const points = generateGpsPoints();
+        if (points.length === 0) {
+            setExportError('Aucun point GPS à exporter');
+            return;
+        }
+        const placemarks = points
+            .filter((p, idx) => idx % Math.ceil(points.length / 50) === 0 || idx === points.length - 1) // Sample for readability
+            .map((p, idx) => `
+    <Placemark>
+      <name>Point ${idx + 1}</name>
+      <Point>
+        <coordinates>${p.lng},${p.lat},0</coordinates>
+      </Point>
+    </Placemark>`)
+            .join('\n');
+        const linestring = points
+            .map(p => `${p.lng},${p.lat},0`)
+            .join('\n      ');
+        const kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${vehicle?.name || 'Vehicle'} GPS Route</name>
+    <Placemark>
+      <name>Route</name>
+      <LineString>
+        <coordinates>
+      ${linestring}
+        </coordinates>
+      </LineString>
+    </Placemark>
+    ${placemarks}
+  </Document>
+</kml>`;
+        downloadFile(kml, `${vehicle?.name || 'vehicle'}_gps_export.kml`, 'application/vnd.google-earth.kml+xml');
+        setExportMenuOpen(false);
+    };
+    const exportToGPX = () => {
+        const points = generateGpsPoints();
+        if (points.length === 0) {
+            setExportError('Aucun point GPS à exporter');
+            return;
+        }
+        const trkpts = points
+            .map(p => `
+    <trkpt lat="${p.lat}" lon="${p.lng}">
+      <ele>0</ele>
+      <time>${p.timestamp.toISOString()}</time>
+      <speed>${(p.speed || 0).toFixed(1)}</speed>
+    </trkpt>`)
+            .join('\n');
+        const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Vehicle GPS Export"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.topografix.com/GPX/1/1"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>${vehicle?.name || 'Vehicle'} GPS Track</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>
+  <trk>
+    <name>${vehicle?.name || 'Vehicle'}</name>
+    <trkseg>
+      ${trkpts}
+    </trkseg>
+  </trk>
+</gpx>`;
+        downloadFile(gpx, `${vehicle?.name || 'vehicle'}_gps_export.gpx`, 'application/gpx+xml');
+        setExportMenuOpen(false);
+    };
+    const exportToXLSX = () => {
+        const points = generateGpsPoints();
+        if (points.length === 0) {
+            setExportError('Aucun point GPS à exporter');
+            return;
+        }
+        const headers = ['Date', 'Heure', 'Latitude', 'Longitude', 'Vitesse', 'Cap', 'Adresse'];
+        const rows = points.map(p => {
+            const dt = new Date(p.timestamp);
+            const date = dt.toLocaleDateString('fr-FR');
+            const time = dt.toLocaleTimeString('fr-FR');
+            return [
+                date,
+                time,
+                p.lat.toFixed(6),
+                p.lng.toFixed(6),
+                (p.speed || 0).toFixed(1),
+                (p.heading || 0).toFixed(1),
+                'GPS Track',
+            ];
+        });
+        // Excel FR compatible CSV with semicolon separator
+        const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
+        downloadFile(csv, `${vehicle?.name || 'vehicle'}_gps_export.csv`, 'text/csv;charset=utf-8');
+        setExportMenuOpen(false);
+    };
+    const downloadFile = (content, filename, mimeType) => {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+    const handlePhotoUpload = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (event.target?.result) {
+                    const newPhoto = {
+                        id: Date.now().toString(),
+                        data: event.target.result,
+                        name: file.name,
+                        uploadedAt: new Date(),
+                    };
+                    setPhotos([...photos, newPhoto]);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    const deletePhoto = (photoId) => {
+        setPhotos(photos.filter(p => p.id !== photoId));
+    };
+    const saveNotes = async () => {
+        if (!id)
+            return;
+        try {
+            setNotesLoading(true);
+            await apiClient.patch(`/vehicles/${id}`, {
+                notes: vehicleNotes,
+            });
+            // Success notification would go here
+        }
+        catch (error) {
+            console.error('Error saving notes:', error);
+        }
+        finally {
+            setNotesLoading(false);
+        }
+    };
     if (vehicleLoading) {
         return (_jsxs("div", { className: "space-y-6", children: [_jsx(Skeleton, { className: "h-10 w-48" }), _jsxs("div", { className: "grid gap-6 lg:grid-cols-3", children: [_jsx(Skeleton, { className: "h-64 lg:col-span-2" }), _jsx(Skeleton, { className: "h-64" })] })] }));
     }
@@ -282,19 +497,13 @@ export default function VehicleDetailPage() {
                                                     label = 'Acceptable';
                                                 }
                                                 return (_jsx("div", { className: `rounded-[8px] px-2 py-1 ${bgColor} border border-[#1F1F2E]`, children: _jsxs("p", { className: `font-medium text-xs ${color}`, children: [gpsAccuracy.toFixed(1), " m - ", label] }) }));
-                                            })() })] }) })] }), positions.length > 0 && (_jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsxs(CardHeader, { className: "pb-3", children: [_jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", title: "Derni\u00E8res positions enregistr\u00E9es du v\u00E9hicule", children: "Historique GPS" }), _jsx(CardDescription, { className: "text-xs text-[#6B6B80]", children: "Derni\u00E8res positions enregistr\u00E9es" })] }), _jsx(CardContent, { children: _jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "w-full text-sm", children: [_jsx("thead", { children: _jsxs("tr", { className: "border-b border-[#1F1F2E] text-left text-xs text-[#6B6B80]", children: [_jsx("th", { className: "pb-2 pr-4", children: "Date" }), _jsx("th", { className: "pb-2 pr-4", children: "Vitesse" }), _jsx("th", { className: "pb-2 pr-4", children: "Cap" }), _jsx("th", { className: "pb-2", children: "Position" })] }) }), _jsx("tbody", { className: "divide-y divide-[#1F1F2E]", children: positions.slice(0, 15).map((pos, idx) => (_jsxs("tr", { className: "text-xs text-[#F0F0F5]", children: [_jsx("td", { className: "py-2 pr-4 text-[#6B6B80]", children: pos.createdAt ? formatDateTime(pos.createdAt) : formatDateTime(pos.timestamp) }), _jsxs("td", { className: "py-2 pr-4 font-mono font-semibold", children: [(pos.speed || 0).toFixed(0), " km/h"] }), _jsxs("td", { className: "py-2 pr-4 text-[#6B6B80]", children: [(pos.heading || 0).toFixed(0), "\u00B0"] }), _jsxs("td", { className: "py-2 font-mono text-[#00E5CC]", children: [pos.lat?.toFixed(5), ", ", pos.lng?.toFixed(5)] })] }, idx))) })] }) }) })] })), _jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsx(CardHeader, { className: "pb-3", children: _jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", title: "Notes et annotations sur ce v\u00E9hicule", children: "Notes" }) }), _jsxs(CardContent, { className: "space-y-3", children: [_jsx(Textarea, { placeholder: "Ajouter des notes et informations sur ce v\u00E9hicule...", value: vehicleNotes, onChange: (e) => setVehicleNotes(e.target.value), className: "min-h-24 text-sm bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A]" }), _jsx(Button, { className: "bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]", size: "sm", onClick: () => {
-                                            alert('Notes enregistrées');
-                                        }, children: "Enregistrer" })] })] }), _jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsxs(CardHeader, { className: "pb-3 flex items-center justify-between", children: [_jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", title: "Champs suppl\u00E9mentaires personnalis\u00E9s pour ce v\u00E9hicule", children: "Champs personnalis\u00E9s" }), _jsxs(Button, { className: "gap-2 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]", size: "sm", onClick: () => setShowAddField(!showAddField), children: [_jsx(Plus, { size: 14 }), "Ajouter un champ"] })] }), _jsxs(CardContent, { className: "space-y-3", children: [showAddField && (_jsxs("div", { className: "border border-[#1F1F2E] rounded-lg p-3 space-y-2 bg-[#1A1A25]", children: [_jsx("input", { type: "text", placeholder: "Nom du champ", value: newFieldForm.key, onChange: (e) => setNewFieldForm({ ...newFieldForm, key: e.target.value }), className: "w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A]" }), _jsx("input", { type: "text", placeholder: "Valeur", value: newFieldForm.value, onChange: (e) => setNewFieldForm({ ...newFieldForm, value: e.target.value }), className: "w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A]" }), _jsxs("div", { className: "flex gap-2", children: [_jsx(Button, { size: "sm", className: "flex-1 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]", onClick: () => {
+                                            })() })] }) })] }), maintenanceInfo.nextDate && (_jsxs(Card, { className: `bg-[#12121A] border ${maintenanceInfo.isOverdue ? 'border-[#FF4D6A]' : 'border-[#1F1F2E]'}`, children: [_jsx(CardHeader, { className: "pb-3", children: _jsxs("div", { className: "flex items-center gap-2", children: [_jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", children: "Maintenance" }), maintenanceInfo.isOverdue && (_jsxs(Badge, { variant: "destructive", className: "bg-[#FF4D6A] text-white gap-1", children: [_jsx(AlertTriangle, { size: 12 }), "En retard"] }))] }) }), _jsx(CardContent, { children: _jsxs("div", { className: "grid grid-cols-2 gap-4", children: [_jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Type" }), _jsx("p", { className: "font-medium text-[#F0F0F5]", children: maintenanceInfo.type })] }), _jsxs("div", { className: `rounded-[8px] p-3 border ${maintenanceInfo.isOverdue ? 'bg-[#1A0A0A] border-[#FF4D6A]' : 'bg-[#1A1A25] border-[#1F1F2E]'}`, children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Prochaine date" }), _jsx("p", { className: `font-mono text-sm ${maintenanceInfo.isOverdue ? 'text-[#FF4D6A]' : 'text-[#00E5CC]'}`, children: maintenanceInfo.nextDate?.toLocaleDateString('fr-FR') })] }), maintenanceInfo.nextKm && (_jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Prochain kilom\u00E9trage" }), _jsxs("p", { className: "font-mono text-[#00E5CC]", children: [maintenanceInfo.nextKm.toLocaleString('fr-FR'), " km"] })] })), maintenanceInfo.lastDate && (_jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Derni\u00E8re date" }), _jsx("p", { className: "font-mono text-[#6B6B80]", children: maintenanceInfo.lastDate?.toLocaleDateString('fr-FR') })] }))] }) })] })), positions.length > 0 && (_jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsxs(CardHeader, { className: "pb-3", children: [_jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", title: "Derni\u00E8res positions enregistr\u00E9es du v\u00E9hicule", children: "Historique GPS" }), _jsx(CardDescription, { className: "text-xs text-[#6B6B80]", children: "Derni\u00E8res positions enregistr\u00E9es" })] }), _jsx(CardContent, { children: _jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "w-full text-sm", children: [_jsx("thead", { children: _jsxs("tr", { className: "border-b border-[#1F1F2E] text-left text-xs text-[#6B6B80]", children: [_jsx("th", { className: "pb-2 pr-4", children: "Date" }), _jsx("th", { className: "pb-2 pr-4", children: "Vitesse" }), _jsx("th", { className: "pb-2 pr-4", children: "Cap" }), _jsx("th", { className: "pb-2", children: "Position" })] }) }), _jsx("tbody", { className: "divide-y divide-[#1F1F2E]", children: positions.slice(0, 15).map((pos, idx) => (_jsxs("tr", { className: "text-xs text-[#F0F0F5]", children: [_jsx("td", { className: "py-2 pr-4 text-[#6B6B80]", children: pos.createdAt ? formatDateTime(pos.createdAt) : formatDateTime(pos.timestamp) }), _jsxs("td", { className: "py-2 pr-4 font-mono font-semibold", children: [(pos.speed || 0).toFixed(0), " km/h"] }), _jsxs("td", { className: "py-2 pr-4 text-[#6B6B80]", children: [(pos.heading || 0).toFixed(0), "\u00B0"] }), _jsxs("td", { className: "py-2 font-mono text-[#00E5CC]", children: [pos.lat?.toFixed(5), ", ", pos.lng?.toFixed(5)] })] }, idx))) })] }) }) })] })), _jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsx(CardHeader, { className: "pb-3", children: _jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", title: "Galerie de photos du v\u00E9hicule", children: "Images du v\u00E9hicule" }) }), _jsx(CardContent, { children: photos.length === 0 ? (_jsxs("div", { className: "border-2 border-dashed border-[#1F1F2E] rounded-lg p-8 text-center hover:border-[#2A2A3D] transition", children: [_jsx(Camera, { size: 32, className: "mx-auto text-[#6B6B80] mb-2" }), _jsx("p", { className: "text-sm text-[#6B6B80] mb-4", children: "Aucune image. Glissez-d\u00E9posez ou cliquez pour ajouter." }), _jsx("input", { type: "file", accept: "image/*", onChange: handlePhotoUpload, className: "hidden", id: "photo-input" }), _jsxs(Button, { className: "bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]", size: "sm", onClick: () => document.getElementById('photo-input')?.click(), children: [_jsx(Plus, { size: 14, className: "mr-1" }), "Ajouter une image"] })] })) : (_jsxs("div", { children: [_jsx("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4", children: photos.map(photo => (_jsxs("div", { className: "relative group border border-[#1F1F2E] rounded-lg overflow-hidden bg-[#1A1A25]", children: [_jsx("img", { src: photo.data, alt: photo.name, className: "w-full h-32 object-cover" }), _jsx("button", { onClick: () => deletePhoto(photo.id), className: "absolute top-2 right-2 bg-[#FF4D6A] text-white p-1 rounded opacity-0 group-hover:opacity-100 transition", children: _jsx(X, { size: 14 }) }), _jsx("p", { className: "text-xs text-[#6B6B80] p-2 truncate", children: photo.name })] }, photo.id))) }), _jsx("input", { type: "file", accept: "image/*", onChange: handlePhotoUpload, className: "hidden", id: "photo-input-add" }), _jsxs(Button, { className: "gap-2 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]", size: "sm", onClick: () => document.getElementById('photo-input-add')?.click(), children: [_jsx(Plus, { size: 14 }), "Ajouter une image"] })] })) })] }), _jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsx(CardHeader, { className: "pb-3", children: _jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", title: "Notes et annotations sur ce v\u00E9hicule", children: "Notes" }) }), _jsxs(CardContent, { className: "space-y-3", children: [_jsx(Textarea, { placeholder: "Ajouter des notes et informations sur ce v\u00E9hicule...", value: vehicleNotes, onChange: (e) => setVehicleNotes(e.target.value), className: "min-h-24 text-sm bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]" }), _jsx(Button, { className: "bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]", size: "sm", onClick: saveNotes, disabled: notesLoading, children: notesLoading ? 'Enregistrement...' : 'Enregistrer' })] })] }), _jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsxs(CardHeader, { className: "pb-3 flex items-center justify-between", children: [_jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", title: "Champs suppl\u00E9mentaires personnalis\u00E9s pour ce v\u00E9hicule", children: "Champs personnalis\u00E9s" }), _jsxs(Button, { className: "gap-2 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]", size: "sm", onClick: () => setShowAddField(!showAddField), children: [_jsx(Plus, { size: 14 }), "Ajouter un champ"] })] }), _jsxs(CardContent, { className: "space-y-3", children: [showAddField && (_jsxs("div", { className: "border border-[#1F1F2E] rounded-lg p-3 space-y-2 bg-[#1A1A25]", children: [_jsx("input", { type: "text", placeholder: "Nom du champ", value: newFieldForm.key, onChange: (e) => setNewFieldForm({ ...newFieldForm, key: e.target.value }), className: "w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]" }), _jsx("input", { type: "text", placeholder: "Valeur", value: newFieldForm.value, onChange: (e) => setNewFieldForm({ ...newFieldForm, value: e.target.value }), className: "w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]" }), _jsxs("div", { className: "flex gap-2", children: [_jsx(Button, { size: "sm", className: "flex-1 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]", onClick: () => {
                                                             if (newFieldForm.key && newFieldForm.value) {
                                                                 setCustomFields([...customFields, { key: newFieldForm.key, value: newFieldForm.value }]);
                                                                 setNewFieldForm({ key: '', value: '' });
                                                                 setShowAddField(false);
                                                             }
-                                                        }, children: "Ajouter" }), _jsx(Button, { size: "sm", className: "flex-1 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]", onClick: () => setShowAddField(false), children: "Annuler" })] })] })), _jsx("div", { className: "space-y-2", children: customFields.length > 0 ? (customFields.map((field, idx) => (_jsxs("div", { className: "border border-[#1F1F2E] rounded-lg p-2.5 flex items-center justify-between text-sm bg-[#1A1A25]", children: [_jsxs("div", { children: [_jsx("p", { className: "font-medium text-[#F0F0F5]", children: field.key }), _jsx("p", { className: "text-xs text-[#6B6B80]", children: field.value })] }), _jsx("button", { onClick: () => setCustomFields(customFields.filter((_, i) => i !== idx)), className: "text-[#6B6B80] hover:text-[#F0F0F5]", children: _jsx(X, { size: 16 }) })] }, idx)))) : (_jsx("p", { className: "text-xs text-[#6B6B80]", children: "Aucun champ personnalis\u00E9" })) })] })] }), _jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsx(CardHeader, { className: "pb-3", children: _jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", title: "Galerie de photos du v\u00E9hicule", children: "Images du v\u00E9hicule" }) }), _jsx(CardContent, { children: _jsxs("div", { className: "border-2 border-dashed border-[#1F1F2E] rounded-lg p-8 text-center hover:border-[#2A2A3D] transition", children: [_jsx(Camera, { size: 32, className: "mx-auto text-[#6B6B80] mb-2" }), _jsx("p", { className: "text-sm text-[#6B6B80] mb-4", children: "Aucune image. Glissez-d\u00E9posez ou cliquez pour ajouter." }), _jsx("input", { type: "file", accept: "image/*", onChange: (e) => {
-                                                if (e.target.files && e.target.files[0]) {
-                                                    setSelectedPhoto(e.target.files[0].name);
-                                                }
-                                            }, className: "hidden", id: "photo-input" }), _jsx(Button, { className: "bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]", size: "sm", onClick: () => document.getElementById('photo-input')?.click(), children: "S\u00E9lectionner une image" }), selectedPhoto && (_jsxs("p", { className: "text-xs text-[#6B6B80] mt-3", children: ["Fichier s\u00E9lectionn\u00E9: ", _jsx("span", { className: "font-medium text-[#F0F0F5]", children: selectedPhoto })] }))] }) })] })] })), activeTab === 'trips' && (_jsxs("div", { className: "space-y-6", children: [_jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsx(CardHeader, { className: "pb-3", children: _jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", children: "Filtre par date" }) }), _jsx(CardContent, { children: _jsxs("div", { className: "flex gap-4 items-end", children: [_jsxs("div", { className: "flex-1", children: [_jsx("label", { className: "block text-sm font-medium text-[#F0F0F5] mb-1", children: "\u00C0 partir du" }), _jsx("input", { type: "date", value: dateFrom, onChange: (e) => setDateFrom(e.target.value), className: "w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5]" })] }), _jsxs("div", { className: "flex-1", children: [_jsx("label", { className: "block text-sm font-medium text-[#F0F0F5] mb-1", children: "Jusqu'au" }), _jsx("input", { type: "date", value: dateTo, onChange: (e) => setDateTo(e.target.value), className: "w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5]" })] })] }) })] }), _jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsxs(CardHeader, { className: "pb-3", children: [_jsxs(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", children: ["Trajets (", trips.length, ")"] }), _jsx(CardDescription, { className: "text-[#6B6B80]", children: tripsLoading ? 'Chargement...' : `${trips.length} trajet(s) trouvé(s)` })] }), _jsx(CardContent, { children: tripsLoading ? (_jsxs("div", { className: "space-y-3", children: [_jsx(Skeleton, { className: "h-20" }), _jsx(Skeleton, { className: "h-20" }), _jsx(Skeleton, { className: "h-20" })] })) : trips.length === 0 ? (_jsxs("div", { className: "text-center py-8", children: [_jsx(Route, { size: 32, className: "mx-auto text-[#6B6B80] mb-2" }), _jsx("p", { className: "text-[#6B6B80]", children: "Aucun trajet trouv\u00E9 pour cette p\u00E9riode" })] })) : (_jsx("div", { className: "space-y-3", children: trips.map((trip, idx) => (_jsxs("div", { className: "border border-[#1F1F2E] rounded-[12px] p-4 hover:bg-[#1A1A25] hover:border-[#2A2A3D] transition", children: [_jsxs("div", { className: "grid grid-cols-2 gap-4 mb-3", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "D\u00E9part" }), _jsx("p", { className: "font-syne font-medium text-sm text-[#F0F0F5]", children: trip.startAddress || `${trip.startLat.toFixed(4)}, ${trip.startLng.toFixed(4)}` }), _jsx("p", { className: "text-xs text-[#6B6B80]", children: formatDateTime(trip.startTime) })] }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Arriv\u00E9e" }), _jsx("p", { className: "font-syne font-medium text-sm text-[#F0F0F5]", children: trip.endAddress || `${trip.endLat.toFixed(4)}, ${trip.endLng.toFixed(4)}` }), _jsx("p", { className: "text-xs text-[#6B6B80]", children: formatDateTime(trip.endTime) })] })] }), _jsxs("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 text-sm", children: [_jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Dur\u00E9e" }), _jsx("p", { className: "font-mono font-semibold text-[#00E5CC]", children: formatDuration(trip.duration) })] }), _jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Distance" }), _jsxs("p", { className: "font-mono font-semibold text-[#00E5CC]", children: [trip.distance.toFixed(1), " km"] })] }), _jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Vitesse moy." }), _jsxs("p", { className: "font-mono font-semibold text-[#00E5CC]", children: [trip.averageSpeed.toFixed(0), " km/h"] })] }), _jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Vitesse max" }), _jsxs("p", { className: "font-mono font-semibold text-[#00E5CC]", children: [trip.maxSpeed.toFixed(0), " km/h"] })] })] }), _jsxs(Button, { className: "w-full gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]", size: "sm", onClick: () => setReplayingTrip(trip), children: [_jsx(Play, { size: 14 }), "Rejouer ce trajet"] })] }, idx))) })) })] }), replayingTrip && (_jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsxs(CardHeader, { className: "pb-3 flex items-center justify-between", children: [_jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", children: "Affichage du trajet" }), _jsx(Button, { variant: "ghost", size: "sm", className: "text-[#6B6B80] hover:text-[#F0F0F5]", onClick: () => setReplayingTrip(null), children: _jsx(X, { size: 18 }) })] }), _jsxs(CardContent, { children: [_jsx("div", { className: "h-96 rounded-lg overflow-hidden mb-4 border border-[#1F1F2E]", children: _jsxs(MapContainer, { center: [replayingTrip.startLat, replayingTrip.startLng], zoom: 14, className: "h-full w-full", zoomControl: false, children: [_jsx(TileLayer, { url: MAPBOX_TILE_URL('streets-v12'), tileSize: 512, zoomOffset: -1 }), _jsx(Marker, { position: [replayingTrip.startLat, replayingTrip.startLng], children: _jsxs(Popup, { children: [_jsx("strong", { children: "D\u00E9part" }), _jsx("br", {}), formatDateTime(replayingTrip.startTime)] }) }), _jsx(Marker, { position: [replayingTrip.endLat, replayingTrip.endLng], children: _jsxs(Popup, { children: [_jsx("strong", { children: "Arriv\u00E9e" }), _jsx("br", {}), formatDateTime(replayingTrip.endTime)] }) }), replayingTrip.points && replayingTrip.points.map((pt, idx) => (_jsx(CircleMarker, { center: [pt.lat, pt.lng], radius: 2, pathOptions: {
+                                                        }, children: "Ajouter" }), _jsx(Button, { size: "sm", className: "flex-1 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]", onClick: () => setShowAddField(false), children: "Annuler" })] })] })), _jsx("div", { className: "space-y-2", children: customFields.length > 0 ? (customFields.map((field, idx) => (_jsxs("div", { className: "border border-[#1F1F2E] rounded-lg p-2.5 flex items-center justify-between text-sm bg-[#1A1A25]", children: [_jsxs("div", { children: [_jsx("p", { className: "font-medium text-[#F0F0F5]", children: field.key }), _jsx("p", { className: "text-xs text-[#6B6B80]", children: field.value })] }), _jsx("button", { onClick: () => setCustomFields(customFields.filter((_, i) => i !== idx)), className: "text-[#6B6B80] hover:text-[#F0F0F5]", children: _jsx(X, { size: 16 }) })] }, idx)))) : (_jsx("p", { className: "text-xs text-[#6B6B80]", children: "Aucun champ personnalis\u00E9" })) })] })] })] })), activeTab === 'trips' && (_jsxs("div", { className: "space-y-6", children: [_jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsx(CardHeader, { className: "pb-3", children: _jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", children: "Filtre et export des trajets" }) }), _jsxs(CardContent, { className: "space-y-4", children: [exportError && (_jsxs("div", { className: "flex items-center gap-2 bg-[#1A0A0A] border border-[#FF4D6A] rounded-lg p-3", children: [_jsx(AlertCircle, { size: 16, className: "text-[#FF4D6A] flex-shrink-0" }), _jsx("p", { className: "text-sm text-[#F0F0F5]", children: exportError })] })), _jsxs("div", { className: "flex gap-4 items-end flex-wrap", children: [_jsxs("div", { className: "flex-1 min-w-[200px]", children: [_jsx("label", { className: "block text-sm font-medium text-[#F0F0F5] mb-1", children: "\u00C0 partir du" }), _jsx("input", { type: "date", value: dateFrom, onChange: (e) => setDateFrom(e.target.value), className: "w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5] focus:border-[#00E5CC]" })] }), _jsxs("div", { className: "flex-1 min-w-[200px]", children: [_jsx("label", { className: "block text-sm font-medium text-[#F0F0F5] mb-1", children: "Jusqu'au" }), _jsx("input", { type: "date", value: dateTo, onChange: (e) => setDateTo(e.target.value), className: "w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5] focus:border-[#00E5CC]" })] }), _jsxs("div", { className: "relative", children: [_jsxs(Button, { className: "gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]", onClick: () => setExportMenuOpen(!exportMenuOpen), children: [_jsx(Download, { size: 14 }), "Exporter", _jsx(ChevronDown, { size: 14 })] }), exportMenuOpen && (_jsxs("div", { className: "absolute right-0 mt-2 w-48 bg-[#12121A] border border-[#1F1F2E] rounded-lg shadow-lg z-10", children: [_jsx("button", { onClick: exportToCSV, className: "w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]", children: "CSV" }), _jsx("button", { onClick: exportToKML, className: "w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]", children: "KML (Google Earth)" }), _jsx("button", { onClick: exportToGPX, className: "w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]", children: "GPX" }), _jsx("button", { onClick: exportToXLSX, className: "w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25]", children: "Excel (FR)" })] }))] })] })] })] }), _jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsxs(CardHeader, { className: "pb-3", children: [_jsxs(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", children: ["Trajets (", trips.length, ")"] }), _jsx(CardDescription, { className: "text-[#6B6B80]", children: tripsLoading ? 'Chargement...' : `${trips.length} trajet(s) trouvé(s)` })] }), _jsx(CardContent, { children: tripsLoading ? (_jsxs("div", { className: "space-y-3", children: [_jsx(Skeleton, { className: "h-20" }), _jsx(Skeleton, { className: "h-20" }), _jsx(Skeleton, { className: "h-20" })] })) : trips.length === 0 ? (_jsxs("div", { className: "text-center py-8", children: [_jsx(Route, { size: 32, className: "mx-auto text-[#6B6B80] mb-2" }), _jsx("p", { className: "text-[#6B6B80]", children: "Aucun trajet trouv\u00E9 pour cette p\u00E9riode" })] })) : (_jsx("div", { className: "space-y-3", children: trips.map((trip, idx) => (_jsxs("div", { className: "border border-[#1F1F2E] rounded-[12px] p-4 hover:bg-[#1A1A25] hover:border-[#2A2A3D] transition", children: [_jsxs("div", { className: "grid grid-cols-2 gap-4 mb-3", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "D\u00E9part" }), _jsx("p", { className: "font-syne font-medium text-sm text-[#F0F0F5]", children: trip.startAddress || `${trip.startLat.toFixed(4)}, ${trip.startLng.toFixed(4)}` }), _jsx("p", { className: "text-xs text-[#6B6B80]", children: formatDateTime(trip.startTime) })] }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Arriv\u00E9e" }), _jsx("p", { className: "font-syne font-medium text-sm text-[#F0F0F5]", children: trip.endAddress || `${trip.endLat.toFixed(4)}, ${trip.endLng.toFixed(4)}` }), _jsx("p", { className: "text-xs text-[#6B6B80]", children: formatDateTime(trip.endTime) })] })] }), _jsxs("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 text-sm", children: [_jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Dur\u00E9e" }), _jsx("p", { className: "font-mono font-semibold text-[#00E5CC]", children: formatDuration(trip.duration) })] }), _jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Distance" }), _jsxs("p", { className: "font-mono font-semibold text-[#00E5CC]", children: [trip.distance.toFixed(1), " km"] })] }), _jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Vitesse moy." }), _jsxs("p", { className: "font-mono font-semibold text-[#00E5CC]", children: [trip.averageSpeed.toFixed(0), " km/h"] })] }), _jsxs("div", { className: "bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center", children: [_jsx("p", { className: "text-xs text-[#6B6B80] mb-1", children: "Vitesse max" }), _jsxs("p", { className: "font-mono font-semibold text-[#00E5CC]", children: [trip.maxSpeed.toFixed(0), " km/h"] })] })] }), _jsxs(Button, { className: "w-full gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]", size: "sm", onClick: () => setReplayingTrip(trip), children: [_jsx(Play, { size: 14 }), "Rejouer ce trajet"] })] }, idx))) })) })] }), replayingTrip && (_jsxs(Card, { className: "bg-[#12121A] border border-[#1F1F2E]", children: [_jsxs(CardHeader, { className: "pb-3 flex items-center justify-between", children: [_jsx(CardTitle, { className: "font-syne text-base text-[#F0F0F5]", children: "Affichage du trajet" }), _jsx(Button, { variant: "ghost", size: "sm", className: "text-[#6B6B80] hover:text-[#F0F0F5]", onClick: () => setReplayingTrip(null), children: _jsx(X, { size: 18 }) })] }), _jsxs(CardContent, { children: [_jsx("div", { className: "h-96 rounded-lg overflow-hidden mb-4 border border-[#1F1F2E]", children: _jsxs(MapContainer, { center: [replayingTrip.startLat, replayingTrip.startLng], zoom: 14, className: "h-full w-full", zoomControl: false, children: [_jsx(TileLayer, { url: MAPBOX_TILE_URL('streets-v12'), tileSize: 512, zoomOffset: -1 }), _jsx(Marker, { position: [replayingTrip.startLat, replayingTrip.startLng], children: _jsxs(Popup, { children: [_jsx("strong", { children: "D\u00E9part" }), _jsx("br", {}), formatDateTime(replayingTrip.startTime)] }) }), _jsx(Marker, { position: [replayingTrip.endLat, replayingTrip.endLng], children: _jsxs(Popup, { children: [_jsx("strong", { children: "Arriv\u00E9e" }), _jsx("br", {}), formatDateTime(replayingTrip.endTime)] }) }), replayingTrip.points && replayingTrip.points.map((pt, idx) => (_jsx(CircleMarker, { center: [pt.lat, pt.lng], radius: 2, pathOptions: {
                                                         color: '#00E5CC',
                                                         fillColor: '#00E5CC',
                                                         fillOpacity: 0.6 - (idx / replayingTrip.points.length) * 0.5,

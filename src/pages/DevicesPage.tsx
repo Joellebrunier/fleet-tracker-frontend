@@ -15,7 +15,7 @@ import {
 import { useAuthStore } from '@/stores/authStore'
 import { apiClient } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
-import { Search, Wifi, Zap, Clock, Locate, RotateCw, AlertCircle, Link as LinkIcon, Download, Upload } from 'lucide-react'
+import { Search, Wifi, Zap, Clock, Locate, RotateCw, AlertCircle, Link as LinkIcon, Download, Upload, Battery, History, Layers } from 'lucide-react'
 import { formatTimeAgo } from '@/lib/utils'
 
 interface Device {
@@ -25,18 +25,31 @@ interface Device {
   provider: string
   status: 'online' | 'offline' | 'faulty'
   simNumber?: string
+  operator?: string
+  dataPlan?: string
   batteryLevel?: number
   signalStrength?: number
   firmwareVersion?: string
   lastSeen?: string
   vehicleId?: string
   vehicleName?: string
+  inventoryStatus?: 'En stock' | 'Assigné' | 'En réparation' | 'Retiré'
 }
 
 interface Vehicle {
   id: string
   name: string
   licensePlate: string
+}
+
+interface DeviceHistory {
+  id: string
+  deviceId: string
+  vehicleId: string
+  vehicleName: string
+  assignedDate: string
+  removedDate?: string
+  status: 'current' | 'previous'
 }
 
 export default function DevicesPage() {
@@ -47,11 +60,18 @@ export default function DevicesPage() {
   const [selectedVehicleId, setSelectedVehicleId] = useState('')
   const [importDialog, setImportDialog] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
-  const [parsedData, setParsedData] = useState<Array<{imei: string; model: string; provider: string; simNumber: string}>>([])
+  const [parsedData, setParsedData] = useState<Array<{imei: string; model: string; provider: string; simNumber: string; operator?: string; dataPlan?: string}>>([])
+  const [editingDevice, setEditingDevice] = useState<Device | null>(null)
+  const [editDialog, setEditDialog] = useState(false)
+  const [historyDialog, setHistoryDialog] = useState(false)
+  const [selectedDeviceHistory, setSelectedDeviceHistory] = useState<DeviceHistory[]>([])
+  const [bulkAssignDialog, setBulkAssignDialog] = useState(false)
+  const [selectedDeviceIds, setSelectedDeviceIds] = useState<Set<string>>(new Set())
+  const [bulkAssignVehicleId, setBulkAssignVehicleId] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch devices
-  const { data: devices = [], isLoading, error } = useQuery({
+  const { data: devices = [], isLoading, error, refetch } = useQuery({
     queryKey: ['devices', organizationId],
     queryFn: async () => {
       if (!organizationId) return []
@@ -115,11 +135,33 @@ export default function DevicesPage() {
     }
   }
 
+  const getInventoryStatusColor = (status?: string): 'default' | 'destructive' | 'secondary' | 'outline' => {
+    switch (status) {
+      case 'En stock':
+        return 'default'
+      case 'Assigné':
+        return 'secondary'
+      case 'En réparation':
+        return 'outline'
+      case 'Retiré':
+        return 'destructive'
+      default:
+        return 'default'
+    }
+  }
+
   const getBatteryColor = (level?: number): string => {
     if (!level) return 'bg-[#1A1A25]'
     if (level > 50) return 'bg-[#00E5CC]'
     if (level > 20) return 'bg-[#FFB547]'
     return 'bg-[#FF4D6A]'
+  }
+
+  const getBatteryTextColor = (level?: number): string => {
+    if (!level) return 'text-[#6B6B80]'
+    if (level > 50) return 'text-[#00E5CC]'
+    if (level > 20) return 'text-[#FFB547]'
+    return 'text-[#FF4D6A]'
   }
 
   const getSignalBars = (strength?: number): number => {
@@ -145,6 +187,47 @@ export default function DevicesPage() {
     setAssignmentDialog(true)
   }
 
+  const openEditDialog = (device: Device) => {
+    setEditingDevice(device)
+    setEditDialog(true)
+  }
+
+  const openHistoryDialog = (device: Device) => {
+    setSelectedDevice(device)
+    // Mock history data based on device ID
+    const mockHistory: DeviceHistory[] = [
+      {
+        id: '1',
+        deviceId: device.id,
+        vehicleId: 'vh-001',
+        vehicleName: 'Renault Master 1',
+        assignedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        removedDate: undefined,
+        status: 'current',
+      },
+      {
+        id: '2',
+        deviceId: device.id,
+        vehicleId: 'vh-002',
+        vehicleName: 'Peugeot Boxer 2',
+        assignedDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+        removedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'previous',
+      },
+      {
+        id: '3',
+        deviceId: device.id,
+        vehicleId: 'vh-003',
+        vehicleName: 'Mercedes Sprinter 3',
+        assignedDate: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
+        removedDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'previous',
+      },
+    ]
+    setSelectedDeviceHistory(mockHistory)
+    setHistoryDialog(true)
+  }
+
   const handleAssignVehicle = async () => {
     if (!selectedDevice || !selectedVehicleId) return
     try {
@@ -153,9 +236,43 @@ export default function DevicesPage() {
       })
       setAssignmentDialog(false)
       setSelectedDevice(null)
-      // In a real app, would invalidate query cache here
+      refetch()
     } catch (error) {
       console.error('Erreur lors de l\'assignation:', error)
+    }
+  }
+
+  const handleSaveDevice = async () => {
+    if (!editingDevice) return
+    try {
+      await apiClient.put(`/api/devices/${editingDevice.id}`, {
+        simNumber: editingDevice.simNumber,
+        operator: editingDevice.operator,
+        dataPlan: editingDevice.dataPlan,
+        inventoryStatus: editingDevice.inventoryStatus,
+      })
+      setEditDialog(false)
+      setEditingDevice(null)
+      refetch()
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error)
+    }
+  }
+
+  const handleBulkAssign = async () => {
+    if (selectedDeviceIds.size === 0 || !bulkAssignVehicleId) return
+    try {
+      for (const deviceId of selectedDeviceIds) {
+        await apiClient.put(`/api/devices/${deviceId}`, {
+          vehicleId: bulkAssignVehicleId,
+        })
+      }
+      setBulkAssignDialog(false)
+      setSelectedDeviceIds(new Set())
+      setBulkAssignVehicleId('')
+      refetch()
+    } catch (error) {
+      console.error('Erreur lors de l\'attribution en masse:', error)
     }
   }
 
@@ -164,7 +281,6 @@ export default function DevicesPage() {
       await apiClient.post(`/api/devices/${deviceId}/command`, {
         command,
       })
-      // Show success notification
     } catch (error) {
       console.error('Erreur lors de l\'envoi de la commande:', error)
     }
@@ -183,7 +299,6 @@ export default function DevicesPage() {
     reader.onload = (e) => {
       const text = e.target?.result as string
       const lines = text.split('\n').filter(line => line.trim())
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
       const data = []
 
       for (let i = 1; i < lines.length; i++) {
@@ -193,7 +308,9 @@ export default function DevicesPage() {
             imei: values[0] || '',
             model: values[1] || '',
             provider: values[2] || '',
-            simNumber: values[3] || ''
+            simNumber: values[3] || '',
+            operator: values[4] || '',
+            dataPlan: values[5] || '',
           })
         }
       }
@@ -211,14 +328,16 @@ export default function DevicesPage() {
           imei: device.imei,
           model: device.model,
           provider: device.provider,
-          simNumber: device.simNumber
+          simNumber: device.simNumber,
+          operator: device.operator,
+          dataPlan: device.dataPlan,
         })
       }
 
       setImportDialog(false)
       setImportFile(null)
       setParsedData([])
-      // Refresh devices list
+      refetch()
     } catch (error) {
       console.error('Erreur lors de l\'importation:', error)
     }
@@ -227,15 +346,18 @@ export default function DevicesPage() {
   const handleExportDevices = () => {
     if (devices.length === 0) return
 
-    const headers = ['IMEI', 'Modèle', 'Fournisseur', 'Numéro SIM', 'Statut', 'Batterie', 'Signal']
+    const headers = ['IMEI', 'Modèle', 'Fournisseur', 'Numéro SIM', 'Opérateur', 'Plan données', 'Statut', 'Batterie', 'Signal', 'Inventaire']
     const rows = devices.map(d => [
       d.imei,
       d.model,
       d.provider,
       d.simNumber || '',
+      d.operator || '',
+      d.dataPlan || '',
       getStatusLabel(d.status),
       d.batteryLevel || 0,
-      d.signalStrength || 0
+      d.signalStrength || 0,
+      d.inventoryStatus || 'Assigné',
     ])
 
     const csv = [headers, ...rows]
@@ -251,6 +373,24 @@ export default function DevicesPage() {
     URL.revokeObjectURL(url)
   }
 
+  const toggleDeviceSelection = (deviceId: string) => {
+    const newSelection = new Set(selectedDeviceIds)
+    if (newSelection.has(deviceId)) {
+      newSelection.delete(deviceId)
+    } else {
+      newSelection.add(deviceId)
+    }
+    setSelectedDeviceIds(newSelection)
+  }
+
+  const selectAllDevices = (select: boolean) => {
+    if (select) {
+      setSelectedDeviceIds(new Set(filteredDevices.map(d => d.id)))
+    } else {
+      setSelectedDeviceIds(new Set())
+    }
+  }
+
   return (
     <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
       {/* Header */}
@@ -260,6 +400,15 @@ export default function DevicesPage() {
           <p className="mt-2 text-[#6B6B80]">Gérez vos trackers et appareils GPS</p>
         </div>
         <div className="flex gap-2">
+          {selectedDeviceIds.size > 0 && (
+            <Button
+              onClick={() => setBulkAssignDialog(true)}
+              className="flex items-center gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+            >
+              <Layers size={16} />
+              Attribution en masse ({selectedDeviceIds.size})
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => setImportDialog(true)}
@@ -324,12 +473,22 @@ export default function DevicesPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#1F1F2E]">
+                  <th className="px-6 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedDeviceIds.size === filteredDevices.length && filteredDevices.length > 0}
+                      onChange={(e) => selectAllDevices(e.target.checked)}
+                      className="w-4 h-4 rounded border-[#1F1F2E] bg-[#0A0A0F] cursor-pointer"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">IMEI</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Modèle</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">SIM / Opérateur</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Firmware</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Statut</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Batterie</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Signal</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Inventaire</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Véhicule</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Dernière pos.</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Actions</th>
@@ -338,8 +497,22 @@ export default function DevicesPage() {
               <tbody className="divide-y divide-[#1F1F2E]">
                 {filteredDevices.map((device) => (
                   <tr key={device.id} className="hover:bg-[#1A1A25] transition-colors">
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedDeviceIds.has(device.id)}
+                        onChange={() => toggleDeviceSelection(device.id)}
+                        className="w-4 h-4 rounded border-[#1F1F2E] bg-[#0A0A0F] cursor-pointer"
+                      />
+                    </td>
                     <td className="px-6 py-4 text-sm font-medium text-[#F0F0F5] font-mono">{device.imei}</td>
                     <td className="px-6 py-4 text-sm text-[#6B6B80]">{device.model}</td>
+                    <td className="px-6 py-4 text-sm text-[#6B6B80]">
+                      <div className="space-y-0.5">
+                        {device.simNumber && <div className="font-mono">{device.simNumber}</div>}
+                        {device.operator && <div className="text-xs">{device.operator}</div>}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-sm text-[#6B6B80]">
                       {device.firmwareVersion || '-'}
                     </td>
@@ -350,13 +523,14 @@ export default function DevicesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-16 bg-[#1A1A25] rounded overflow-hidden">
+                        <Battery className={`h-4 w-4 ${getBatteryTextColor(device.batteryLevel)}`} />
+                        <div className="h-6 w-12 bg-[#1A1A25] rounded overflow-hidden">
                           <div
                             className={`h-full ${getBatteryColor(device.batteryLevel)}`}
                             style={{ width: `${device.batteryLevel || 0}%` }}
                           />
                         </div>
-                        <span className="text-xs text-[#6B6B80] w-8 font-mono">
+                        <span className={`text-xs font-mono ${getBatteryTextColor(device.batteryLevel)}`}>
                           {device.batteryLevel || 0}%
                         </span>
                       </div>
@@ -375,6 +549,11 @@ export default function DevicesPage() {
                         ))}
                       </div>
                     </td>
+                    <td className="px-6 py-4 text-sm">
+                      <Badge variant={getInventoryStatusColor(device.inventoryStatus)}>
+                        {device.inventoryStatus || 'Assigné'}
+                      </Badge>
+                    </td>
                     <td className="px-6 py-4 text-sm text-[#6B6B80]">
                       {device.vehicleName ? (
                         <Badge variant="secondary" className="bg-[rgba(0,229,204,0.12)] text-[#00E5CC]">{device.vehicleName}</Badge>
@@ -387,6 +566,20 @@ export default function DevicesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={() => openEditDialog(device)}
+                          className="p-1.5 hover:bg-[rgba(0,229,204,0.12)] rounded text-[#00E5CC]"
+                          title="Modifier détails SIM"
+                        >
+                          <Wifi size={16} />
+                        </button>
+                        <button
+                          onClick={() => openHistoryDialog(device)}
+                          className="p-1.5 hover:bg-[rgba(255,181,71,0.12)] rounded text-[#FFB547]"
+                          title="Historique remplacements"
+                        >
+                          <History size={16} />
+                        </button>
                         <button
                           onClick={() => openAssignmentDialog(device)}
                           className="p-1.5 hover:bg-[rgba(0,229,204,0.12)] rounded text-[#00E5CC]"
@@ -442,6 +635,141 @@ export default function DevicesPage() {
           </div>
         </Card>
       )}
+
+      {/* Edit Device Dialog */}
+      <Dialog open={editDialog} onOpenChange={setEditDialog}>
+        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Détails de la carte SIM</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
+              Modifier les informations SIM et l'inventaire de l'appareil
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingDevice && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#F0F0F5]">IMEI</label>
+                <Input
+                  disabled
+                  value={editingDevice.imei}
+                  className="bg-[#0A0A0F] border-[#1F1F2E] text-[#6B6B80] rounded-[8px]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#F0F0F5]">Numéro SIM</label>
+                <Input
+                  value={editingDevice.simNumber || ''}
+                  onChange={(e) => setEditingDevice({ ...editingDevice, simNumber: e.target.value })}
+                  placeholder="898210..."
+                  className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#F0F0F5]">Opérateur</label>
+                <Input
+                  value={editingDevice.operator || ''}
+                  onChange={(e) => setEditingDevice({ ...editingDevice, operator: e.target.value })}
+                  placeholder="Orange, SFR, Bouygues..."
+                  className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#F0F0F5]">Plan de données</label>
+                <Input
+                  value={editingDevice.dataPlan || ''}
+                  onChange={(e) => setEditingDevice({ ...editingDevice, dataPlan: e.target.value })}
+                  placeholder="10 GB/mois, Illimité..."
+                  className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#F0F0F5]">Statut inventaire</label>
+                <select
+                  value={editingDevice.inventoryStatus || 'Assigné'}
+                  onChange={(e) => setEditingDevice({ ...editingDevice, inventoryStatus: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-[#1F1F2E] rounded-[8px] text-sm bg-[#0A0A0F] text-[#F0F0F5] focus:outline-none focus:ring-2 focus:ring-[#00E5CC]"
+                >
+                  <option value="En stock">En stock</option>
+                  <option value="Assigné">Assigné</option>
+                  <option value="En réparation">En réparation</option>
+                  <option value="Retiré">Retiré</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditDialog(false)}
+              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleSaveDevice}
+              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+            >
+              Sauvegarder
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* History Dialog */}
+      <Dialog open={historyDialog} onOpenChange={setHistoryDialog}>
+        <DialogContent className="max-w-2xl bg-[#12121A] border-[#1F1F2E]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F5] font-syne">
+              Historique des remplacements - {selectedDevice?.imei}
+            </DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
+              Historique d'assignation de cet appareil à différents véhicules
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-4">
+            {selectedDeviceHistory.length === 0 ? (
+              <p className="text-[#6B6B80] text-sm">Aucun historique disponible</p>
+            ) : (
+              selectedDeviceHistory.map((history) => (
+                <div key={history.id} className="border border-[#1F1F2E] rounded-lg p-4 bg-[#0A0A0F]">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-medium text-[#F0F0F5]">{history.vehicleName}</p>
+                      <p className="text-sm text-[#6B6B80]">
+                        Assigné: {new Date(history.assignedDate).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                    <Badge variant={history.status === 'current' ? 'default' : 'secondary'}>
+                      {history.status === 'current' ? 'Actuel' : 'Précédent'}
+                    </Badge>
+                  </div>
+                  {history.removedDate && (
+                    <p className="text-sm text-[#6B6B80]">
+                      Retiré: {new Date(history.removedDate).toLocaleDateString('fr-FR')}
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              onClick={() => setHistoryDialog(false)}
+              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+            >
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Assignment Dialog */}
       <Dialog open={assignmentDialog} onOpenChange={setAssignmentDialog}>
@@ -502,13 +830,60 @@ export default function DevicesPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Bulk Assignment Dialog */}
+      <Dialog open={bulkAssignDialog} onOpenChange={setBulkAssignDialog}>
+        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Attribution en masse</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
+              Assigner {selectedDeviceIds.size} appareil(s) à un véhicule
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#F0F0F5]">Sélectionner un véhicule</label>
+              <select
+                value={bulkAssignVehicleId}
+                onChange={(e) => setBulkAssignVehicleId(e.target.value)}
+                className="w-full px-3 py-2 border border-[#1F1F2E] rounded-[8px] text-sm bg-[#0A0A0F] text-[#F0F0F5] focus:outline-none focus:ring-2 focus:ring-[#00E5CC]"
+              >
+                <option value="">-- Sélectionner un véhicule --</option>
+                {vehicles.map((vehicle) => (
+                  <option key={vehicle.id} value={vehicle.id}>
+                    {vehicle.name} ({vehicle.licensePlate})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBulkAssignDialog(false)}
+              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleBulkAssign}
+              disabled={!bulkAssignVehicleId}
+              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+            >
+              Assigner à {selectedDeviceIds.size} appareil(s)
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Import Dialog */}
       <Dialog open={importDialog} onOpenChange={setImportDialog}>
         <DialogContent className="max-w-2xl bg-[#12121A] border-[#1F1F2E]">
           <DialogHeader>
             <DialogTitle className="text-[#F0F0F5] font-syne">Importer des appareils</DialogTitle>
             <DialogDescription className="text-[#6B6B80]">
-              Téléchargez un fichier CSV avec le format: IMEI, Modèle, Fournisseur, Numéro SIM
+              Téléchargez un fichier CSV avec le format: IMEI, Modèle, Fournisseur, Numéro SIM, Opérateur, Plan données
             </DialogDescription>
           </DialogHeader>
 
@@ -551,7 +926,9 @@ export default function DevicesPage() {
                         <th className="px-4 py-2 text-left text-[#6B6B80]">IMEI</th>
                         <th className="px-4 py-2 text-left text-[#6B6B80]">Modèle</th>
                         <th className="px-4 py-2 text-left text-[#6B6B80]">Fournisseur</th>
-                        <th className="px-4 py-2 text-left text-[#6B6B80]">Numéro SIM</th>
+                        <th className="px-4 py-2 text-left text-[#6B6B80]">SIM</th>
+                        <th className="px-4 py-2 text-left text-[#6B6B80]">Opérateur</th>
+                        <th className="px-4 py-2 text-left text-[#6B6B80]">Plan</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#1F1F2E]">
@@ -560,7 +937,9 @@ export default function DevicesPage() {
                           <td className="px-4 py-2 text-[#F0F0F5] font-mono">{row.imei}</td>
                           <td className="px-4 py-2 text-[#6B6B80]">{row.model}</td>
                           <td className="px-4 py-2 text-[#6B6B80]">{row.provider}</td>
-                          <td className="px-4 py-2 text-[#6B6B80]">{row.simNumber}</td>
+                          <td className="px-4 py-2 text-[#6B6B80] font-mono text-xs">{row.simNumber}</td>
+                          <td className="px-4 py-2 text-[#6B6B80]">{row.operator}</td>
+                          <td className="px-4 py-2 text-[#6B6B80] text-xs">{row.dataPlan}</td>
                         </tr>
                       ))}
                     </tbody>

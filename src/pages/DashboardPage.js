@@ -7,8 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useVehicles } from '@/hooks/useVehicles';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useAuthStore } from '@/stores/authStore';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend, } from 'recharts';
-import { Truck, Activity, Navigation, WifiOff, Clock, MapPin, ChevronRight, AlertCircle, FileText, Zap, Plus, Route, Settings, GripHorizontal, Building2, ChevronUp, ChevronDown, RotateCcw, TrendingUp, TrendingDown, LogOut, LogIn, AlertTriangle, Shield, } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend, LineChart, Line, } from 'recharts';
+import { Truck, Activity, Navigation, WifiOff, Clock, MapPin, ChevronRight, AlertCircle, FileText, Zap, Plus, Route, Settings, GripHorizontal, Building2, ChevronUp, ChevronDown, RotateCcw, TrendingUp, TrendingDown, LogOut, LogIn, AlertTriangle, Shield, HelpCircle, } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, } from '@/components/ui/dialog';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { MAPBOX_TILE_URL } from '@/lib/constants';
@@ -36,6 +36,21 @@ const PROVIDER_COLORS_DARK = {
     Ubiwan: '#FFB547',
     Autre: '#6B6B80',
 };
+// Keyboard Shortcuts Modal Component
+function KeyboardShortcutsModal() {
+    const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
+    useEffect(() => {
+        const handleKeyPress = (e) => {
+            if (e.key === '?' && !isOpen) {
+                setIsOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, [isOpen]);
+    return (_jsx(Dialog, { open: isOpen, onOpenChange: setIsOpen, children: _jsxs(DialogContent, { className: "bg-[#12121A] border border-[#1F1F2E] max-w-md", children: [_jsxs(DialogHeader, { children: [_jsx(DialogTitle, { className: "text-[#F0F0F5] font-syne", children: "Raccourcis clavier" }), _jsx(DialogDescription, { className: "text-[#6B6B80]", children: "Appuyez sur ? pour afficher ce menu" })] }), _jsxs("div", { className: "space-y-4", children: [_jsxs("div", { className: "space-y-3 max-h-96 overflow-y-auto", children: [_jsxs("div", { className: "flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]", children: [_jsx("span", { className: "text-sm text-[#F0F0F5]", children: "Tableau de bord" }), _jsx("kbd", { className: "px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]", children: "D" })] }), _jsxs("div", { className: "flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]", children: [_jsx("span", { className: "text-sm text-[#F0F0F5]", children: "Carte" }), _jsx("kbd", { className: "px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]", children: "M" })] }), _jsxs("div", { className: "flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]", children: [_jsx("span", { className: "text-sm text-[#F0F0F5]", children: "V\u00E9hicules" }), _jsx("kbd", { className: "px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]", children: "V" })] }), _jsxs("div", { className: "flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]", children: [_jsx("span", { className: "text-sm text-[#F0F0F5]", children: "Alertes" }), _jsx("kbd", { className: "px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]", children: "A" })] }), _jsxs("div", { className: "flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]", children: [_jsx("span", { className: "text-sm text-[#F0F0F5]", children: "Rapports" }), _jsx("kbd", { className: "px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]", children: "R" })] }), _jsxs("div", { className: "flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]", children: [_jsx("span", { className: "text-sm text-[#F0F0F5]", children: "G\u00E9obarri\u00E8res" }), _jsx("kbd", { className: "px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]", children: "G" })] }), _jsxs("div", { className: "flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]", children: [_jsx("span", { className: "text-sm text-[#F0F0F5]", children: "Param\u00E8tres" }), _jsx("kbd", { className: "px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]", children: "S" })] })] }), _jsx("div", { className: "flex gap-2 justify-end pt-2 border-t border-[#1F1F2E]", children: _jsx(Button, { variant: "outline", size: "sm", onClick: () => setIsOpen(false), className: "border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]", children: "Fermer" }) })] })] }) }));
+}
 // Heatmap Marker Component
 function HeatmapMarker({ position, density, }) {
     const colorMap = {
@@ -65,7 +80,10 @@ export default function DashboardPage() {
         'quick-actions',
         'alerts-feed',
         'status-summary',
+        'mileage-trend',
+        'fleet-utilization',
         'speed-distribution',
+        'alert-frequency',
         'weekly-comparison',
         'heatmap',
         'fleet-activity',
@@ -84,7 +102,10 @@ export default function DashboardPage() {
             'quick-actions': { visible: true, size: 'normal' },
             'alerts-feed': { visible: true, size: 'normal' },
             'status-summary': { visible: true, size: 'normal' },
+            'mileage-trend': { visible: true, size: 'normal' },
+            'fleet-utilization': { visible: true, size: 'normal' },
             'speed-distribution': { visible: true, size: 'normal' },
+            'alert-frequency': { visible: true, size: 'normal' },
             'weekly-comparison': { visible: true, size: 'normal' },
             heatmap: { visible: true, size: 'expanded' },
             'fleet-activity': { visible: true, size: 'normal' },
@@ -134,7 +155,10 @@ export default function DashboardPage() {
         'quick-actions': 'Actions rapides',
         'alerts-feed': 'Flux d\'alertes',
         'status-summary': 'Résumé du statut',
+        'mileage-trend': 'Tendance kilométrique',
+        'fleet-utilization': 'Utilisation de la flotte',
         'speed-distribution': 'Distribution des vitesses',
+        'alert-frequency': 'Fréquence des alertes',
         'weekly-comparison': 'Comparaison hebdomadaire',
         heatmap: 'Carte thermique',
         'fleet-activity': 'Activité de la flotte',
@@ -184,7 +208,10 @@ export default function DashboardPage() {
             'quick-actions': { visible: true, size: 'normal' },
             'alerts-feed': { visible: true, size: 'normal' },
             'status-summary': { visible: true, size: 'normal' },
+            'mileage-trend': { visible: true, size: 'normal' },
+            'fleet-utilization': { visible: true, size: 'normal' },
             'speed-distribution': { visible: true, size: 'normal' },
+            'alert-frequency': { visible: true, size: 'normal' },
             'weekly-comparison': { visible: true, size: 'normal' },
             heatmap: { visible: true, size: 'expanded' },
             'fleet-activity': { visible: true, size: 'normal' },
@@ -309,7 +336,42 @@ export default function DashboardPage() {
             count: count,
         }));
     }, []);
-    // Heatmap density data (simulated around Nice)
+    // Mileage trend data (30 days)
+    const mileageTrendData = useMemo(() => {
+        return Array.from({ length: 30 }, (_, i) => ({
+            day: `${i + 1}`,
+            km: Math.floor(Math.random() * 500 + 1200),
+        }));
+    }, []);
+    // Fleet utilization data
+    const fleetUtilizationData = useMemo(() => {
+        const total = Math.max(stats.total, 1);
+        return [
+            { name: 'En service', value: Math.floor(total * 0.65), color: '#22c55e' },
+            { name: 'En maintenance', value: Math.floor(total * 0.15), color: '#f97316' },
+            { name: 'Inactif', value: Math.floor(total * 0.12), color: '#eab308' },
+            { name: 'Hors ligne', value: Math.floor(total * 0.08), color: '#9ca3af' },
+        ];
+    }, [stats.total]);
+    // Speed distribution data (6 ranges)
+    const speedDistributionData = useMemo(() => {
+        return [
+            { range: '0-30 km/h', count: 45 },
+            { range: '31-60 km/h', count: 82 },
+            { range: '61-90 km/h', count: 63 },
+            { range: '91-120 km/h', count: 28 },
+            { range: '>120 km/h', count: 5 },
+        ];
+    }, []);
+    // Alert frequency data (7 days)
+    const alertFrequencyData = useMemo(() => {
+        const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+        return days.map((day) => ({
+            day,
+            count: Math.floor(Math.random() * 25 + 5),
+        }));
+    }, []);
+    // Enhanced heatmap density data (10 points around Nice)
     const heatmapData = useMemo(() => {
         return [
             { position: [43.7, 7.12], density: 'élevé' },
@@ -317,6 +379,11 @@ export default function DashboardPage() {
             { position: [43.68, 7.1], density: 'moyen' },
             { position: [43.72, 7.08], density: 'faible' },
             { position: [43.65, 7.2], density: 'faible' },
+            { position: [43.73, 7.18], density: 'moyen' },
+            { position: [43.66, 7.05], density: 'faible' },
+            { position: [43.75, 7.22], density: 'faible' },
+            { position: [43.64, 7.15], density: 'moyen' },
+            { position: [43.69, 7.25], density: 'faible' },
         ];
     }, []);
     // Daily summary metrics
@@ -418,7 +485,7 @@ export default function DashboardPage() {
     if (isLoading) {
         return (_jsxs("div", { className: "space-y-6", children: [_jsx(Skeleton, { className: "h-10 w-64" }), _jsx("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-4", children: [...Array(4)].map((_, i) => (_jsx(Skeleton, { className: "h-28" }, i))) }), _jsxs("div", { className: "grid gap-6 lg:grid-cols-3", children: [_jsx(Skeleton, { className: "h-80 lg:col-span-2" }), _jsx(Skeleton, { className: "h-80" })] })] }));
     }
-    return (_jsxs("div", { className: "space-y-6 bg-[#0A0A0F]", children: [_jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-2xl font-bold font-syne text-[#F0F0F5]", children: "Tableau de bord" }), _jsxs("p", { className: "mt-1 text-sm text-[#6B6B80]", children: ["Vue d'ensemble de votre flotte \u2014 ", stats.total, " v\u00E9hicules, ", stats.withGps, " avec GPS actif"] })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: () => setShowWidgetConfig(!showWidgetConfig), className: "gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]", children: [_jsx(Settings, { size: 16 }), _jsx("span", { children: "Personnaliser" })] })] }), showWidgetConfig && (_jsxs("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]", children: [_jsx("div", { className: "pb-4 px-6 pt-6 border-b border-[#1F1F2E]", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-syne text-base font-bold text-[#F0F0F5]", children: "Personnaliser les widgets" }), _jsx("p", { className: "text-sm mt-1 text-[#6B6B80]", children: "G\u00E9rez la visibilit\u00E9, la taille et l'ordre des widgets de votre tableau de bord" })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: resetWidgetConfig, className: "gap-2 text-[#FFB547] border-[#FFB547]/30 bg-[#FFB547]/10 hover:bg-[#FFB547]/20", children: [_jsx(RotateCcw, { size: 14 }), _jsx("span", { children: "R\u00E9initialiser" })] })] }) }), _jsx("div", { className: "px-6 py-6", children: _jsx("div", { className: "space-y-3", children: widgetOrder.map((id) => (_jsxs("div", { className: "flex items-center gap-3 p-3 bg-[#1A1A25] rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] hover:border-[#2A2A3D] transition-colors", children: [_jsx("label", { className: "flex items-center gap-2 cursor-pointer", children: _jsx("input", { type: "checkbox", checked: widgetConfig[id].visible, onChange: () => toggleWidgetVisibility(id), className: "w-4 h-4 rounded cursor-pointer accent-[#00E5CC]" }) }), _jsx("div", { className: "flex-1", children: _jsx("span", { className: `text-sm font-medium ${widgetConfig[id].visible ? 'text-[#F0F0F5]' : 'text-[#6B6B80]'}`, children: widgetLabels[id] }) }), _jsx("div", { className: "flex gap-1 bg-[#12121A] rounded-[var(--tz-radius-sm)] p-1", children: ['compact', 'normal', 'expanded'].map((size) => (_jsx("button", { onClick: () => setWidgetSize(id, size), title: size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large', className: `px-2 py-1 text-xs rounded transition-colors ${widgetConfig[id].size === size
+    return (_jsxs("div", { className: "space-y-6 bg-[#0A0A0F]", children: [_jsx(KeyboardShortcutsModal, {}), _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-2xl font-bold font-syne text-[#F0F0F5]", children: "Tableau de bord" }), _jsxs("p", { className: "mt-1 text-sm text-[#6B6B80]", children: ["Vue d'ensemble de votre flotte \u2014 ", stats.total, " v\u00E9hicules, ", stats.withGps, " avec GPS actif"] })] }), _jsxs("div", { className: "flex gap-2", children: [_jsxs(Button, { variant: "outline", size: "sm", className: "gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]", title: "Appuyez sur ? pour les raccourcis", children: [_jsx(HelpCircle, { size: 16 }), _jsx("span", { children: "Aide" })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: () => setShowWidgetConfig(!showWidgetConfig), className: "gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]", children: [_jsx(Settings, { size: 16 }), _jsx("span", { children: "Personnaliser" })] })] })] }), showWidgetConfig && (_jsxs("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]", children: [_jsx("div", { className: "pb-4 px-6 pt-6 border-b border-[#1F1F2E]", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-syne text-base font-bold text-[#F0F0F5]", children: "Personnaliser les widgets" }), _jsx("p", { className: "text-sm mt-1 text-[#6B6B80]", children: "G\u00E9rez la visibilit\u00E9, la taille et l'ordre des widgets de votre tableau de bord" })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: resetWidgetConfig, className: "gap-2 text-[#FFB547] border-[#FFB547]/30 bg-[#FFB547]/10 hover:bg-[#FFB547]/20", children: [_jsx(RotateCcw, { size: 14 }), _jsx("span", { children: "R\u00E9initialiser" })] })] }) }), _jsx("div", { className: "px-6 py-6", children: _jsx("div", { className: "space-y-3", children: widgetOrder.map((id) => (_jsxs("div", { className: "flex items-center gap-3 p-3 bg-[#1A1A25] rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] hover:border-[#2A2A3D] transition-colors", children: [_jsx("label", { className: "flex items-center gap-2 cursor-pointer", children: _jsx("input", { type: "checkbox", checked: widgetConfig[id].visible, onChange: () => toggleWidgetVisibility(id), className: "w-4 h-4 rounded cursor-pointer accent-[#00E5CC]" }) }), _jsx("div", { className: "flex-1", children: _jsx("span", { className: `text-sm font-medium ${widgetConfig[id].visible ? 'text-[#F0F0F5]' : 'text-[#6B6B80]'}`, children: widgetLabels[id] }) }), _jsx("div", { className: "flex gap-1 bg-[#12121A] rounded-[var(--tz-radius-sm)] p-1", children: ['compact', 'normal', 'expanded'].map((size) => (_jsx("button", { onClick: () => setWidgetSize(id, size), title: size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large', className: `px-2 py-1 text-xs rounded transition-colors ${widgetConfig[id].size === size
                                                 ? 'bg-[#00E5CC] text-[#0A0A0F]'
                                                 : 'text-[#6B6B80] hover:text-[#F0F0F5]'}`, children: size === 'compact' ? 'C' : size === 'normal' ? 'N' : 'L' }, size))) }), _jsxs("div", { className: "flex gap-1 border-l border-[#1F1F2E] pl-3", children: [_jsx("button", { onClick: () => moveWidgetUp(id), disabled: widgetOrder.indexOf(id) === 0, className: "p-1 text-[#6B6B80] hover:text-[#00E5CC] disabled:opacity-30 disabled:cursor-not-allowed transition-colors", title: "Monter", children: _jsx(ChevronUp, { size: 16 }) }), _jsx("button", { onClick: () => moveWidgetDown(id), disabled: widgetOrder.indexOf(id) === widgetOrder.length - 1, className: "p-1 text-[#6B6B80] hover:text-[#00E5CC] disabled:opacity-30 disabled:cursor-not-allowed transition-colors", title: "Descendre", children: _jsx(ChevronDown, { size: 16 }) })] })] }, id))) }) })] })), _jsxs("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-5 stagger-children", children: [_jsx("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-[#6B6B80] uppercase tracking-wide", children: "Total v\u00E9hicules" }), _jsx("p", { className: "text-3xl font-bold font-mono text-[#F0F0F5] mt-1", children: stats.total }), _jsxs("p", { className: "text-xs text-[#6B6B80] mt-1", children: [stats.withGps, " GPS actif"] })] }), _jsx("div", { className: "rounded-[var(--tz-radius)] bg-[rgba(59,130,246,0.1)] p-3 border border-[rgba(59,130,246,0.2)]", children: _jsx(Truck, { className: "text-[#3B82F6]", size: 24 }) })] }) }), _jsx("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-[#6B6B80] uppercase tracking-wide", children: "En mouvement" }), _jsx("p", { className: "text-3xl font-bold font-mono text-[#22C55E] mt-1", children: stats.moving }), _jsxs("p", { className: "text-xs text-[#6B6B80] mt-1", children: [stats.stopped, " \u00E0 l'arr\u00EAt"] })] }), _jsx("div", { className: "rounded-[var(--tz-radius)] bg-[rgba(34,197,94,0.1)] p-3 border border-[rgba(34,197,94,0.2)]", children: _jsx(Navigation, { className: "text-[#22C55E]", size: 24 }) })] }) }), _jsx("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-[#6B6B80] uppercase tracking-wide", children: "Actifs r\u00E9cents" }), _jsx("p", { className: "text-3xl font-bold font-mono text-[#FFB547] mt-1", children: stats.recentlyActive }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-1", children: "derni\u00E8res 10 min" })] }), _jsx("div", { className: "rounded-[var(--tz-radius)] bg-[rgba(255,181,71,0.1)] p-3 border border-[rgba(255,181,71,0.2)]", children: _jsx(Activity, { className: "text-[#FFB547]", size: 24 }) })] }) }), _jsx("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-[#6B6B80] uppercase tracking-wide", children: "Hors ligne" }), _jsx("p", { className: "text-3xl font-bold font-mono text-[#FF4D6A] mt-1", children: stats.noGps }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-1", children: "sans position GPS" })] }), _jsx("div", { className: "rounded-[var(--tz-radius)] bg-[rgba(255,77,106,0.1)] p-3 border border-[rgba(255,77,106,0.2)]", children: _jsx(WifiOff, { className: "text-[#FF4D6A]", size: 24 }) })] }) }), _jsx("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-[#6B6B80] uppercase tracking-wide", children: "Km du jour" }), _jsxs("p", { className: "text-3xl font-bold font-mono text-[#00E5CC] mt-1", children: [(dailySummary.totalKm / 1000).toFixed(1), "K"] }), _jsxs("div", { className: "flex items-center gap-1 mt-1", children: [_jsxs("span", { className: `text-xs font-medium ${dailySummary.comparisons.km >= 0 ? 'text-[#22C55E]' : 'text-[#FF4D6A]'}`, children: [dailySummary.comparisons.km >= 0 ? '+' : '', dailySummary.comparisons.km.toFixed(1), "%"] }), _jsx("span", { className: "text-xs text-[#6B6B80]", children: "vs hier" })] })] }), _jsx("div", { className: "rounded-[var(--tz-radius)] bg-[rgba(0,229,204,0.1)] p-3 border border-[rgba(0,229,204,0.2)]", children: _jsx(Route, { className: "text-[#00E5CC]", size: 24 }) })] }) })] }), widgetConfig['daily-summary'].visible && (_jsx("div", { className: `${widgetConfig['daily-summary'].size === 'expanded'
                     ? 'md:col-span-2 lg:col-span-4'
@@ -491,22 +558,43 @@ export default function DashboardPage() {
                                 : 'md:col-span-1 lg:col-span-1'}`, children: _jsxs("div", { className: "relative group", children: [_jsx("div", { className: "absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity", children: _jsx(GripHorizontal, { size: 16, className: "text-[#6B6B80]" }) }), _jsxs("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]", children: [_jsxs("div", { className: "px-6 py-4 border-b border-[#1F1F2E]", children: [_jsx("h3", { className: "font-syne text-base font-bold text-[#F0F0F5]", children: "R\u00E9sum\u00E9 des statuts" }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-1", children: "Derni\u00E8res mises \u00E0 jour v\u00E9hicule" })] }), _jsx("div", { className: "px-6 py-4", children: _jsx("div", { className: "space-y-3", children: recentlyUpdated.slice(0, 8).map((v) => {
                                                     const isMoving = (v.currentSpeed || 0) > 2;
                                                     return (_jsxs("div", { className: "flex items-center gap-3 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] p-2.5 hover:bg-[#1A1A25] cursor-pointer", onClick: () => navigate(`/vehicles/${v.id}`), children: [_jsx("span", { className: `h-2 w-2 rounded-full flex-shrink-0 ${isMoving ? 'bg-[#22C55E]' : 'bg-[#FFB547]'}` }), _jsxs("div", { className: "flex-1 min-w-0", children: [_jsx("p", { className: "text-sm font-medium text-[#F0F0F5] truncate", children: v.name }), _jsxs("p", { className: "text-xs text-[#6B6B80]", children: [isMoving ? 'En mouvement' : 'Arrêté', " \u00B7 ", formatTimeAgo(v.lastCommunication)] })] }), _jsxs("span", { className: "text-xs font-semibold font-mono text-[#F0F0F5] flex-shrink-0", children: [(v.currentSpeed || 0).toFixed(0), _jsx("span", { className: "text-[#6B6B80] font-normal", children: " km/h" })] })] }, v.id));
-                                                }) }) })] })] }) }))] }), widgetConfig['speed-distribution'].visible && (_jsx("div", { className: `${widgetConfig['speed-distribution'].size === 'expanded'
-                    ? 'lg:col-span-2'
-                    : widgetConfig['speed-distribution'].size === 'normal'
+                                                }) }) })] })] }) }))] }), widgetConfig['mileage-trend'].visible && (_jsx("div", { className: `${widgetConfig['mileage-trend'].size === 'expanded'
+                    ? 'lg:col-span-4'
+                    : widgetConfig['mileage-trend'].size === 'normal'
                         ? 'lg:col-span-2'
-                        : ''}`, children: _jsxs("div", { className: "relative group", children: [_jsx("div", { className: "absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity", children: _jsx(GripHorizontal, { size: 16, className: "text-[#6B6B80]" }) }), _jsxs("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]", children: [_jsxs("div", { className: "px-6 py-4 border-b border-[#1F1F2E]", children: [_jsx("h3", { className: "font-syne text-base font-bold text-[#F0F0F5]", children: "Distribution des vitesses" }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-1", children: "Nombre de v\u00E9hicules par plage de vitesse" })] }), _jsx("div", { className: "px-6 py-4", children: _jsx(ResponsiveContainer, { width: "100%", height: 300, children: _jsxs(BarChart, { data: [
-                                                { range: '0-30 km/h', count: 45 },
-                                                { range: '30-60 km/h', count: 82 },
-                                                { range: '60-90 km/h', count: 63 },
-                                                { range: '90-120 km/h', count: 28 },
-                                                { range: '>120 km/h', count: 5 },
-                                            ], children: [_jsx(CartesianGrid, { strokeDasharray: "3 3", stroke: "#2A2A3D" }), _jsx(XAxis, { dataKey: "range", stroke: "#6B6B80", style: { fontSize: '12px' } }), _jsx(YAxis, { stroke: "#6B6B80", style: { fontSize: '12px' } }), _jsx(Tooltip, { contentStyle: {
+                        : ''}`, children: _jsxs("div", { className: "relative group", children: [_jsx("div", { className: "absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity", children: _jsx(GripHorizontal, { size: 16, className: "text-[#6B6B80]" }) }), _jsxs("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]", children: [_jsxs("div", { className: "px-6 py-4 border-b border-[#1F1F2E]", children: [_jsx("h3", { className: "font-syne text-base font-bold text-[#F0F0F5]", children: "Tendance kilom\u00E9trique" }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-1", children: "Kilom\u00E9trage quotidien sur 30 jours" })] }), _jsx("div", { className: "px-6 py-4", children: _jsx(ResponsiveContainer, { width: "100%", height: 300, children: _jsxs(LineChart, { data: mileageTrendData, children: [_jsx(CartesianGrid, { strokeDasharray: "3 3", stroke: "#2A2A3D" }), _jsx(XAxis, { dataKey: "day", stroke: "#6B6B80", style: { fontSize: '12px' } }), _jsx(YAxis, { stroke: "#6B6B80", style: { fontSize: '12px' } }), _jsx(Tooltip, { contentStyle: {
                                                         backgroundColor: '#12121A',
                                                         border: '1px solid #1F1F2E',
                                                         borderRadius: '8px',
                                                         color: '#F0F0F5',
-                                                    }, formatter: (value) => [`${value} véhicules`, 'Nombre'] }), _jsx(Bar, { dataKey: "count", fill: "#00E5CC", radius: [8, 8, 0, 0] })] }) }) })] })] }) })), widgetConfig['weekly-comparison'].visible && (_jsx("div", { className: `${widgetConfig['weekly-comparison'].size === 'expanded'
+                                                    }, formatter: (value) => [`${value} km`, 'Kilométrage'] }), _jsx(Line, { type: "monotone", dataKey: "km", stroke: "#00E5CC", dot: false, strokeWidth: 2, name: "Kilom\u00E9trage" })] }) }) })] })] }) })), widgetConfig['fleet-utilization'].visible && (_jsx("div", { className: `${widgetConfig['fleet-utilization'].size === 'expanded'
+                    ? 'lg:col-span-2'
+                    : widgetConfig['fleet-utilization'].size === 'normal'
+                        ? 'lg:col-span-2'
+                        : ''}`, children: _jsxs("div", { className: "relative group", children: [_jsx("div", { className: "absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity", children: _jsx(GripHorizontal, { size: 16, className: "text-[#6B6B80]" }) }), _jsxs("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]", children: [_jsxs("div", { className: "px-6 py-4 border-b border-[#1F1F2E]", children: [_jsx("h3", { className: "font-syne text-base font-bold text-[#F0F0F5]", children: "Utilisation de la flotte" }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-1", children: "\u00C9tat des v\u00E9hicules" })] }), _jsx("div", { className: "px-6 py-4", children: _jsx(ResponsiveContainer, { width: "100%", height: 300, children: _jsxs(PieChart, { children: [_jsx(Pie, { data: fleetUtilizationData, cx: "50%", cy: "50%", labelLine: false, label: ({ name, value }) => `${name}: ${value}`, outerRadius: 100, fill: "#8884d8", dataKey: "value", children: fleetUtilizationData.map((entry, index) => (_jsx(Cell, { fill: entry.color }, `cell-${index}`))) }), _jsx(Tooltip, { formatter: (value) => `${value} véhicules`, contentStyle: {
+                                                        backgroundColor: '#12121A',
+                                                        border: '1px solid #1F1F2E',
+                                                        borderRadius: '8px',
+                                                        color: '#F0F0F5',
+                                                    } })] }) }) })] })] }) })), widgetConfig['speed-distribution'].visible && (_jsx("div", { className: `${widgetConfig['speed-distribution'].size === 'expanded'
+                    ? 'lg:col-span-2'
+                    : widgetConfig['speed-distribution'].size === 'normal'
+                        ? 'lg:col-span-2'
+                        : ''}`, children: _jsxs("div", { className: "relative group", children: [_jsx("div", { className: "absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity", children: _jsx(GripHorizontal, { size: 16, className: "text-[#6B6B80]" }) }), _jsxs("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]", children: [_jsxs("div", { className: "px-6 py-4 border-b border-[#1F1F2E]", children: [_jsx("h3", { className: "font-syne text-base font-bold text-[#F0F0F5]", children: "Distribution des vitesses" }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-1", children: "Nombre de v\u00E9hicules par plage de vitesse" })] }), _jsx("div", { className: "px-6 py-4", children: _jsx(ResponsiveContainer, { width: "100%", height: 300, children: _jsxs(BarChart, { data: speedDistributionData, children: [_jsx(CartesianGrid, { strokeDasharray: "3 3", stroke: "#2A2A3D" }), _jsx(XAxis, { dataKey: "range", stroke: "#6B6B80", style: { fontSize: '12px' } }), _jsx(YAxis, { stroke: "#6B6B80", style: { fontSize: '12px' } }), _jsx(Tooltip, { contentStyle: {
+                                                        backgroundColor: '#12121A',
+                                                        border: '1px solid #1F1F2E',
+                                                        borderRadius: '8px',
+                                                        color: '#F0F0F5',
+                                                    }, formatter: (value) => [`${value} véhicules`, 'Nombre'] }), _jsx(Bar, { dataKey: "count", fill: "#00E5CC", radius: [8, 8, 0, 0] })] }) }) })] })] }) })), widgetConfig['alert-frequency'].visible && (_jsx("div", { className: `${widgetConfig['alert-frequency'].size === 'expanded'
+                    ? 'lg:col-span-2'
+                    : widgetConfig['alert-frequency'].size === 'normal'
+                        ? 'lg:col-span-2'
+                        : ''}`, children: _jsxs("div", { className: "relative group", children: [_jsx("div", { className: "absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity", children: _jsx(GripHorizontal, { size: 16, className: "text-[#6B6B80]" }) }), _jsxs("div", { className: "tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]", children: [_jsxs("div", { className: "px-6 py-4 border-b border-[#1F1F2E]", children: [_jsx("h3", { className: "font-syne text-base font-bold text-[#F0F0F5]", children: "Fr\u00E9quence des alertes" }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-1", children: "Nombre d'alertes par jour (7 derniers jours)" })] }), _jsx("div", { className: "px-6 py-4", children: _jsx(ResponsiveContainer, { width: "100%", height: 300, children: _jsxs(BarChart, { data: alertFrequencyData, children: [_jsx(CartesianGrid, { strokeDasharray: "3 3", stroke: "#2A2A3D" }), _jsx(XAxis, { dataKey: "day", stroke: "#6B6B80", style: { fontSize: '12px' } }), _jsx(YAxis, { stroke: "#6B6B80", style: { fontSize: '12px' } }), _jsx(Tooltip, { contentStyle: {
+                                                        backgroundColor: '#12121A',
+                                                        border: '1px solid #1F1F2E',
+                                                        borderRadius: '8px',
+                                                        color: '#F0F0F5',
+                                                    }, formatter: (value) => [`${value} alertes`, 'Nombre'] }), _jsx(Bar, { dataKey: "count", fill: "#FFB547", radius: [8, 8, 0, 0] })] }) }) })] })] }) })), widgetConfig['weekly-comparison'].visible && (_jsx("div", { className: `${widgetConfig['weekly-comparison'].size === 'expanded'
                     ? 'lg:col-span-2'
                     : widgetConfig['weekly-comparison'].size === 'normal'
                         ? 'lg:col-span-2'

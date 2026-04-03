@@ -5,6 +5,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useVehicle, useVehicleHistory } from '@/hooks/useVehicles'
 import { useAuthStore } from '@/stores/authStore'
+import { apiClient } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,10 @@ import {
   Plus,
   X,
   Repeat2,
+  AlertCircle,
+  Trash2,
+  ChevronDown,
+  AlertTriangle,
 } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer'
@@ -63,6 +68,30 @@ interface Trip {
   points: Array<{ lat: number; lng: number; timestamp: Date; speed: number }>
 }
 
+interface GpsPoint {
+  lat: number
+  lng: number
+  timestamp: Date
+  speed: number
+  heading?: number
+}
+
+interface VehiclePhoto {
+  id: string
+  data: string // base64 data URL
+  name: string
+  uploadedAt: Date
+}
+
+interface MaintenanceInfo {
+  nextDate?: Date
+  nextKm?: number
+  lastDate?: Date
+  lastKm?: number
+  type: string
+  isOverdue: boolean
+}
+
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -81,6 +110,15 @@ export default function VehicleDetailPage() {
   const [dateFrom, setDateFrom] = useState<string>(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
   const [dateTo, setDateTo] = useState<string>(new Date().toISOString().split('T')[0])
   const [replayingTrip, setReplayingTrip] = useState<Trip | null>(null)
+  const [photos, setPhotos] = useState<VehiclePhoto[]>([])
+  const [notesLoading, setNotesLoading] = useState(false)
+  const [exportMenuOpen, setExportMenuOpen] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+  const [maintenanceInfo, setMaintenanceInfo] = useState<MaintenanceInfo>({
+    type: 'Service',
+    isOverdue: false,
+  })
+
   const { data: vehicle, isLoading: vehicleLoading } = useVehicle(id || '')
   const { data: history } = useVehicleHistory(id || '')
 
@@ -100,6 +138,26 @@ export default function VehicleDetailPage() {
           : Object.entries((vehicle as any).customFields).map(([key, value]) => ({ key, value: String(value) }))
         setCustomFields(fieldsArray)
       }
+
+      // Load maintenance info from vehicle metadata
+      const meta = (vehicle as any).metadata || {}
+      if (meta.nextMaintenanceDate || meta.nextMaintenanceKm) {
+        const nextDate = meta.nextMaintenanceDate ? new Date(meta.nextMaintenanceDate) : undefined
+        const isOverdue = nextDate && nextDate < new Date()
+        setMaintenanceInfo({
+          nextDate,
+          nextKm: meta.nextMaintenanceKm,
+          lastDate: meta.lastMaintenanceDate ? new Date(meta.lastMaintenanceDate) : undefined,
+          lastKm: meta.lastMaintenanceKm,
+          type: meta.maintenanceType || 'Service',
+          isOverdue: isOverdue || false,
+        })
+      }
+
+      // Load photos if stored in metadata
+      if (meta.photos && Array.isArray(meta.photos)) {
+        setPhotos(meta.photos)
+      }
     }
   }, [vehicle])
 
@@ -115,6 +173,14 @@ export default function VehicleDetailPage() {
   // Fetch trips when date range changes
   useEffect(() => {
     if (!id || !organizationId) return
+
+    // Validate date range
+    if (new Date(dateTo) < new Date(dateFrom)) {
+      setExportError('La date de fin doit être après la date de début')
+      return
+    }
+
+    setExportError(null)
 
     const fetchTrips = async () => {
       try {
@@ -240,6 +306,204 @@ export default function VehicleDetailPage() {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+  }
+
+  // Export functions
+  const generateGpsPoints = (): GpsPoint[] => {
+    if (!trips || trips.length === 0) return []
+    const points: GpsPoint[] = []
+    trips.forEach(trip => {
+      if (trip.points) {
+        points.push(...trip.points)
+      }
+    })
+    return points.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+  }
+
+  const exportToCSV = () => {
+    const points = generateGpsPoints()
+    if (points.length === 0) {
+      setExportError('Aucun point GPS à exporter')
+      return
+    }
+
+    const headers = ['Date', 'Heure', 'Latitude', 'Longitude', 'Vitesse', 'Cap', 'Adresse']
+    const rows = points.map(p => {
+      const dt = new Date(p.timestamp)
+      const date = dt.toLocaleDateString('fr-FR')
+      const time = dt.toLocaleTimeString('fr-FR')
+      return [
+        date,
+        time,
+        p.lat.toFixed(6),
+        p.lng.toFixed(6),
+        (p.speed || 0).toFixed(1),
+        (p.heading || 0).toFixed(1),
+        'GPS Track',
+      ]
+    })
+
+    const csv = [headers, ...rows].map(r => r.map(cell => `"${cell}"`).join(',')).join('\n')
+    downloadFile(csv, `${vehicle?.name || 'vehicle'}_gps_export.csv`, 'text/csv')
+    setExportMenuOpen(false)
+  }
+
+  const exportToKML = () => {
+    const points = generateGpsPoints()
+    if (points.length === 0) {
+      setExportError('Aucun point GPS à exporter')
+      return
+    }
+
+    const placemarks = points
+      .filter((p, idx) => idx % Math.ceil(points.length / 50) === 0 || idx === points.length - 1) // Sample for readability
+      .map((p, idx) => `
+    <Placemark>
+      <name>Point ${idx + 1}</name>
+      <Point>
+        <coordinates>${p.lng},${p.lat},0</coordinates>
+      </Point>
+    </Placemark>`)
+      .join('\n')
+
+    const linestring = points
+      .map(p => `${p.lng},${p.lat},0`)
+      .join('\n      ')
+
+    const kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${vehicle?.name || 'Vehicle'} GPS Route</name>
+    <Placemark>
+      <name>Route</name>
+      <LineString>
+        <coordinates>
+      ${linestring}
+        </coordinates>
+      </LineString>
+    </Placemark>
+    ${placemarks}
+  </Document>
+</kml>`
+
+    downloadFile(kml, `${vehicle?.name || 'vehicle'}_gps_export.kml`, 'application/vnd.google-earth.kml+xml')
+    setExportMenuOpen(false)
+  }
+
+  const exportToGPX = () => {
+    const points = generateGpsPoints()
+    if (points.length === 0) {
+      setExportError('Aucun point GPS à exporter')
+      return
+    }
+
+    const trkpts = points
+      .map(p => `
+    <trkpt lat="${p.lat}" lon="${p.lng}">
+      <ele>0</ele>
+      <time>${p.timestamp.toISOString()}</time>
+      <speed>${(p.speed || 0).toFixed(1)}</speed>
+    </trkpt>`)
+      .join('\n')
+
+    const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Vehicle GPS Export"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.topografix.com/GPX/1/1"
+  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+  <metadata>
+    <name>${vehicle?.name || 'Vehicle'} GPS Track</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>
+  <trk>
+    <name>${vehicle?.name || 'Vehicle'}</name>
+    <trkseg>
+      ${trkpts}
+    </trkseg>
+  </trk>
+</gpx>`
+
+    downloadFile(gpx, `${vehicle?.name || 'vehicle'}_gps_export.gpx`, 'application/gpx+xml')
+    setExportMenuOpen(false)
+  }
+
+  const exportToXLSX = () => {
+    const points = generateGpsPoints()
+    if (points.length === 0) {
+      setExportError('Aucun point GPS à exporter')
+      return
+    }
+
+    const headers = ['Date', 'Heure', 'Latitude', 'Longitude', 'Vitesse', 'Cap', 'Adresse']
+    const rows = points.map(p => {
+      const dt = new Date(p.timestamp)
+      const date = dt.toLocaleDateString('fr-FR')
+      const time = dt.toLocaleTimeString('fr-FR')
+      return [
+        date,
+        time,
+        p.lat.toFixed(6),
+        p.lng.toFixed(6),
+        (p.speed || 0).toFixed(1),
+        (p.heading || 0).toFixed(1),
+        'GPS Track',
+      ]
+    })
+
+    // Excel FR compatible CSV with semicolon separator
+    const csv = [headers, ...rows].map(r => r.join(';')).join('\n')
+    downloadFile(csv, `${vehicle?.name || 'vehicle'}_gps_export.csv`, 'text/csv;charset=utf-8')
+    setExportMenuOpen(false)
+  }
+
+  const downloadFile = (content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const newPhoto: VehiclePhoto = {
+            id: Date.now().toString(),
+            data: event.target.result as string,
+            name: file.name,
+            uploadedAt: new Date(),
+          }
+          setPhotos([...photos, newPhoto])
+        }
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const deletePhoto = (photoId: string) => {
+    setPhotos(photos.filter(p => p.id !== photoId))
+  }
+
+  const saveNotes = async () => {
+    if (!id) return
+    try {
+      setNotesLoading(true)
+      await apiClient.patch(`/vehicles/${id}`, {
+        notes: vehicleNotes,
+      })
+      // Success notification would go here
+    } catch (error) {
+      console.error('Error saving notes:', error)
+    } finally {
+      setNotesLoading(false)
+    }
   }
 
   if (vehicleLoading) {
@@ -708,6 +972,49 @@ export default function VehicleDetailPage() {
           </Card>
         </div>
 
+        {/* Maintenance Reminders */}
+        {maintenanceInfo.nextDate && (
+          <Card className={`bg-[#12121A] border ${maintenanceInfo.isOverdue ? 'border-[#FF4D6A]' : 'border-[#1F1F2E]'}`}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <CardTitle className="font-syne text-base text-[#F0F0F5]">Maintenance</CardTitle>
+                {maintenanceInfo.isOverdue && (
+                  <Badge variant="destructive" className="bg-[#FF4D6A] text-white gap-1">
+                    <AlertTriangle size={12} />
+                    En retard
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3">
+                  <p className="text-xs text-[#6B6B80] mb-1">Type</p>
+                  <p className="font-medium text-[#F0F0F5]">{maintenanceInfo.type}</p>
+                </div>
+                <div className={`rounded-[8px] p-3 border ${maintenanceInfo.isOverdue ? 'bg-[#1A0A0A] border-[#FF4D6A]' : 'bg-[#1A1A25] border-[#1F1F2E]'}`}>
+                  <p className="text-xs text-[#6B6B80] mb-1">Prochaine date</p>
+                  <p className={`font-mono text-sm ${maintenanceInfo.isOverdue ? 'text-[#FF4D6A]' : 'text-[#00E5CC]'}`}>
+                    {maintenanceInfo.nextDate?.toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+                {maintenanceInfo.nextKm && (
+                  <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3">
+                    <p className="text-xs text-[#6B6B80] mb-1">Prochain kilométrage</p>
+                    <p className="font-mono text-[#00E5CC]">{maintenanceInfo.nextKm.toLocaleString('fr-FR')} km</p>
+                  </div>
+                )}
+                {maintenanceInfo.lastDate && (
+                  <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3">
+                    <p className="text-xs text-[#6B6B80] mb-1">Dernière date</p>
+                    <p className="font-mono text-[#6B6B80]">{maintenanceInfo.lastDate?.toLocaleDateString('fr-FR')}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* GPS History */}
         {positions.length > 0 && (
           <Card className="bg-[#12121A] border border-[#1F1F2E]">
@@ -746,6 +1053,72 @@ export default function VehicleDetailPage() {
           </Card>
         )}
 
+        {/* Vehicle Photos */}
+        <Card className="bg-[#12121A] border border-[#1F1F2E]">
+          <CardHeader className="pb-3">
+            <CardTitle className="font-syne text-base text-[#F0F0F5]" title="Galerie de photos du véhicule">Images du véhicule</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {photos.length === 0 ? (
+              <div className="border-2 border-dashed border-[#1F1F2E] rounded-lg p-8 text-center hover:border-[#2A2A3D] transition">
+                <Camera size={32} className="mx-auto text-[#6B6B80] mb-2" />
+                <p className="text-sm text-[#6B6B80] mb-4">Aucune image. Glissez-déposez ou cliquez pour ajouter.</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                  id="photo-input"
+                />
+                <Button
+                  className="bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+                  size="sm"
+                  onClick={() => document.getElementById('photo-input')?.click()}
+                >
+                  <Plus size={14} className="mr-1" />
+                  Ajouter une image
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                  {photos.map(photo => (
+                    <div key={photo.id} className="relative group border border-[#1F1F2E] rounded-lg overflow-hidden bg-[#1A1A25]">
+                      <img
+                        src={photo.data}
+                        alt={photo.name}
+                        className="w-full h-32 object-cover"
+                      />
+                      <button
+                        onClick={() => deletePhoto(photo.id)}
+                        className="absolute top-2 right-2 bg-[#FF4D6A] text-white p-1 rounded opacity-0 group-hover:opacity-100 transition"
+                      >
+                        <X size={14} />
+                      </button>
+                      <p className="text-xs text-[#6B6B80] p-2 truncate">{photo.name}</p>
+                    </div>
+                  ))}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                  id="photo-input-add"
+                />
+                <Button
+                  className="gap-2 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+                  size="sm"
+                  onClick={() => document.getElementById('photo-input-add')?.click()}
+                >
+                  <Plus size={14} />
+                  Ajouter une image
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Vehicle Notes */}
         <Card className="bg-[#12121A] border border-[#1F1F2E]">
           <CardHeader className="pb-3">
@@ -756,16 +1129,15 @@ export default function VehicleDetailPage() {
               placeholder="Ajouter des notes et informations sur ce véhicule..."
               value={vehicleNotes}
               onChange={(e) => setVehicleNotes(e.target.value)}
-              className="min-h-24 text-sm bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A]"
+              className="min-h-24 text-sm bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]"
             />
             <Button
-              className="bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+              className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]"
               size="sm"
-              onClick={() => {
-                alert('Notes enregistrées')
-              }}
+              onClick={saveNotes}
+              disabled={notesLoading}
             >
-              Enregistrer
+              {notesLoading ? 'Enregistrement...' : 'Enregistrer'}
             </Button>
           </CardContent>
         </Card>
@@ -791,14 +1163,14 @@ export default function VehicleDetailPage() {
                   placeholder="Nom du champ"
                   value={newFieldForm.key}
                   onChange={(e) => setNewFieldForm({ ...newFieldForm, key: e.target.value })}
-                  className="w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A]"
+                  className="w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]"
                 />
                 <input
                   type="text"
                   placeholder="Valeur"
                   value={newFieldForm.value}
                   onChange={(e) => setNewFieldForm({ ...newFieldForm, value: e.target.value })}
-                  className="w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A]"
+                  className="w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]"
                 />
                 <div className="flex gap-2">
                   <Button
@@ -846,56 +1218,26 @@ export default function VehicleDetailPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Vehicle Photos */}
-        <Card className="bg-[#12121A] border border-[#1F1F2E]">
-          <CardHeader className="pb-3">
-            <CardTitle className="font-syne text-base text-[#F0F0F5]" title="Galerie de photos du véhicule">Images du véhicule</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="border-2 border-dashed border-[#1F1F2E] rounded-lg p-8 text-center hover:border-[#2A2A3D] transition">
-              <Camera size={32} className="mx-auto text-[#6B6B80] mb-2" />
-              <p className="text-sm text-[#6B6B80] mb-4">Aucune image. Glissez-déposez ou cliquez pour ajouter.</p>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setSelectedPhoto(e.target.files[0].name)
-                  }
-                }}
-                className="hidden"
-                id="photo-input"
-              />
-              <Button
-                className="bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
-                size="sm"
-                onClick={() => document.getElementById('photo-input')?.click()}
-              >
-                Sélectionner une image
-              </Button>
-              {selectedPhoto && (
-                <p className="text-xs text-[#6B6B80] mt-3">
-                  Fichier sélectionné: <span className="font-medium text-[#F0F0F5]">{selectedPhoto}</span>
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
       </div>
       )}
 
       {/* Trips Tab */}
       {activeTab === 'trips' && (
         <div className="space-y-6">
-          {/* Date Range Selector */}
+          {/* Date Range Selector with Export */}
           <Card className="bg-[#12121A] border border-[#1F1F2E]">
             <CardHeader className="pb-3">
-              <CardTitle className="font-syne text-base text-[#F0F0F5]">Filtre par date</CardTitle>
+              <CardTitle className="font-syne text-base text-[#F0F0F5]">Filtre et export des trajets</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex gap-4 items-end">
-                <div className="flex-1">
+            <CardContent className="space-y-4">
+              {exportError && (
+                <div className="flex items-center gap-2 bg-[#1A0A0A] border border-[#FF4D6A] rounded-lg p-3">
+                  <AlertCircle size={16} className="text-[#FF4D6A] flex-shrink-0" />
+                  <p className="text-sm text-[#F0F0F5]">{exportError}</p>
+                </div>
+              )}
+              <div className="flex gap-4 items-end flex-wrap">
+                <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-[#F0F0F5] mb-1">
                     À partir du
                   </label>
@@ -903,10 +1245,10 @@ export default function VehicleDetailPage() {
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5]"
+                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5] focus:border-[#00E5CC]"
                   />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-[#F0F0F5] mb-1">
                     Jusqu'au
                   </label>
@@ -914,8 +1256,46 @@ export default function VehicleDetailPage() {
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5]"
+                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5] focus:border-[#00E5CC]"
                   />
+                </div>
+                <div className="relative">
+                  <Button
+                    className="gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]"
+                    onClick={() => setExportMenuOpen(!exportMenuOpen)}
+                  >
+                    <Download size={14} />
+                    Exporter
+                    <ChevronDown size={14} />
+                  </Button>
+                  {exportMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-[#12121A] border border-[#1F1F2E] rounded-lg shadow-lg z-10">
+                      <button
+                        onClick={exportToCSV}
+                        className="w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]"
+                      >
+                        CSV
+                      </button>
+                      <button
+                        onClick={exportToKML}
+                        className="w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]"
+                      >
+                        KML (Google Earth)
+                      </button>
+                      <button
+                        onClick={exportToGPX}
+                        className="w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]"
+                      >
+                        GPX
+                      </button>
+                      <button
+                        onClick={exportToXLSX}
+                        className="w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25]"
+                      >
+                        Excel (FR)
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

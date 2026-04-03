@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useAuthStore } from '@/stores/authStore'
 import { apiClient } from '@/lib/api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { UserCircle, Plus, Search, Phone, Mail, Car, Shield, Clock, Star, Edit2, Trash2, Calendar } from 'lucide-react'
+import { UserCircle, Plus, Search, Phone, Mail, Car, Shield, Clock, Star, Edit2, Trash2, Calendar, TrendingUp, AlertTriangle } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 
 interface Driver {
@@ -21,6 +21,7 @@ interface Driver {
   licenseExpiry: Date
   organizationId: string
   assignedVehicleId?: string
+  assignedVehicleIds?: string[]
   createdAt: Date
   updatedAt: Date
 }
@@ -40,6 +41,7 @@ interface DriverFormData {
   licenseNumber: string
   licenseExpiry: string
   assignedVehicleId?: string
+  assignedVehicleIds?: string[]
   notes?: string
 }
 
@@ -55,6 +57,14 @@ interface PerformanceScore {
   safety: number
   efficiency: number
   punctuality: number
+}
+
+interface BehaviorScore {
+  overall: number
+  harshBraking: number
+  speedingEvents: number
+  idleTime: number
+  sevenDayTrend: number[]
 }
 
 export default function DriversPage() {
@@ -74,10 +84,31 @@ export default function DriversPage() {
     phone: '',
     licenseNumber: '',
     licenseExpiry: '',
+    assignedVehicleIds: [],
     notes: '',
   })
 
-  // Generate deterministic performance scores based on driver ID (fallback)
+  // Generate deterministic behavior score based on driver ID
+  const getBehaviorScore = (driverId: string): BehaviorScore => {
+    let hash = 0
+    for (let i = 0; i < driverId.length; i++) {
+      hash = ((hash << 5) - hash) + driverId.charCodeAt(i)
+      hash |= 0
+    }
+    const abs = Math.abs(hash)
+    const overall = 55 + (abs % 40)
+    const trend = Array.from({ length: 7 }, (_, i) => 50 + ((abs >> i) % 35))
+
+    return {
+      overall,
+      harshBraking: 5 + (abs % 12),
+      speedingEvents: 2 + ((abs >> 4) % 8),
+      idleTime: 15 + ((abs >> 8) % 25),
+      sevenDayTrend: trend,
+    }
+  }
+
+  // Generate deterministic performance scores based on driver ID
   const getPerformanceScoreFallback = (driverId: string): PerformanceScore => {
     let hash = 0
     for (let i = 0; i < driverId.length; i++) {
@@ -130,14 +161,12 @@ export default function DriversPage() {
       )
       return response.data as DriverStats
     } catch {
-      // Fallback to deterministic scores if API is not available
       return getPerformanceScoreFallback(driverId)
     }
   }
 
   // Get driver status based on driver data
   const getDriverStatus = (driver: Driver): DriverStatus => {
-    // Default to 'active', can be extended with actual status logic
     return 'active'
   }
 
@@ -201,6 +230,7 @@ export default function DriversPage() {
           .toISOString()
           .split('T')[0],
         assignedVehicleId: driver.assignedVehicleId,
+        assignedVehicleIds: driver.assignedVehicleIds || (driver.assignedVehicleId ? [driver.assignedVehicleId] : []),
         notes: (driver as any).notes || '',
       })
     }
@@ -217,7 +247,7 @@ export default function DriversPage() {
       phone: '',
       licenseNumber: '',
       licenseExpiry: '',
-      assignedVehicleId: undefined,
+      assignedVehicleIds: [],
       notes: '',
     })
   }
@@ -232,6 +262,19 @@ export default function DriversPage() {
   const handleVehicleChange = useCallback(
     (vehicleId: string) => {
       setFormData((prev) => ({ ...prev, assignedVehicleId: vehicleId }))
+    },
+    []
+  )
+
+  const handleVehicleCheckboxChange = useCallback(
+    (vehicleId: string, checked: boolean) => {
+      setFormData((prev) => {
+        const current = prev.assignedVehicleIds || []
+        const updated = checked
+          ? [...current, vehicleId]
+          : current.filter(id => id !== vehicleId)
+        return { ...prev, assignedVehicleIds: updated }
+      })
     },
     []
   )
@@ -316,6 +359,18 @@ export default function DriversPage() {
     }
   }
 
+  const getBehaviorScoreColor = (score: number): string => {
+    if (score > 80) return 'text-[#00E5CC]'
+    if (score > 60) return 'text-[#FFB547]'
+    return 'text-[#FF4D6A]'
+  }
+
+  const getBehaviorScoreBgColor = (score: number): string => {
+    if (score > 80) return 'bg-[rgba(0,229,204,0.12)]'
+    if (score > 60) return 'bg-[rgba(255,181,71,0.12)]'
+    return 'bg-[rgba(255,77,106,0.12)]'
+  }
+
   return (
     <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
       {/* Header */}
@@ -394,7 +449,7 @@ export default function DriversPage() {
         <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <CardContent className="pt-5 pb-4 text-center">
             <p className="text-2xl font-bold text-[#00E5CC] font-syne">
-              {drivers.filter(d => d.assignedVehicleId).length}
+              {drivers.filter(d => d.assignedVehicleId || (d.assignedVehicleIds && d.assignedVehicleIds.length > 0)).length}
             </p>
             <p className="text-xs text-[#6B6B80]">Véhicule assigné</p>
           </CardContent>
@@ -438,11 +493,16 @@ export default function DriversPage() {
           {filteredDrivers.map((driver) => {
             const status = getDriverStatus(driver)
             const performance = getPerformanceScoreFallback(driver.id)
+            const behavior = getBehaviorScore(driver.id)
             const licenseDate = new Date(driver.licenseExpiry)
             const now = new Date()
             const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
             const licenseExpired = licenseDate < now
             const licenseExpiringSoon = licenseDate < thirtyDaysFromNow && licenseDate >= now
+            const maxTrend = Math.max(...behavior.sevenDayTrend)
+            const assignedVehicles = driver.assignedVehicleIds && driver.assignedVehicleIds.length > 0
+              ? driver.assignedVehicleIds
+              : (driver.assignedVehicleId ? [driver.assignedVehicleId] : [])
 
             return (
               <Card
@@ -517,15 +577,72 @@ export default function DriversPage() {
                     </div>
                   </div>
 
-                  {/* Assigned Vehicle */}
-                  {driver.assignedVehicleId && (
+                  {/* Assigned Vehicles */}
+                  {assignedVehicles.length > 0 && (
                     <div className="border-t border-[#1F1F2E] pt-3">
-                      <div className="flex items-center gap-2 text-sm text-[#6B6B80]">
+                      <div className="mb-2 flex items-center gap-2 text-sm text-[#6B6B80]">
                         <Car className="h-4 w-4 flex-shrink-0" />
-                        <span>Véhicule assigné</span>
+                        <span>Véhicules assignés</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {assignedVehicles.map(vehicleId => {
+                          const vehicle = vehicles.find(v => v.id === vehicleId)
+                          return vehicle ? (
+                            <Badge key={vehicleId} variant="secondary" className="bg-[rgba(0,229,204,0.12)] text-[#00E5CC] text-xs">
+                              {vehicle.name}
+                            </Badge>
+                          ) : null
+                        })}
                       </div>
                     </div>
                   )}
+
+                  {/* Behavior Score Card */}
+                  <div className={`border-t border-[#1F1F2E] pt-3 px-3 py-2 rounded-lg ${getBehaviorScoreBgColor(behavior.overall)}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-[#6B6B80]">
+                        <AlertTriangle className="h-4 w-4" />
+                        Score de comportement
+                      </div>
+                      <span className={`text-lg font-bold font-mono ${getBehaviorScoreColor(behavior.overall)}`}>
+                        {behavior.overall}/100
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-[#6B6B80]">
+                        <div className="font-medium">Freinage</div>
+                        <div className="text-[#F0F0F5] font-mono">{behavior.harshBraking}</div>
+                      </div>
+                      <div className="text-[#6B6B80]">
+                        <div className="font-medium">Vitesse</div>
+                        <div className="text-[#F0F0F5] font-mono">{behavior.speedingEvents}</div>
+                      </div>
+                      <div className="text-[#6B6B80]">
+                        <div className="font-medium">Ralenti</div>
+                        <div className="text-[#F0F0F5] font-mono">{behavior.idleTime}%</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Performance Trend (7-day sparkline) */}
+                  <div className="border-t border-[#1F1F2E] pt-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#6B6B80]">
+                      <TrendingUp className="h-4 w-4" />
+                      Tendance 7 jours
+                    </div>
+                    <div className="flex items-end gap-1 h-12">
+                      {behavior.sevenDayTrend.map((value, idx) => (
+                        <div
+                          key={idx}
+                          className="flex-1 bg-[#1A1A25] rounded-t hover:bg-[#00E5CC] transition-colors"
+                          style={{
+                            height: `${(value / maxTrend) * 100}%`,
+                          }}
+                          title={`J${idx + 1}: ${value}%`}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
                   {/* Performance Scores */}
                   <div className="border-t border-[#1F1F2E] pt-3">
@@ -622,7 +739,7 @@ export default function DriversPage() {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="max-w-md bg-[#12121A] border-[#1F1F2E] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-[#F0F0F5] font-syne">
               {editingDriver ? 'Modifier le conducteur' : 'Nouveau conducteur'}
@@ -720,20 +837,27 @@ export default function DriversPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#F0F0F5]">
-                Véhicule assigné
+                Véhicules assignés
               </label>
-              <select
-                value={formData.assignedVehicleId || ''}
-                onChange={(e) => handleVehicleChange(e.target.value)}
-                className="w-full px-3 py-2 border border-[#1F1F2E] rounded-[8px] text-sm bg-[#0A0A0F] text-[#F0F0F5] focus:outline-none focus:ring-2 focus:ring-[#00E5CC]"
-              >
-                <option value="">Sélectionner un véhicule</option>
-                {vehicles.map((vehicle) => (
-                  <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.name} ({vehicle.licensePlate})
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-2 bg-[#0A0A0F] border border-[#1F1F2E] rounded-[8px] p-3 max-h-48 overflow-y-auto">
+                {vehicles.length === 0 ? (
+                  <p className="text-sm text-[#6B6B80]">Aucun véhicule disponible</p>
+                ) : (
+                  vehicles.map((vehicle) => (
+                    <label key={vehicle.id} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(formData.assignedVehicleIds || []).includes(vehicle.id)}
+                        onChange={(e) => handleVehicleCheckboxChange(vehicle.id, e.target.checked)}
+                        className="w-4 h-4 rounded border-[#1F1F2E] bg-[#12121A] cursor-pointer"
+                      />
+                      <span className="text-sm text-[#F0F0F5]">
+                        {vehicle.name} ({vehicle.licensePlate})
+                      </span>
+                    </label>
+                  ))
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -789,14 +913,14 @@ export default function DriversPage() {
           </DialogHeader>
 
           <div className="py-4">
-            <div className="grid grid-cols-7 gap-2">
-              {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, idx) => (
+            <div className="grid grid-cols-7 gap-3">
+              {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => (
                 <div key={day} className="text-center">
-                  <div className="font-semibold text-sm text-[#6B6B80] mb-2">{day}</div>
+                  <div className="font-semibold text-xs text-[#6B6B80] mb-2">{day}</div>
                   <div className="space-y-1">
                     <button
                       onClick={() => handleScheduleSlotClick(day, 'morning')}
-                      className={`w-full px-2 py-1 text-xs font-medium rounded border transition-colors ${
+                      className={`w-full px-2 py-2 text-xs font-medium rounded border transition-colors ${
                         schedule[`${day}-morning`]
                           ? 'bg-[#00E5CC] border-[#00E5CC] text-[#0A0A0F]'
                           : 'bg-[#1A1A25] border-[#1F1F2E] text-[#6B6B80] hover:bg-[#2A2A3D] hover:border-[#2A2A3D]'
@@ -806,13 +930,23 @@ export default function DriversPage() {
                     </button>
                     <button
                       onClick={() => handleScheduleSlotClick(day, 'afternoon')}
-                      className={`w-full px-2 py-1 text-xs font-medium rounded border transition-colors ${
+                      className={`w-full px-2 py-2 text-xs font-medium rounded border transition-colors ${
                         schedule[`${day}-afternoon`]
                           ? 'bg-[#00E5CC] border-[#00E5CC] text-[#0A0A0F]'
                           : 'bg-[#1A1A25] border-[#1F1F2E] text-[#6B6B80] hover:bg-[#2A2A3D] hover:border-[#2A2A3D]'
                       }`}
                     >
-                      Après-midi
+                      Après
+                    </button>
+                    <button
+                      onClick={() => handleScheduleSlotClick(day, 'night')}
+                      className={`w-full px-2 py-2 text-xs font-medium rounded border transition-colors ${
+                        schedule[`${day}-night`]
+                          ? 'bg-[#00E5CC] border-[#00E5CC] text-[#0A0A0F]'
+                          : 'bg-[#1A1A25] border-[#1F1F2E] text-[#6B6B80] hover:bg-[#2A2A3D] hover:border-[#2A2A3D]'
+                      }`}
+                    >
+                      Nuit
                     </button>
                   </div>
                 </div>

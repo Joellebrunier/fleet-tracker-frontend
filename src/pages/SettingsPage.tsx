@@ -7,7 +7,7 @@ import { API_ROUTES } from '@/lib/constants'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Key, Database, MapPin, Globe, Copy, RefreshCw, Eye, EyeOff, Wifi, Server, User, Bell, Palette, Shield, LogOut, Plus, Trash2, Save, Check } from 'lucide-react'
+import { Key, Database, MapPin, Globe, Copy, RefreshCw, Eye, EyeOff, Wifi, Server, User, Bell, Palette, Shield, LogOut, Plus, Trash2, Save, Check, Smartphone, Lock, BarChart3, Mail, AlertCircle, Download, Send, X } from 'lucide-react'
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -133,6 +133,70 @@ export default function SettingsPage() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState('Opérateur')
 
+  // 2FA state
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
+  const [show2FASetup, setShow2FASetup] = useState(false)
+  const [verificationCode, setVerificationCode] = useState('')
+  const [backupCodes, setBackupCodes] = useState<string[]>([
+    'ABCD-1234-EFGH', 'IJKL-5678-MNOP', 'QRST-9012-UVWX',
+    'YZAB-3456-CDEF', 'GHIJ-7890-KLMN', 'OPQR-1234-STUV',
+    'WXYZ-5678-ABCD', 'EFGH-9012-IJKL'
+  ])
+  const [showBackupCodes, setShowBackupCodes] = useState(false)
+  const [twoFASaving, setTwoFASaving] = useState(false)
+
+  // IP Restrictions state
+  const [ipRestrictionsEnabled, setIpRestrictionsEnabled] = useState(false)
+  const [whitelistedIPs, setWhitelistedIPs] = useState<Array<{
+    id: string
+    ip: string
+    description: string
+    addedDate: string
+  }>>([
+    { id: '1', ip: '192.168.1.100', description: 'Bureau principal', addedDate: '2025-01-15' },
+    { id: '2', ip: '10.0.0.50', description: 'VPN entreprise', addedDate: '2025-01-10' }
+  ])
+  const [currentIP, setCurrentIP] = useState('203.0.113.42')
+  const [newIPAddress, setNewIPAddress] = useState('')
+  const [newIPDescription, setNewIPDescription] = useState('')
+  const [ipSaving, setIpSaving] = useState(false)
+
+  // Activity Logs state
+  const [activityLogs, setActivityLogs] = useState<Array<{
+    id: string
+    date: string
+    action: string
+    ip: string
+    browser: string
+  }>>([
+    { id: '1', date: '2025-03-15 14:32:18', action: 'Connexion', ip: '192.168.1.100', browser: 'Chrome 125.0' },
+    { id: '2', date: '2025-03-15 10:15:45', action: 'Modification paramètres', ip: '192.168.1.100', browser: 'Chrome 125.0' },
+    { id: '3', date: '2025-03-14 18:20:30', action: 'Téléchargement rapport', ip: '10.0.0.50', browser: 'Firefox 124.0' },
+    { id: '4', date: '2025-03-14 12:45:10', action: 'Création utilisateur', ip: '192.168.1.100', browser: 'Chrome 125.0' },
+    { id: '5', date: '2025-03-13 16:32:55', action: 'Connexion', ip: '203.0.113.42', browser: 'Safari 18.1' },
+    { id: '6', date: '2025-03-13 09:10:20', action: 'Modification profil', ip: '192.168.1.100', browser: 'Chrome 125.0' },
+    { id: '7', date: '2025-03-12 22:15:40', action: 'Déconnexion', ip: '192.168.1.100', browser: 'Chrome 125.0' },
+    { id: '8', date: '2025-03-12 15:42:18', action: 'Export données', ip: '10.0.0.50', browser: 'Firefox 124.0' },
+    { id: '9', date: '2025-03-11 11:35:22', action: 'Connexion', ip: '192.168.1.100', browser: 'Chrome 125.0' },
+    { id: '10', date: '2025-03-10 14:20:45', action: 'Changement mot de passe', ip: '203.0.113.42', browser: 'Safari 18.1' }
+  ])
+  const [logStartDate, setLogStartDate] = useState('2025-03-01')
+  const [logEndDate, setLogEndDate] = useState('2025-03-15')
+
+  // Pending Invitations state
+  const [pendingInvitations, setPendingInvitations] = useState<Array<{
+    id: string
+    email: string
+    role: string
+    status: 'En attente' | 'Accepté' | 'Expiré'
+    sentDate: string
+    expiryDate: string
+  }>>([
+    { id: '1', email: 'alice.dupont@example.com', role: 'Opérateur', status: 'En attente', sentDate: '2025-03-10', expiryDate: '2025-03-17' },
+    { id: '2', email: 'bob.martin@example.com', role: 'Superviseur', status: 'En attente', sentDate: '2025-03-12', expiryDate: '2025-03-19' },
+    { id: '3', email: 'carol.bernard@example.com', role: 'Opérateur', status: 'Accepté', sentDate: '2025-03-01', expiryDate: '2025-03-08' }
+  ])
+
   // White Label saving state
   const [whiteLabelSaving, setWhiteLabelSaving] = useState(false)
   const [whiteLabelSaved, setWhiteLabelSaved] = useState(false)
@@ -157,7 +221,6 @@ export default function SettingsPage() {
         const data = response.data
         setSessions(data.sessions || data || [])
       } catch (error) {
-        // Fallback to current session on error
         setSessions([
           {
             id: '1',
@@ -510,6 +573,53 @@ export default function SettingsPage() {
     }
   }
 
+  const handleEnable2FA = async () => {
+    setShow2FASetup(true)
+  }
+
+  const handleDisable2FA = async () => {
+    setTwoFactorEnabled(false)
+    setShow2FASetup(false)
+    setVerificationCode('')
+  }
+
+  const handleVerify2FA = () => {
+    if (verificationCode.length === 6) {
+      setTwoFASaving(true)
+      setTimeout(() => {
+        setTwoFactorEnabled(true)
+        setShowBackupCodes(true)
+        setTwoFASaving(false)
+        setVerificationCode('')
+      }, 1000)
+    }
+  }
+
+  const handleAddIPAddress = async () => {
+    if (!newIPAddress.trim()) return
+    const newIP = {
+      id: String(Date.now()),
+      ip: newIPAddress,
+      description: newIPDescription,
+      addedDate: new Date().toISOString().split('T')[0]
+    }
+    setWhitelistedIPs([...whitelistedIPs, newIP])
+    setNewIPAddress('')
+    setNewIPDescription('')
+  }
+
+  const handleRemoveIPAddress = (ipId: string) => {
+    setWhitelistedIPs(whitelistedIPs.filter(ip => ip.id !== ipId))
+  }
+
+  const handleResendInvitation = (inviteId: string) => {
+    console.log('Resending invitation:', inviteId)
+  }
+
+  const handleCancelInvitation = (inviteId: string) => {
+    setPendingInvitations(prev => prev.filter(inv => inv.id !== inviteId))
+  }
+
   const isAdmin = user?.role === ('ADMIN' as any) || user?.role === ('SUPER_ADMIN' as any) || (user?.role as string) === 'admin' || (user?.role as string) === 'administrator'
 
   return (
@@ -566,6 +676,402 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* 2FA Authentication Setup */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Smartphone size={20} />
+            Authentification à deux facteurs
+          </CardTitle>
+          <CardDescription>Sécurisez votre compte avec l'authentification à deux facteurs</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+            <div className="flex items-center gap-3">
+              <Lock size={18} className={twoFactorEnabled ? 'text-[#22C55E]' : 'text-[#6B6B80]'} />
+              <div>
+                <p className="font-medium text-[#F0F0F5]">Statut 2FA</p>
+                <p className="text-sm text-[#6B6B80]">
+                  {twoFactorEnabled ? 'Activé' : 'Désactivé'}
+                </p>
+              </div>
+            </div>
+            {!twoFactorEnabled ? (
+              <Button onClick={handleEnable2FA} className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80">
+                Activer
+              </Button>
+            ) : (
+              <Button onClick={handleDisable2FA} variant="destructive">
+                Désactiver
+              </Button>
+            )}
+          </div>
+
+          {show2FASetup && !twoFactorEnabled && (
+            <div className="space-y-4 p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-[#F0F0F5]">Code QR</p>
+                <div className="flex justify-center p-4 bg-[#0A0A0F] rounded-lg border border-[#1F1F2E]">
+                  <div className="w-40 h-40 bg-gradient-to-br from-[#00E5CC] to-[#0A0A0F] rounded-lg flex items-center justify-center">
+                    <span className="text-[#6B6B80] text-xs text-center">QR Code Placeholder</span>
+                  </div>
+                </div>
+                <p className="text-xs text-[#6B6B80] text-center">Scannez ce code avec votre application authenticateur</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#6B6B80] mb-2">Code de vérification (6 chiffres)</label>
+                <Input
+                  type="text"
+                  placeholder="000000"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  maxLength={6}
+                  className="text-center text-lg tracking-widest"
+                />
+              </div>
+
+              <Button
+                onClick={handleVerify2FA}
+                disabled={verificationCode.length !== 6 || twoFASaving}
+                className="w-full"
+              >
+                {twoFASaving ? 'Vérification...' : 'Vérifier et activer'}
+              </Button>
+            </div>
+          )}
+
+          {twoFactorEnabled && showBackupCodes && (
+            <div className="space-y-3 p-4 border border-[#FFB547] rounded-lg bg-[#FFB547]/10">
+              <div className="flex items-start gap-2">
+                <AlertCircle size={18} className="text-[#FFB547] flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-[#F0F0F5]">Codes de sauvegarde</p>
+                  <p className="text-xs text-[#6B6B80] mt-1">Conservez ces codes en sécurité. Vous en aurez besoin si vous perdez l'accès à votre appareil.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 p-3 bg-[#0A0A0F] rounded-lg">
+                {backupCodes.map((code, idx) => (
+                  <div key={idx} className="flex items-center gap-2 font-mono text-sm text-[#F0F0F5]">
+                    <span className="flex-shrink-0 text-[#6B6B80]">{idx + 1}.</span>
+                    <span>{code}</span>
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(backupCodes.join('\n'))
+                }}
+                variant="outline"
+                className="w-full gap-2"
+              >
+                <Copy size={16} />
+                Copier les codes
+              </Button>
+              <Button
+                onClick={() => setShowBackupCodes(false)}
+                className="w-full bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80"
+              >
+                J'ai sauvegardé les codes
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* IP Access Restrictions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield size={20} />
+            Restrictions d'accès par IP
+          </CardTitle>
+          <CardDescription>Contrôlez l'accès à partir d'adresses IP spécifiques</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+            <div>
+              <p className="font-medium text-[#F0F0F5]">Restrictions d'IP activées</p>
+              <p className="text-sm text-[#6B6B80]">{whitelistedIPs.length} IP autorisée(s)</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={ipRestrictionsEnabled}
+              onChange={(e) => setIpRestrictionsEnabled(e.target.checked)}
+              className="h-4 w-4"
+            />
+          </div>
+
+          <div className="p-3 bg-[#1A1A25] rounded-lg border border-[#1F1F2E]">
+            <p className="text-sm text-[#6B6B80] mb-2">Votre adresse IP actuelle</p>
+            <div className="flex items-center gap-2 font-mono text-[#F0F0F5]">
+              <span className="font-bold">{currentIP}</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => navigator.clipboard.writeText(currentIP)}
+                className="text-[#00E5CC] hover:text-[#00E5CC]"
+              >
+                <Copy size={14} />
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-[#F0F0F5]">Ajouter une IP à la liste blanche</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Input
+                type="text"
+                placeholder="192.168.1.100"
+                value={newIPAddress}
+                onChange={(e) => setNewIPAddress(e.target.value)}
+                className="bg-[#0A0A0F] border-[#1F1F2E]"
+              />
+              <Input
+                type="text"
+                placeholder="Description (ex: Bureau)"
+                value={newIPDescription}
+                onChange={(e) => setNewIPDescription(e.target.value)}
+                className="bg-[#0A0A0F] border-[#1F1F2E]"
+              />
+              <Button
+                onClick={handleAddIPAddress}
+                disabled={!newIPAddress.trim()}
+                className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80"
+              >
+                <Plus size={16} />
+                Ajouter
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-[#F0F0F5]">IPs autorisées</h4>
+            {whitelistedIPs.length > 0 ? (
+              <div className="space-y-2">
+                {whitelistedIPs.map((ip) => (
+                  <div key={ip.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+                    <div className="flex-1">
+                      <p className="font-mono text-[#F0F0F5] font-medium">{ip.ip}</p>
+                      <p className="text-xs text-[#6B6B80]">{ip.description} • Ajoutée le {ip.addedDate}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleRemoveIPAddress(ip.id)}
+                      className="text-[#FF4D6A] hover:text-[#FF4D6A]"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-[#6B6B80]">Aucune IP ajoutée pour le moment</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Activity Logs */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 size={20} />
+            Journal d'activité
+          </CardTitle>
+          <CardDescription>Historique de vos connexions et actions</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[#6B6B80] mb-2">Du</label>
+              <Input
+                type="date"
+                value={logStartDate}
+                onChange={(e) => setLogStartDate(e.target.value)}
+                className="bg-[#0A0A0F] border-[#1F1F2E]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#6B6B80] mb-2">Au</label>
+              <Input
+                type="date"
+                value={logEndDate}
+                onChange={(e) => setLogEndDate(e.target.value)}
+                className="bg-[#0A0A0F] border-[#1F1F2E]"
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto border border-[#1F1F2E] rounded-lg">
+            <table className="w-full text-sm">
+              <thead className="bg-[#1A1A25] border-b border-[#1F1F2E]">
+                <tr>
+                  <th className="px-4 py-3 text-left text-[#6B6B80] font-medium">Date</th>
+                  <th className="px-4 py-3 text-left text-[#6B6B80] font-medium">Action</th>
+                  <th className="px-4 py-3 text-left text-[#6B6B80] font-medium">IP</th>
+                  <th className="px-4 py-3 text-left text-[#6B6B80] font-medium">Navigateur</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1F1F2E]">
+                {activityLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-[#1A1A25] transition-colors">
+                    <td className="px-4 py-3 text-[#F0F0F5] font-mono text-xs">{log.date}</td>
+                    <td className="px-4 py-3 text-[#F0F0F5]">{log.action}</td>
+                    <td className="px-4 py-3 text-[#F0F0F5] font-mono text-xs">{log.ip}</td>
+                    <td className="px-4 py-3 text-[#6B6B80]">{log.browser}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Collaborators & Email Invitations */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail size={20} />
+            Collaborateurs
+          </CardTitle>
+          <CardDescription>Gérez les membres de votre équipe</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Pending Invitations */}
+          {pendingInvitations.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-[#F0F0F5]">Invitations en attente</h4>
+              <div className="space-y-2">
+                {pendingInvitations.map((invite) => (
+                  <div key={invite.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+                    <div className="flex-1">
+                      <p className="font-medium text-[#F0F0F5]">{invite.email}</p>
+                      <p className="text-xs text-[#6B6B80]">
+                        Rôle: {invite.role} • {invite.status}
+                        {invite.status === 'En attente' && ` • Expire le ${invite.expiryDate}`}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      {invite.status === 'En attente' && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleResendInvitation(invite.id)}
+                            className="text-[#00E5CC] hover:text-[#00E5CC]"
+                          >
+                            <Send size={14} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleCancelInvitation(invite.id)}
+                            className="text-[#FF4D6A] hover:text-[#FF4D6A]"
+                          >
+                            <X size={14} />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Email Invitation Form */}
+          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-medium text-[#F0F0F5]">Inviter par e-mail</h4>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowInviteForm(!showInviteForm)}
+              >
+                {showInviteForm ? <X size={16} /> : <Plus size={16} />}
+              </Button>
+            </div>
+
+            {showInviteForm && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-2">Adresse email</label>
+                  <Input
+                    type="email"
+                    placeholder="collaborateur@example.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="bg-[#0A0A0F] border-[#1F1F2E]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-2">Rôle</label>
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value)}
+                    className="w-full rounded-md border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5]"
+                  >
+                    <option>Opérateur</option>
+                    <option>Superviseur</option>
+                    <option>Administrateur</option>
+                  </select>
+                </div>
+                <Button
+                  onClick={handleInviteCollaborator}
+                  disabled={!inviteEmail.trim()}
+                  className="w-full bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80"
+                >
+                  <Send size={16} className="mr-2" />
+                  Envoyer l'invitation
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Current Collaborators */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-[#F0F0F5]">Collaborateurs actuels</h4>
+            {collabsLoading ? (
+              <p className="text-sm text-[#6B6B80]">Chargement...</p>
+            ) : collaborators.length > 0 ? (
+              <div className="space-y-2">
+                {collaborators.map((collab) => (
+                  <div key={collab.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] rounded-lg hover:bg-[#1A1A25]">
+                    <div className="flex-1">
+                      <p className="font-medium text-[#F0F0F5]">{collab.name}</p>
+                      <p className="text-xs text-[#6B6B80]">{collab.email}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={collab.role}
+                        onChange={(e) => handleUpdateCollaboratorRole(collab.id, e.target.value)}
+                        className="rounded-md border border-[#1F1F2E] bg-[#1A1A25] px-2 py-1 text-xs text-[#F0F0F5]"
+                      >
+                        <option>Opérateur</option>
+                        <option>Superviseur</option>
+                        <option>Administrateur</option>
+                      </select>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeleteCollaborator(collab.id)}
+                        className="text-[#FF4D6A] hover:text-[#FF4D6A]"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-[#6B6B80]">Aucun collaborateur pour le moment</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Organization Profile section */}
       <Card>
         <CardHeader>
@@ -603,474 +1109,48 @@ export default function SettingsPage() {
               <div>
                 <label className="block text-sm font-medium text-[#6B6B80]">Téléphone</label>
                 <Input
-                  type="tel"
+                  type="text"
                   value={organization.phone}
                   disabled={!orgEditing}
                   onChange={(e) => setOrganization({...organization, phone: e.target.value})}
                   className="mt-1"
                 />
               </div>
-              <div className="flex gap-2">
-                {orgEditing ? (
-                  <>
-                    <Button onClick={handleSaveOrganization} className="flex-1">
-                      Enregistrer
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => setOrgEditing(false)}
-                    >
-                      Annuler
-                    </Button>
-                  </>
-                ) : (
-                  <Button onClick={() => setOrgEditing(true)} variant="outline" className="w-full">
-                    Modifier l'organisation
-                  </Button>
-                )}
-              </div>
+              <Button
+                onClick={handleSaveOrganization}
+                className="w-full"
+                variant={orgEditing ? 'default' : 'outline'}
+              >
+                {orgEditing ? 'Enregistrer' : 'Modifier l\'organisation'}
+              </Button>
             </>
           )}
         </CardContent>
       </Card>
 
-      {/* Departments section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Server size={20} />
-            Départements
-          </CardTitle>
-          <CardDescription>Gérez les départements de votre organisation</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {deptsLoading ? (
-            <p className="text-sm text-[#6B6B80]">Chargement...</p>
-          ) : (
-            <>
-              {departments.length > 0 ? (
-                <div className="space-y-2">
-                  {departments.map((dept) => (
-                    <div
-                      key={dept.id}
-                      className="flex items-center justify-between p-3 bg-[#1A1A25] rounded border border-[#1F1F2E]"
-                    >
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-[#F0F0F5]">{dept.name}</p>
-                        {dept.description && (
-                          <p className="text-xs text-[#6B6B80]">{dept.description}</p>
-                        )}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-[#FF4D6A]"
-                        onClick={() => handleDeleteDepartment(dept.id)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-[#6B6B80]">Aucun département</p>
-              )}
-
-              {showNewDept ? (
-                <div className="space-y-3 p-4 bg-[#1A1A25] rounded-lg border border-[#1F1F2E]">
-                  <div>
-                    <label className="block text-sm font-medium text-[#6B6B80] mb-1">Nom du département</label>
-                    <Input
-                      type="text"
-                      value={newDeptName}
-                      onChange={(e) => setNewDeptName(e.target.value)}
-                      placeholder="Ex: Logistique"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#6B6B80] mb-1">Description (optionnel)</label>
-                    <Input
-                      type="text"
-                      value={newDeptDesc}
-                      onChange={(e) => setNewDeptDesc(e.target.value)}
-                      placeholder="Description du département"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleAddDepartment} className="flex-1">
-                      Créer
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => {
-                        setShowNewDept(false)
-                        setNewDeptName('')
-                        setNewDeptDesc('')
-                      }}
-                    >
-                      Annuler
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setShowNewDept(true)}
-                >
-                  <Plus size={16} className="mr-2" />
-                  Ajouter un département
-                </Button>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Security section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield size={20} />
-            Sécurité
-          </CardTitle>
-          <CardDescription>Gérez la sécurité de votre compte</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg">
-            <div>
-              <p className="font-medium text-[#F0F0F5]">Authentification à deux facteurs (2FA)</p>
-              <p className="text-sm text-[#6B6B80]">Ajoutez une couche de sécurité supplémentaire à votre compte</p>
-            </div>
-            <Button variant="outline">Activer</Button>
-          </div>
-          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg">
-            <div>
-              <p className="font-medium text-[#F0F0F5]">Dernière connexion</p>
-              <p className="text-sm text-[#6B6B80]">{user?.lastLogin ? new Date(user.lastLogin).toLocaleString('fr-FR') : 'Information non disponible'}</p>
-            </div>
-          </div>
-          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="font-medium text-[#F0F0F5]">Sessions actives</p>
-                <p className="text-sm text-[#6B6B80]">{sessions.length} session(s) active(s)</p>
-              </div>
-              {sessions.length > 0 && (
-                <Button
-                  variant="outline"
-                  className="text-[#FF4D6A]"
-                  onClick={handleDisconnectAllSessions}
-                >
-                  Déconnecter tout
-                </Button>
-              )}
-            </div>
-            {sessionsLoading ? (
-              <p className="text-sm text-[#6B6B80]">Chargement...</p>
-            ) : sessions.length > 0 ? (
-              <div className="space-y-2">
-                {sessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="flex items-center justify-between p-3 bg-[#1A1A25] rounded border border-[#1F1F2E]"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-[#F0F0F5]">{session.deviceName}</p>
-                      <p className="text-xs text-[#6B6B80]">IP: {session.ipAddress}</p>
-                      <p className="text-xs text-[#6B6B80]">
-                        Dernière activité: {new Date(session.lastActive).toLocaleString('fr-FR')}
-                      </p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-[#FF4D6A]"
-                      onClick={() => handleDisconnectSession(session.id)}
-                    >
-                      <LogOut size={16} className="mr-1" />
-                      Déconnecter
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-[#6B6B80]">Aucune session active</p>
-            )}
-          </div>
-          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg">
-            <div>
-              <p className="font-medium text-[#F0F0F5]">Changer le mot de passe</p>
-              <p className="text-sm text-[#6B6B80]">Mettez à jour votre mot de passe régulièrement</p>
-            </div>
-            <Button variant="outline">Modifier</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Preferences section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette size={20} />
-            Préférences
-          </CardTitle>
-          <CardDescription>Personnalisez votre expérience</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Thème</label>
-            <div className="flex gap-4">
-              {['light', 'dark'].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTheme(t as 'light' | 'dark')}
-                  className={`rounded-lg px-4 py-2 font-medium transition-colors ${
-                    theme === t
-                      ? 'bg-fleet-tracker-600 text-white'
-                      : 'bg-[#12121A] text-[#6B6B80] hover:bg-[#1A1A25]'
-                  }`}
-                >
-                  {t === 'light' ? 'Clair' : 'Sombre'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Langue</label>
-            <select
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
-            >
-              <option value="en">English</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
-              <option value="de">Deutsch</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Unité de vitesse</label>
-            <select
-              value={speedUnit}
-              onChange={(e) => handleSpeedUnitChange(e.target.value)}
-              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
-            >
-              <option value="kmh">Kilomètres par heure (km/h)</option>
-              <option value="mph">Miles par heure (mph)</option>
-              <option value="kn">Nœuds (kn)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Unité de distance</label>
-            <select
-              value={distanceUnit}
-              onChange={(e) => handleDistanceUnitChange(e.target.value)}
-              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
-            >
-              <option value="km">Kilomètres (km)</option>
-              <option value="mi">Miles (mi)</option>
-            </select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Session Timeout Configuration */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wifi size={20} />
-            Configuration de session
-          </CardTitle>
-          <CardDescription>Gérez la durée d'inactivité avant déconnexion</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Délai d'expiration de session</label>
-            <select
-              value={sessionTimeout}
-              onChange={(e) => handleSessionTimeoutChange(e.target.value)}
-              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 w-full text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
-            >
-              <option value="30m">30 minutes</option>
-              <option value="1h">1 heure</option>
-              <option value="2h">2 heures</option>
-              <option value="4h">4 heures</option>
-              <option value="8h">8 heures</option>
-              <option value="24h">24 heures</option>
-              <option value="7d">7 jours</option>
-            </select>
-            <p className="text-xs text-[#6B6B80] mt-2">
-              Vous serez automatiquement déconnecté après cette période d'inactivité.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Collaborators Section */}
-      {isAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User size={20} />
-              Collaborateurs
-            </CardTitle>
-            <CardDescription>Gérez les utilisateurs et les rôles de votre organisation</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {collabsLoading ? (
-              <p className="text-sm text-[#6B6B80]">Chargement...</p>
-            ) : (
-              <>
-                {collaborators.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="border-b border-[#1F1F2E]">
-                        <tr>
-                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Nom</th>
-                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Email</th>
-                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Rôle</th>
-                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Dernière activité</th>
-                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#1F1F2E]">
-                        {collaborators.map((collab) => (
-                          <tr key={collab.id} className="hover:bg-[#1A1A25]">
-                            <td className="py-3 px-3">{collab.name}</td>
-                            <td className="py-3 px-3 text-[#6B6B80]">{collab.email}</td>
-                            <td className="py-3 px-3">
-                              <select
-                                value={collab.role}
-                                onChange={(e) => handleUpdateCollaboratorRole(collab.id, e.target.value)}
-                                className="rounded-md border border-[#1F1F2E] bg-white px-2 py-1 text-xs font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
-                              >
-                                <option value="Admin">Admin</option>
-                                <option value="Manager">Manager</option>
-                                <option value="Opérateur">Opérateur</option>
-                              </select>
-                            </td>
-                            <td className="py-3 px-3 text-[#6B6B80] text-xs">
-                              {new Date(collab.lastActive).toLocaleString('fr-FR')}
-                            </td>
-                            <td className="py-3 px-3">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-[#FF4D6A]"
-                                onClick={() => handleDeleteCollaborator(collab.id)}
-                              >
-                                <Trash2 size={14} />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="text-sm text-[#6B6B80]">Aucun collaborateur</p>
-                )}
-
-                {showInviteForm ? (
-                  <div className="space-y-3 p-4 bg-[#1A1A25] rounded-lg border border-[#1F1F2E]">
-                    <div>
-                      <label className="block text-sm font-medium text-[#6B6B80] mb-1">Email du collaborateur</label>
-                      <Input
-                        type="email"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                        placeholder="collaborateur@example.com"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[#6B6B80] mb-1">Rôle</label>
-                      <select
-                        value={inviteRole}
-                        onChange={(e) => setInviteRole(e.target.value)}
-                        className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 w-full text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
-                      >
-                        <option value="Admin">Admin</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Opérateur">Opérateur</option>
-                      </select>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleInviteCollaborator} className="flex-1">
-                        Inviter
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => {
-                          setShowInviteForm(false)
-                          setInviteEmail('')
-                          setInviteRole('Opérateur')
-                        }}
-                      >
-                        Annuler
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setShowInviteForm(true)}
-                  >
-                    <Plus size={16} className="mr-2" />
-                    Inviter un collaborateur
-                  </Button>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Notifications section */}
+      {/* Notification Preferences */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell size={20} />
-            Notifications
+            Préférences de notification
           </CardTitle>
-          <CardDescription>Contrôlez la réception de vos alertes</CardDescription>
+          <CardDescription>Configurez comment vous recevez les alertes</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[
-            { label: 'Notifications par email', key: 'email' },
-            { label: 'Notifications push', key: 'push' },
-            { label: 'Notifications SMS', key: 'sms' },
-          ].map((item) => (
-            <div key={item.key} className="flex items-center justify-between">
-              <label className="text-sm font-medium text-[#6B6B80]">{item.label}</label>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-[#6B6B80]">Alertes email</label>
+                <p className="text-xs text-[#6B6B80]">Recevoir les alertes par email</p>
+              </div>
               <input type="checkbox" defaultChecked className="h-4 w-4" />
             </div>
-          ))}
 
-          {/* WhatsApp Channel */}
-          <div className="pt-4 border-t border-[#1F1F2E]">
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium text-[#6B6B80]">WhatsApp</label>
-                <p className="text-xs text-[#6B6B80]">Bientôt disponible</p>
-              </div>
-              <input type="checkbox" disabled className="h-4 w-4" />
-            </div>
-          </div>
-
-          {/* Push Mobile Channel */}
-          <div className="pt-4 border-t border-[#1F1F2E]">
-            <div className="flex items-center justify-between">
-              <div>
-                <label className="text-sm font-medium text-[#6B6B80]">Push mobile</label>
-                <p className="text-xs text-[#6B6B80]">Configurez l'app mobile</p>
+                <label className="text-sm font-medium text-[#6B6B80]">Notifications push</label>
+                <p className="text-xs text-[#6B6B80]">Configurer l'app mobile</p>
               </div>
               <input type="checkbox" disabled className="h-4 w-4" />
             </div>

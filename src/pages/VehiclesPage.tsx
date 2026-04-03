@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useVehicles, useCreateVehicle, useUpdateVehicle, useDeleteVehicle, useVehicleGroups } from '@/hooks/useVehicles'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,12 +7,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { Search, Plus, Download, Trash2, Edit2, FileDown, LayoutGrid, List } from 'lucide-react'
+import { Search, Plus, Download, Trash2, Edit2, FileDown, LayoutGrid, List, Clock, Zap, Upload, ChevronDown, AlertCircle, Image as ImageIcon } from 'lucide-react'
 import { VehicleStatus } from '@/types/vehicle'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 import type { Vehicle } from '@/types/vehicle'
 import { useAuthStore } from '@/stores/authStore'
 import { apiClient } from '@/lib/api'
+
+interface ImportPreviewData {
+  [key: string]: string | number
+}
 
 export default function VehiclesPage() {
   const navigate = useNavigate()
@@ -26,6 +30,33 @@ export default function VehiclesPage() {
   const [page, setPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const [showScheduledExports, setShowScheduledExports] = useState(false)
+  const [scheduledExports, setScheduledExports] = useState<Array<{ id: string; name: string; format: string; frequency: string; nextRun: string }>>([])
+  const [newScheduledExport, setNewScheduledExport] = useState({ name: '', format: 'csv', frequency: 'daily' })
+
+  // Import CSV/XLSX state
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importPreviewData, setImportPreviewData] = useState<ImportPreviewData[]>([])
+  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({
+    Nom: '',
+    Plaque: '',
+    VIN: '',
+    Type: '',
+    Marque: '',
+    Modèle: '',
+  })
+  const [importErrors, setImportErrors] = useState<string[]>([])
+  const [isImporting, setIsImporting] = useState(false)
+  const [importProgress, setImportProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Bulk operations state
+  const [selectAllChecked, setSelectAllChecked] = useState(false)
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
+  const [bulkChangeGroupId, setBulkChangeGroupId] = useState('')
+  const [showBulkChangeGroup, setShowBulkChangeGroup] = useState(false)
 
   // Modal and form state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -101,8 +132,177 @@ export default function VehiclesPage() {
     if (checked) {
       const allIds = new Set(vehicles.map(v => v.id))
       setSelectedIds(allIds)
+      setSelectAllChecked(true)
     } else {
       setSelectedIds(new Set())
+      setSelectAllChecked(false)
+    }
+  }
+
+  // CSV/XLSX Import functions
+  const parseCSVData = (text: string): ImportPreviewData[] => {
+    const lines = text.split('\n').filter(line => line.trim())
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+    const rows: ImportPreviewData[] = []
+
+    for (let i = 1; i < Math.min(lines.length, 6); i++) {
+      const values = lines[i].split(',').map(v => v.trim())
+      const row: ImportPreviewData = {}
+      headers.forEach((header, idx) => {
+        row[header] = values[idx] || ''
+      })
+      rows.push(row)
+    }
+
+    return rows
+  }
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setImportFile(file)
+    setImportErrors([])
+    setColumnMapping({
+      Nom: '',
+      Plaque: '',
+      VIN: '',
+      Type: '',
+      Marque: '',
+      Modèle: '',
+    })
+
+    const text = await file.text()
+    const data = parseCSVData(text)
+    setImportPreviewData(data)
+
+    // Auto-detect column headers
+    const headers = Object.keys(data[0] || {})
+    const mapping: Record<string, string> = { ...columnMapping }
+
+    headers.forEach(header => {
+      const lowerHeader = header.toLowerCase()
+      if (lowerHeader.includes('nom') || lowerHeader.includes('name')) mapping['Nom'] = header
+      else if (lowerHeader.includes('plaque') || lowerHeader.includes('plate') || lowerHeader.includes('immat')) mapping['Plaque'] = header
+      else if (lowerHeader.includes('vin')) mapping['VIN'] = header
+      else if (lowerHeader.includes('type') || lowerHeader.includes('catégorie')) mapping['Type'] = header
+      else if (lowerHeader.includes('marque') || lowerHeader.includes('brand') || lowerHeader.includes('manufacturer')) mapping['Marque'] = header
+      else if (lowerHeader.includes('modèle') || lowerHeader.includes('model')) mapping['Modèle'] = header
+    })
+
+    setColumnMapping(mapping)
+  }
+
+  const validateImportData = (): boolean => {
+    const errors: string[] = []
+
+    // Check required mappings
+    if (!columnMapping.Nom) errors.push('Colonne "Nom" non mappée')
+    if (!columnMapping.Plaque) errors.push('Colonne "Plaque" non mappée')
+
+    // Check for duplicate plates
+    const plates = importPreviewData.map(row => row[columnMapping.Plaque])
+    const duplicates = plates.filter((plate, idx) => plates.indexOf(plate) !== idx)
+    if (duplicates.length > 0) {
+      errors.push(`Plaques dupliquées détectées: ${duplicates.join(', ')}`)
+    }
+
+    // Check existing plates in database
+    const existingPlates = vehicles.map(v => v.plate)
+    const conflictingPlates = plates.filter(p => existingPlates.includes(String(p)))
+    if (conflictingPlates.length > 0) {
+      errors.push(`Plaques déjà existantes: ${conflictingPlates.join(', ')}`)
+    }
+
+    setImportErrors(errors)
+    return errors.length === 0
+  }
+
+  const handleImportVehicles = async () => {
+    if (!validateImportData()) return
+
+    setIsImporting(true)
+    setImportProgress(0)
+
+    try {
+      const vehiclesToImport = importPreviewData.map((row) => ({
+        name: String(row[columnMapping.Nom]),
+        registrationNumber: String(row[columnMapping.Plaque]),
+        vin: columnMapping.VIN ? String(row[columnMapping.VIN]) : '',
+        type: columnMapping.Type ? String(row[columnMapping.Type]).toLowerCase() : 'voiture',
+        manufacturer: columnMapping.Marque ? String(row[columnMapping.Marque]) : '',
+        model: columnMapping.Modèle ? String(row[columnMapping.Modèle]) : '',
+        features: { hasGPS: true, hasFuelSensor: false, hasTemperatureSensor: false, hasCrashSensor: false },
+      }))
+
+      // Simulate batch import with progress
+      for (let i = 0; i < vehiclesToImport.length; i++) {
+        await apiClient.post(
+          `/api/organizations/${organizationId}/vehicles`,
+          vehiclesToImport[i]
+        )
+        setImportProgress(Math.round(((i + 1) / vehiclesToImport.length) * 100))
+      }
+
+      // Refresh vehicles list
+      setIsImportDialogOpen(false)
+      setImportFile(null)
+      setImportPreviewData([])
+      setImportProgress(0)
+    } catch (error) {
+      setImportErrors(['Erreur lors de l\'import des véhicules'])
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Supprimer ${selectedIds.size} véhicules ? Cette action est irréversible.`)) return
+
+    try {
+      for (const vehicleId of selectedIds) {
+        await apiClient.delete(`/api/organizations/${organizationId}/vehicles/${vehicleId}`)
+      }
+      setSelectedIds(new Set())
+      setSelectAllChecked(false)
+      setShowBulkDeleteConfirm(false)
+    } catch (error) {
+      console.error('Erreur lors de la suppression groupée:', error)
+    }
+  }
+
+  const handleBulkChangeGroup = async () => {
+    if (!bulkChangeGroupId || selectedIds.size === 0) return
+
+    try {
+      for (const vehicleId of selectedIds) {
+        const vehicle = vehicles.find(v => v.id === vehicleId)
+        if (vehicle) {
+          await updateVehicleMutation.mutateAsync({
+            name: vehicle.name,
+            vin: vehicle.vin || '',
+            registrationNumber: vehicle.plate,
+            type: vehicle.type || '',
+            manufacturer: vehicle.brand || undefined,
+            model: vehicle.model || undefined,
+            year: vehicle.year || undefined,
+            color: vehicle.metadata?.color,
+            groupId: bulkChangeGroupId,
+            features: vehicle.features || {
+              hasGPS: false,
+              hasFuelSensor: false,
+              hasTemperatureSensor: false,
+              hasCrashSensor: false,
+            },
+          })
+        }
+      }
+      setSelectedIds(new Set())
+      setSelectAllChecked(false)
+      setShowBulkChangeGroup(false)
+      setBulkChangeGroupId('')
+    } catch (error) {
+      console.error('Erreur lors du changement de groupe:', error)
     }
   }
 
@@ -147,6 +347,123 @@ export default function VehiclesPage() {
     } catch (error) {
       console.error('Erreur lors de l\'export des conducteurs:', error)
     }
+  }
+
+  const generateKMLData = (vehiclesToExport: Vehicle[]): string => {
+    let kml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    kml += '<kml xmlns="http://www.opengis.net/kml/2.2">\n'
+    kml += '  <Document>\n'
+    kml += '    <name>Export Véhicules</name>\n'
+    kml += '    <description>Positions des véhicules</description>\n'
+
+    vehiclesToExport.forEach(v => {
+      if (v.currentLat && v.currentLng) {
+        kml += '    <Placemark>\n'
+        kml += `      <name>${v.name}</name>\n`
+        kml += `      <description>Plaque: ${v.plate || 'N/A'}\nType: ${v.type || 'N/A'}\nStatut: ${v.status || 'N/A'}\nVitesse: ${formatSpeed(v.currentSpeed)}</description>\n`
+        kml += '      <Point>\n'
+        kml += `        <coordinates>${v.currentLng},${v.currentLat},0</coordinates>\n`
+        kml += '      </Point>\n'
+        kml += '    </Placemark>\n'
+      }
+    })
+
+    kml += '  </Document>\n'
+    kml += '</kml>'
+    return kml
+  }
+
+  const generateGPXData = (vehiclesToExport: Vehicle[]): string => {
+    let gpx = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    gpx += '<gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1">\n'
+    gpx += '  <metadata>\n'
+    gpx += '    <name>Export Véhicules</name>\n'
+    gpx += `    <time>${new Date().toISOString()}</time>\n`
+    gpx += '  </metadata>\n'
+
+    vehiclesToExport.forEach(v => {
+      if (v.currentLat && v.currentLng) {
+        gpx += '  <wpt lat="' + v.currentLat + '" lon="' + v.currentLng + '">\n'
+        gpx += `    <name>${v.name}</name>\n`
+        gpx += `    <desc>Plaque: ${v.plate || 'N/A'}</desc>\n`
+        gpx += '  </wpt>\n'
+      }
+    })
+
+    gpx += '</gpx>'
+    return gpx
+  }
+
+  const exportToFormat = (format: string, vehiclesToExport: Vehicle[] = vehicles) => {
+    if (vehiclesToExport.length === 0) return
+
+    const timestamp = new Date().toISOString().split('T')[0]
+    let blob: Blob
+    let filename: string
+
+    switch (format) {
+      case 'kml':
+        blob = new Blob([generateKMLData(vehiclesToExport)], { type: 'application/vnd.google-earth.kml+xml' })
+        filename = `vehicles_${timestamp}.kml`
+        break
+      case 'gpx':
+        blob = new Blob([generateGPXData(vehiclesToExport)], { type: 'application/gpx+xml' })
+        filename = `vehicles_${timestamp}.gpx`
+        break
+      case 'xlsx':
+        const headers = ['Nom', 'Plaque', 'Type', 'VIN', 'Statut', 'Vitesse', 'Dernière comm']
+        const rows = vehiclesToExport.map(v => [
+          v.name, v.plate, v.type || '-', v.vin || '-', v.status,
+          formatSpeed(v.currentSpeed), formatTimeAgo(v.lastCommunication)
+        ])
+        const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))].join('\n')
+        blob = new Blob([csvContent], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+        filename = `vehicles_${timestamp}.xlsx`
+        break
+      default:
+        return
+    }
+
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', filename)
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportSelected = () => {
+    const selectedVehicles = vehicles.filter(v => selectedIds.has(v.id))
+    exportToFormat('csv', selectedVehicles)
+    setSelectedIds(new Set())
+  }
+
+  const saveScheduledExport = () => {
+    if (!newScheduledExport.name) return
+    const id = Math.random().toString(36).substring(7)
+    const nextRun = new Date()
+    if (newScheduledExport.frequency === 'daily') nextRun.setDate(nextRun.getDate() + 1)
+    else if (newScheduledExport.frequency === 'weekly') nextRun.setDate(nextRun.getDate() + 7)
+    else if (newScheduledExport.frequency === 'monthly') nextRun.setMonth(nextRun.getMonth() + 1)
+
+    const export_ = {
+      id,
+      name: newScheduledExport.name,
+      format: newScheduledExport.format,
+      frequency: newScheduledExport.frequency,
+      nextRun: nextRun.toISOString().split('T')[0]
+    }
+
+    const updated = [...scheduledExports, export_]
+    setScheduledExports(updated)
+    localStorage.setItem('scheduledExports', JSON.stringify(updated))
+    setNewScheduledExport({ name: '', format: 'csv', frequency: 'daily' })
+  }
+
+  const deleteScheduledExport = (id: string) => {
+    const updated = scheduledExports.filter(e => e.id !== id)
+    setScheduledExports(updated)
+    localStorage.setItem('scheduledExports', JSON.stringify(updated))
   }
 
   const openCreateModal = () => {
@@ -238,13 +555,56 @@ export default function VehiclesPage() {
 
       {/* Top Toolbar */}
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]" onClick={exportToCSV}>
-          <FileDown size={16} />
-          VÉHICULES CSV
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+          onClick={() => setIsImportDialogOpen(true)}
+        >
+          <Upload size={16} />
+          IMPORTER
         </Button>
+
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+            onClick={() => setShowExportMenu(!showExportMenu)}
+          >
+            <FileDown size={16} />
+            EXPORTER
+          </Button>
+          {showExportMenu && (
+            <div className="absolute top-10 left-0 bg-[#12121A] border border-[#1F1F2E] rounded-[8px] shadow-lg z-50 w-48">
+              <button onClick={() => { exportToCSV(); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+                CSV (Tous)
+              </button>
+              <button onClick={() => { exportToFormat('xlsx'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+                Excel XLSX
+              </button>
+              <button onClick={() => { exportToFormat('kml'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+                Google Earth (KML)
+              </button>
+              <button onClick={() => { exportToFormat('gpx'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25]">
+                GPS Format (GPX)
+              </button>
+            </div>
+          )}
+        </div>
+
         <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]" onClick={exportConducteursCSV}>
           <FileDown size={16} />
           CONDUCTEURS CSV
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+          onClick={() => setShowScheduledExports(!showScheduledExports)}
+        >
+          <Clock size={16} />
+          EXPORTS PROGRAMMÉS
         </Button>
         <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">
           RÔLES
@@ -379,6 +739,23 @@ export default function VehiclesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {vehicles.map((vehicle) => (
                 <Card key={vehicle.id} className="bg-[#12121A] border-[#1F1F2E] hover:border-[#2A2A3D] transition-all">
+                  {/* Vehicle Photo Thumbnail */}
+                  <div className="h-32 bg-[#0A0A0F] border-b border-[#1F1F2E] flex items-center justify-center overflow-hidden relative group">
+                    {(vehicle.metadata as any)?.photoUrl ? (
+                      <img
+                        src={(vehicle.metadata as any).photoUrl}
+                        alt={vehicle.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform cursor-pointer"
+                        onClick={() => window.open((vehicle.metadata as any).photoUrl, '_blank')}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-[#44445A]">
+                        <ImageIcon size={32} />
+                        <span className="text-xs">Pas de photo</span>
+                      </div>
+                    )}
+                  </div>
+
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -458,9 +835,10 @@ export default function VehiclesPage() {
                       <th className="px-4 py-3 text-left text-sm font-semibold text-[#F0F0F5] w-12">
                         <input
                           type="checkbox"
-                          checked={selectedIds.size === vehicles.length && vehicles.length > 0}
+                          checked={selectAllChecked && vehicles.length > 0}
                           onChange={(e) => toggleSelectAll(e.target.checked)}
                           className="rounded"
+                          title="Sélectionner tous"
                         />
                       </th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">NOM</th>
@@ -659,35 +1037,269 @@ export default function VehiclesPage() {
 
       {/* Floating Action Bar for Selection */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#12121A] border border-[#1F1F2E] rounded-[12px] shadow-lg p-4 flex items-center gap-4">
-          <span className="text-sm font-medium text-[#F0F0F5]">
-            {selectedIds.size} véhicules sélectionnés
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#12121A] border border-[#1F1F2E] rounded-[12px] shadow-lg p-4 flex items-center gap-3 flex-wrap max-w-3xl z-40">
+          <span className="text-sm font-medium text-[#F0F0F5] w-full sm:w-auto">
+            {selectedIds.size} véhicule{selectedIds.size > 1 ? 's' : ''} sélectionné{selectedIds.size > 1 ? 's' : ''}
           </span>
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+            >
+              <Download size={16} />
+              Exporter
+            </Button>
+            {showExportMenu && (
+              <div className="absolute bottom-10 left-0 bg-[#12121A] border border-[#1F1F2E] rounded-[8px] shadow-lg z-50 w-48">
+                <button onClick={() => { exportSelected(); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+                  CSV
+                </button>
+                <button onClick={() => { exportToFormat('xlsx', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+                  Excel XLSX
+                </button>
+                <button onClick={() => { exportToFormat('kml', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+                  KML
+                </button>
+                <button onClick={() => { exportToFormat('gpx', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25]">
+                  GPX
+                </button>
+              </div>
+            )}
+          </div>
+
           <Button
             variant="outline"
             size="sm"
-            onClick={exportToCSV}
+            onClick={() => setShowBulkChangeGroup(true)}
             className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
           >
-            <Download size={16} />
-            Exporter
+            <ChevronDown size={16} />
+            Changer groupe
           </Button>
+
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => {
-              if (confirm('Supprimer ' + selectedIds.size + ' véhicules ?')) {
-                selectedIds.forEach(id => apiClient.delete(`/api/organizations/${organizationId}/vehicles/${id}`))
-                setSelectedIds(new Set())
-              }
-            }}
+            onClick={() => setShowBulkDeleteConfirm(true)}
             className="gap-2 bg-[#FF4D6A] hover:bg-[#E63D5C] text-white"
           >
             <Trash2 size={16} />
-            Supprimer
+            Supprimer ({selectedIds.size})
           </Button>
         </div>
       )}
+
+      {/* Import Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent className="max-w-2xl bg-[#12121A] border-[#1F1F2E]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Importer des véhicules</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
+              Importez des véhicules à partir d'un fichier CSV ou XLSX
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* File Upload */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#F0F0F5]">Fichier CSV/XLSX</label>
+              <div className="border-2 border-dashed border-[#1F1F2E] rounded-[8px] p-6 text-center hover:border-[#00E5CC] transition-colors cursor-pointer"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".csv,.xlsx"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Upload className="h-8 w-8 mx-auto mb-2 text-[#44445A]" />
+                <p className="text-[#F0F0F5]">{importFile ? importFile.name : 'Cliquez pour sélectionner un fichier'}</p>
+                <p className="text-xs text-[#6B6B80] mt-1">CSV ou XLSX acceptés</p>
+              </div>
+            </div>
+
+            {/* Column Mapping */}
+            {importPreviewData.length > 0 && (
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-[#F0F0F5]">Mappage des colonnes</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.keys(columnMapping).map(field => (
+                    <div key={field} className="space-y-1">
+                      <label className="text-xs text-[#6B6B80]">{field} {['Nom', 'Plaque'].includes(field) ? '*' : ''}</label>
+                      <select
+                        value={columnMapping[field]}
+                        onChange={(e) => setColumnMapping({ ...columnMapping, [field]: e.target.value })}
+                        className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
+                      >
+                        <option value="">Sélectionner...</option>
+                        {Object.keys(importPreviewData[0] || {}).map(header => (
+                          <option key={header} value={header}>{header}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Preview */}
+            {importPreviewData.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-[#F0F0F5]">Aperçu (premières 5 lignes)</label>
+                <div className="border border-[#1F1F2E] rounded-[8px] overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-[#0A0A0F] border-b border-[#1F1F2E]">
+                      <tr>
+                        {Object.keys(columnMapping)
+                          .filter(field => columnMapping[field])
+                          .map(field => (
+                            <th key={field} className="px-4 py-2 text-left text-[#F0F0F5] font-medium">
+                              {field}
+                            </th>
+                          ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1F1F2E]">
+                      {importPreviewData.map((row, idx) => (
+                        <tr key={idx} className="hover:bg-[#1A1A25]">
+                          {Object.keys(columnMapping)
+                            .filter(field => columnMapping[field])
+                            .map(field => (
+                              <td key={field} className="px-4 py-2 text-[#F0F0F5]">
+                                {row[columnMapping[field]]}
+                              </td>
+                            ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Errors */}
+            {importErrors.length > 0 && (
+              <div className="bg-[#FF4D6A] bg-opacity-10 border border-[#FF4D6A] rounded-[8px] p-3">
+                <div className="flex gap-2 items-start">
+                  <AlertCircle className="h-5 w-5 text-[#FF4D6A] flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-[#FF4D6A]">
+                    {importErrors.map((error, idx) => (
+                      <div key={idx}>{error}</div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Progress */}
+            {isImporting && importProgress > 0 && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-[#F0F0F5]">
+                  <span>Import en cours...</span>
+                  <span>{importProgress}%</span>
+                </div>
+                <div className="w-full bg-[#1A1A25] rounded-full h-2 border border-[#1F1F2E]">
+                  <div
+                    className="bg-[#00E5CC] h-full rounded-full transition-all"
+                    style={{ width: `${importProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsImportDialogOpen(false)}
+              disabled={isImporting}
+              className="bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleImportVehicles}
+              disabled={isImporting || importPreviewData.length === 0}
+              className="bg-[#00E5CC] hover:bg-[#00CCA6] text-[#0A0A0F] font-semibold"
+            >
+              {isImporting ? `Import en cours (${importProgress}%)` : `Importer ${importPreviewData.length} véhicules`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Change Group Dialog */}
+      <Dialog open={showBulkChangeGroup} onOpenChange={setShowBulkChangeGroup}>
+        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Changer le groupe</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
+              Sélectionnez le groupe pour les {selectedIds.size} véhicules sélectionnés
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <select
+              value={bulkChangeGroupId}
+              onChange={(e) => setBulkChangeGroupId(e.target.value)}
+              className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-[#F0F0F5] focus:border-[#00E5CC]"
+            >
+              <option value="">Sélectionner un groupe...</option>
+              {groups.map(group => (
+                <option key={group.id} value={group.id}>{group.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkChangeGroup(false)}
+              className="bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleBulkChangeGroup}
+              disabled={!bulkChangeGroupId}
+              className="bg-[#00E5CC] hover:bg-[#00CCA6] text-[#0A0A0F] font-semibold"
+            >
+              Confirmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <Dialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
+        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Confirmer la suppression</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
+              Êtes-vous sûr de vouloir supprimer {selectedIds.size} véhicules ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowBulkDeleteConfirm(false)}
+              className="bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleBulkDelete}
+              className="bg-[#FF4D6A] hover:bg-[#E63D5C] text-white"
+            >
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create/Edit Vehicle Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

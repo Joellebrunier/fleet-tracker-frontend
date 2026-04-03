@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useAuthStore } from '@/stores/authStore'
 import { apiClient } from '@/lib/api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Folder, FolderPlus, ChevronDown, ChevronRight, Palette, Hash, Plus, Search, Edit2, Trash2, X } from 'lucide-react'
+import { Folder, FolderPlus, ChevronDown, ChevronRight, Palette, Hash, Plus, Search, Edit2, Trash2, X, BarChart3, Lock, Users, GripVertical } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 
 interface VehicleGroup {
@@ -22,6 +22,11 @@ interface VehicleGroup {
   vehicleCount: number
   createdAt: Date
   updatedAt: Date
+  permissions?: {
+    admin: boolean
+    manager: boolean
+    operator: boolean
+  }
 }
 
 interface Vehicle {
@@ -37,6 +42,13 @@ interface VehicleGroupFormData {
   description: string
   color: string
   parentGroupId?: string
+}
+
+interface GroupStats {
+  totalKmToday: number
+  activeVehicles: number
+  alertCount: number
+  avgSpeed: number
 }
 
 const COLOR_OPTIONS = [
@@ -60,7 +72,6 @@ const COLOR_OPTIONS = [
   { value: 'bg-slate-100 text-slate-800 border-slate-300', label: 'Slate' },
 ]
 
-// Dark theme color options for display
 const DARK_COLOR_OPTIONS = [
   { value: 'bg-[rgba(255,77,106,0.12)] text-[#FF4D6A]', label: 'Red' },
   { value: 'bg-[rgba(255,181,71,0.12)] text-[#FFB547]', label: 'Orange' },
@@ -90,12 +101,22 @@ export default function VehicleGroupsPage() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingGroup, setEditingGroup] = useState<VehicleGroup | null>(null)
+  const [selectedGroupForPermissions, setSelectedGroupForPermissions] = useState<VehicleGroup | null>(null)
+  const [selectedGroupForBulkAssign, setSelectedGroupForBulkAssign] = useState<string | null>(null)
+  const [bulkAssignVehicleIds, setBulkAssignVehicleIds] = useState<Set<string>>(new Set())
   const [formData, setFormData] = useState<VehicleGroupFormData>({
     name: '',
     description: '',
     color: DARK_COLOR_OPTIONS[10].value,
   })
   const [selectedVehicleColor, setSelectedVehicleColor] = useState(DARK_COLOR_OPTIONS[10].value)
+  const [permissions, setPermissions] = useState({
+    admin: false,
+    manager: false,
+    operator: false,
+  })
+  const [groupStats, setGroupStats] = useState<Record<string, GroupStats>>({})
+  const [draggedGroupId, setDraggedGroupId] = useState<string | null>(null)
 
   // Fetch vehicle groups
   const { data: groups = [], isLoading, error } = useQuery({
@@ -168,6 +189,26 @@ export default function VehicleGroupsPage() {
     },
   })
 
+  // Bulk assign vehicles mutation
+  const bulkAssignMutation = useMutation({
+    mutationFn: async (data: { groupId: string; vehicleIds: string[] }) => {
+      const promises = data.vehicleIds.map(vehicleId =>
+        apiClient.patch(
+          `/api/organizations/${organizationId}/vehicles/${vehicleId}`,
+          { vehicleGroupId: data.groupId }
+        )
+      )
+      return Promise.all(promises)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['groupVehicles', organizationId],
+      })
+      setBulkAssignVehicleIds(new Set())
+      setSelectedGroupForBulkAssign(null)
+    },
+  })
+
   const handleOpenModal = (group?: VehicleGroup) => {
     if (group) {
       setEditingGroup(group)
@@ -224,7 +265,16 @@ export default function VehicleGroupsPage() {
     }
   }
 
-  const toggleExpanded = (groupId: string) => {
+  const handleBulkAssignVehicles = async () => {
+    if (!selectedGroupForBulkAssign || bulkAssignVehicleIds.size === 0) return
+
+    await bulkAssignMutation.mutateAsync({
+      groupId: selectedGroupForBulkAssign,
+      vehicleIds: Array.from(bulkAssignVehicleIds),
+    })
+  }
+
+  const toggleExpandedGroup = (groupId: string) => {
     const newExpanded = new Set(expandedGroups)
     if (newExpanded.has(groupId)) {
       newExpanded.delete(groupId)
@@ -250,6 +300,17 @@ export default function VehicleGroupsPage() {
     return groups.filter((g) => g.parentGroupId === parentId)
   }
 
+  // Calculate mock statistics for a group
+  const getGroupStats = (groupId: string): GroupStats => {
+    if (groupStats[groupId]) return groupStats[groupId]
+    return {
+      totalKmToday: Math.floor(Math.random() * 500),
+      activeVehicles: Math.floor(Math.random() * 10),
+      alertCount: Math.floor(Math.random() * 5),
+      avgSpeed: Math.floor(Math.random() * 80 + 20),
+    }
+  }
+
   return (
     <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
       {/* Header */}
@@ -257,7 +318,7 @@ export default function VehicleGroupsPage() {
         <div>
           <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Groupes de véhicules</h1>
           <p className="mt-1 text-sm text-[#6B6B80]">
-            Organisez les véhicules de votre flotte en groupes et gérez les attributions
+            Organisez les véhicules de votre flotte en groupes hiérarchiques et gérez les attributions
           </p>
         </div>
         <Button
@@ -317,6 +378,7 @@ export default function VehicleGroupsPage() {
             const isExpanded = expandedGroups.has(group.id)
             const childGroups = getChildGroups(group.id)
             const vehicles = groupVehicles[group.id] || []
+            const stats = getGroupStats(group.id)
 
             return (
               <div key={group.id} className="space-y-2">
@@ -324,10 +386,18 @@ export default function VehicleGroupsPage() {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {/* Drag Handle */}
+                        <button
+                          onMouseDown={() => setDraggedGroupId(group.id)}
+                          className="mt-1 p-0 text-[#6B6B80] hover:text-[#F0F0F5] cursor-grab active:cursor-grabbing flex-shrink-0"
+                        >
+                          <GripVertical className="h-5 w-5" />
+                        </button>
+
                         {/* Expand/Collapse Button */}
                         {(childGroups.length > 0 || group.vehicleCount > 0) && (
                           <button
-                            onClick={() => toggleExpanded(group.id)}
+                            onClick={() => toggleExpandedGroup(group.id)}
                             className="mt-1 p-0 text-[#6B6B80] hover:text-[#F0F0F5] flex-shrink-0"
                           >
                             {isExpanded ? (
@@ -366,6 +436,27 @@ export default function VehicleGroupsPage() {
                   </CardHeader>
 
                   <CardContent className="pt-0">
+                    {/* Statistics Bar */}
+                    <div className="grid grid-cols-4 gap-2 mb-4 p-3 bg-[#0A0A0F] rounded-[8px] border border-[#1F1F2E]">
+                      <div className="text-center">
+                        <p className="text-xs text-[#6B6B80]">Km aujourd'hui</p>
+                        <p className="text-sm font-semibold text-[#00E5CC]">{stats.totalKmToday}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-[#6B6B80]">Actifs</p>
+                        <p className="text-sm font-semibold text-[#00E5CC]">{stats.activeVehicles}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-[#6B6B80]">Alertes</p>
+                        <p className="text-sm font-semibold text-[#FF4D6A]">{stats.alertCount}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs text-[#6B6B80]">Vit. moy.</p>
+                        <p className="text-sm font-semibold text-[#FFB547]">{stats.avgSpeed} km/h</p>
+                      </div>
+                    </div>
+
+                    {/* Metadata */}
                     <div className="flex flex-wrap items-center gap-3 text-sm text-[#6B6B80] mb-4">
                       <div className="flex items-center gap-1">
                         <Hash className="h-4 w-4" />
@@ -383,7 +474,7 @@ export default function VehicleGroupsPage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <Button
                         variant="outline"
                         size="sm"
@@ -392,6 +483,24 @@ export default function VehicleGroupsPage() {
                       >
                         <Edit2 className="h-4 w-4 mr-1" />
                         Modifier
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedGroupForPermissions(group)}
+                        className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+                      >
+                        <Lock className="h-4 w-4 mr-1" />
+                        Permissions
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedGroupForBulkAssign(group.id)}
+                        className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+                      >
+                        <Users className="h-4 w-4 mr-1" />
+                        Ajouter véhicules
                       </Button>
                       <Button
                         variant="outline"
@@ -598,6 +707,125 @@ export default function VehicleGroupsPage() {
                 : editingGroup
                   ? 'Mettre à jour le groupe'
                   : 'Créer le groupe'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Permissions Dialog */}
+      <Dialog open={!!selectedGroupForPermissions} onOpenChange={() => setSelectedGroupForPermissions(null)}>
+        <DialogContent className="max-w-md bg-[#12121A] border-[#1F1F2E]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F5] font-syne">
+              Permissions du groupe
+            </DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
+              {selectedGroupForPermissions?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-[#F0F0F5]">Rôles autorisés à accéder à ce groupe:</p>
+
+            <div className="space-y-3">
+              {[
+                { key: 'admin', label: 'Administrateur' },
+                { key: 'manager', label: 'Responsable' },
+                { key: 'operator', label: 'Opérateur' },
+              ].map(role => (
+                <label key={role.key} className="flex items-center gap-3 cursor-pointer p-3 bg-[#0A0A0F] border border-[#1F1F2E] rounded-[8px] hover:border-[#00E5CC] transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={permissions[role.key as keyof typeof permissions]}
+                    onChange={(e) =>
+                      setPermissions({
+                        ...permissions,
+                        [role.key]: e.target.checked,
+                      })
+                    }
+                    className="rounded"
+                  />
+                  <span className="text-[#F0F0F5]">{role.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedGroupForPermissions(null)}
+              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+            >
+              Fermer
+            </Button>
+            <Button
+              onClick={() => setSelectedGroupForPermissions(null)}
+              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+            >
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Assign Vehicles Dialog */}
+      <Dialog open={!!selectedGroupForBulkAssign} onOpenChange={() => setSelectedGroupForBulkAssign(null)}>
+        <DialogContent className="max-w-2xl bg-[#12121A] border-[#1F1F2E]">
+          <DialogHeader>
+            <DialogTitle className="text-[#F0F0F5] font-syne">
+              Ajouter des véhicules au groupe
+            </DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
+              Sélectionnez les véhicules à ajouter au groupe
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-2">
+              {groups.find(g => g.id === selectedGroupForBulkAssign)?.id && (
+                <div className="grid grid-cols-1 gap-2">
+                  {/* Mock vehicle list - replace with actual data */}
+                  {[...Array(5)].map((_, i) => (
+                    <label key={i} className="flex items-center gap-3 cursor-pointer p-3 bg-[#0A0A0F] border border-[#1F1F2E] rounded-[8px] hover:border-[#00E5CC] transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={bulkAssignVehicleIds.has(`vehicle-${i}`)}
+                        onChange={(e) => {
+                          const newIds = new Set(bulkAssignVehicleIds)
+                          if (e.target.checked) {
+                            newIds.add(`vehicle-${i}`)
+                          } else {
+                            newIds.delete(`vehicle-${i}`)
+                          }
+                          setBulkAssignVehicleIds(newIds)
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-[#F0F0F5]">Véhicule {i + 1}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedGroupForBulkAssign(null)}
+              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleBulkAssignVehicles}
+              disabled={bulkAssignMutation.isPending || bulkAssignVehicleIds.size === 0}
+              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+            >
+              {bulkAssignMutation.isPending
+                ? 'Assignation...'
+                : `Ajouter ${bulkAssignVehicleIds.size} véhicule(s)`}
             </Button>
           </DialogFooter>
         </DialogContent>

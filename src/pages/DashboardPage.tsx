@@ -21,6 +21,8 @@ import {
   BarChart,
   Bar,
   Legend,
+  LineChart,
+  Line,
 } from 'recharts'
 import {
   Truck,
@@ -49,6 +51,7 @@ import {
   LogIn,
   AlertTriangle,
   Shield,
+  HelpCircle,
 } from 'lucide-react'
 import {
   Dialog,
@@ -104,6 +107,9 @@ type WidgetId =
   | 'departments'
   | 'daily-summary'
   | 'activity-feed'
+  | 'mileage-trend'
+  | 'fleet-utilization'
+  | 'alert-frequency'
 
 interface WidgetConfig {
   visible: boolean
@@ -116,6 +122,75 @@ interface Department {
   vehicleCount: number
   driverCount: number
   performanceScore: number
+}
+
+// Keyboard Shortcuts Modal Component
+function KeyboardShortcutsModal() {
+  const [isOpen, setIsOpen] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.key === '?' && !isOpen) {
+        setIsOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [isOpen])
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="bg-[#12121A] border border-[#1F1F2E] max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-[#F0F0F5] font-syne">Raccourcis clavier</DialogTitle>
+          <DialogDescription className="text-[#6B6B80]">Appuyez sur ? pour afficher ce menu</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
+              <span className="text-sm text-[#F0F0F5]">Tableau de bord</span>
+              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">D</kbd>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
+              <span className="text-sm text-[#F0F0F5]">Carte</span>
+              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">M</kbd>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
+              <span className="text-sm text-[#F0F0F5]">Véhicules</span>
+              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">V</kbd>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
+              <span className="text-sm text-[#F0F0F5]">Alertes</span>
+              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">A</kbd>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
+              <span className="text-sm text-[#F0F0F5]">Rapports</span>
+              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">R</kbd>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
+              <span className="text-sm text-[#F0F0F5]">Géobarrières</span>
+              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">G</kbd>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
+              <span className="text-sm text-[#F0F0F5]">Paramètres</span>
+              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">S</kbd>
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end pt-2 border-t border-[#1F1F2E]">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsOpen(false)}
+              className="border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+            >
+              Fermer
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
 }
 
 // Heatmap Marker Component
@@ -168,7 +243,10 @@ export default function DashboardPage() {
     'quick-actions',
     'alerts-feed',
     'status-summary',
+    'mileage-trend',
+    'fleet-utilization',
     'speed-distribution',
+    'alert-frequency',
     'weekly-comparison',
     'heatmap',
     'fleet-activity',
@@ -188,7 +266,10 @@ export default function DashboardPage() {
       'quick-actions': { visible: true, size: 'normal' },
       'alerts-feed': { visible: true, size: 'normal' },
       'status-summary': { visible: true, size: 'normal' },
+      'mileage-trend': { visible: true, size: 'normal' },
+      'fleet-utilization': { visible: true, size: 'normal' },
       'speed-distribution': { visible: true, size: 'normal' },
+      'alert-frequency': { visible: true, size: 'normal' },
       'weekly-comparison': { visible: true, size: 'normal' },
       heatmap: { visible: true, size: 'expanded' },
       'fleet-activity': { visible: true, size: 'normal' },
@@ -241,7 +322,10 @@ export default function DashboardPage() {
     'quick-actions': 'Actions rapides',
     'alerts-feed': 'Flux d\'alertes',
     'status-summary': 'Résumé du statut',
+    'mileage-trend': 'Tendance kilométrique',
+    'fleet-utilization': 'Utilisation de la flotte',
     'speed-distribution': 'Distribution des vitesses',
+    'alert-frequency': 'Fréquence des alertes',
     'weekly-comparison': 'Comparaison hebdomadaire',
     heatmap: 'Carte thermique',
     'fleet-activity': 'Activité de la flotte',
@@ -296,7 +380,10 @@ export default function DashboardPage() {
       'quick-actions': { visible: true, size: 'normal' },
       'alerts-feed': { visible: true, size: 'normal' },
       'status-summary': { visible: true, size: 'normal' },
+      'mileage-trend': { visible: true, size: 'normal' },
+      'fleet-utilization': { visible: true, size: 'normal' },
       'speed-distribution': { visible: true, size: 'normal' },
+      'alert-frequency': { visible: true, size: 'normal' },
       'weekly-comparison': { visible: true, size: 'normal' },
       heatmap: { visible: true, size: 'expanded' },
       'fleet-activity': { visible: true, size: 'normal' },
@@ -446,7 +533,46 @@ export default function DashboardPage() {
     }))
   }, [])
 
-  // Heatmap density data (simulated around Nice)
+  // Mileage trend data (30 days)
+  const mileageTrendData = useMemo(() => {
+    return Array.from({ length: 30 }, (_, i) => ({
+      day: `${i + 1}`,
+      km: Math.floor(Math.random() * 500 + 1200),
+    }))
+  }, [])
+
+  // Fleet utilization data
+  const fleetUtilizationData = useMemo(() => {
+    const total = Math.max(stats.total, 1)
+    return [
+      { name: 'En service', value: Math.floor(total * 0.65), color: '#22c55e' },
+      { name: 'En maintenance', value: Math.floor(total * 0.15), color: '#f97316' },
+      { name: 'Inactif', value: Math.floor(total * 0.12), color: '#eab308' },
+      { name: 'Hors ligne', value: Math.floor(total * 0.08), color: '#9ca3af' },
+    ]
+  }, [stats.total])
+
+  // Speed distribution data (6 ranges)
+  const speedDistributionData = useMemo(() => {
+    return [
+      { range: '0-30 km/h', count: 45 },
+      { range: '31-60 km/h', count: 82 },
+      { range: '61-90 km/h', count: 63 },
+      { range: '91-120 km/h', count: 28 },
+      { range: '>120 km/h', count: 5 },
+    ]
+  }, [])
+
+  // Alert frequency data (7 days)
+  const alertFrequencyData = useMemo(() => {
+    const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+    return days.map((day) => ({
+      day,
+      count: Math.floor(Math.random() * 25 + 5),
+    }))
+  }, [])
+
+  // Enhanced heatmap density data (10 points around Nice)
   const heatmapData = useMemo(() => {
     return [
       { position: [43.7, 7.12] as [number, number], density: 'élevé' as const },
@@ -454,6 +580,11 @@ export default function DashboardPage() {
       { position: [43.68, 7.1] as [number, number], density: 'moyen' as const },
       { position: [43.72, 7.08] as [number, number], density: 'faible' as const },
       { position: [43.65, 7.2] as [number, number], density: 'faible' as const },
+      { position: [43.73, 7.18] as [number, number], density: 'moyen' as const },
+      { position: [43.66, 7.05] as [number, number], density: 'faible' as const },
+      { position: [43.75, 7.22] as [number, number], density: 'faible' as const },
+      { position: [43.64, 7.15] as [number, number], density: 'moyen' as const },
+      { position: [43.69, 7.25] as [number, number], density: 'faible' as const },
     ]
   }, [])
 
@@ -592,6 +723,9 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 bg-[#0A0A0F]">
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal />
+
       {/* Header with Widget Configuration */}
       <div className="flex items-center justify-between">
         <div>
@@ -600,15 +734,26 @@ export default function DashboardPage() {
             Vue d'ensemble de votre flotte — {stats.total} véhicules, {stats.withGps} avec GPS actif
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowWidgetConfig(!showWidgetConfig)}
-          className="gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]"
-        >
-          <Settings size={16} />
-          <span>Personnaliser</span>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]"
+            title="Appuyez sur ? pour les raccourcis"
+          >
+            <HelpCircle size={16} />
+            <span>Aide</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowWidgetConfig(!showWidgetConfig)}
+            className="gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]"
+          >
+            <Settings size={16} />
+            <span>Personnaliser</span>
+          </Button>
+        </div>
       </div>
 
       {/* Widget Configuration Panel */}
@@ -1051,7 +1196,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Fleet Utilization Pie Chart */}
+        {/* Fleet Status Pie Chart */}
         {widgetConfig['fleet-status'].visible && (
           <div
             className={`${
@@ -1349,6 +1494,111 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Mileage Trend Line Chart */}
+      {widgetConfig['mileage-trend'].visible && (
+        <div
+          className={`${
+            widgetConfig['mileage-trend'].size === 'expanded'
+              ? 'lg:col-span-4'
+              : widgetConfig['mileage-trend'].size === 'normal'
+                ? 'lg:col-span-2'
+                : ''
+          }`}
+        >
+          <div className="relative group">
+            <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
+            </div>
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Tendance kilométrique</h3>
+                <p className="text-xs text-[#6B6B80] mt-1">Kilométrage quotidien sur 30 jours</p>
+              </div>
+              <div className="px-6 py-4">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={mileageTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                    <XAxis dataKey="day" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#12121A',
+                        border: '1px solid #1F1F2E',
+                        borderRadius: '8px',
+                        color: '#F0F0F5',
+                      }}
+                      formatter={(value: any) => [`${value} km`, 'Kilométrage']}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="km"
+                      stroke="#00E5CC"
+                      dot={false}
+                      strokeWidth={2}
+                      name="Kilométrage"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Fleet Utilization Pie Chart */}
+      {widgetConfig['fleet-utilization'].visible && (
+        <div
+          className={`${
+            widgetConfig['fleet-utilization'].size === 'expanded'
+              ? 'lg:col-span-2'
+              : widgetConfig['fleet-utilization'].size === 'normal'
+                ? 'lg:col-span-2'
+                : ''
+          }`}
+        >
+          <div className="relative group">
+            <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
+            </div>
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Utilisation de la flotte</h3>
+                <p className="text-xs text-[#6B6B80] mt-1">État des véhicules</p>
+              </div>
+              <div className="px-6 py-4">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={fleetUtilizationData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {fleetUtilizationData.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: any) => `${value} véhicules`}
+                      contentStyle={{
+                        backgroundColor: '#12121A',
+                        border: '1px solid #1F1F2E',
+                        borderRadius: '8px',
+                        color: '#F0F0F5',
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Speed Distribution Chart */}
       {widgetConfig['speed-distribution'].visible && (
         <div
@@ -1371,15 +1621,7 @@ export default function DashboardPage() {
               </div>
               <div className="px-6 py-4">
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={[
-                      { range: '0-30 km/h', count: 45 },
-                      { range: '30-60 km/h', count: 82 },
-                      { range: '60-90 km/h', count: 63 },
-                      { range: '90-120 km/h', count: 28 },
-                      { range: '>120 km/h', count: 5 },
-                    ]}
-                  >
+                  <BarChart data={speedDistributionData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
                     <XAxis dataKey="range" stroke="#6B6B80" style={{ fontSize: '12px' }} />
                     <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
@@ -1393,6 +1635,50 @@ export default function DashboardPage() {
                       formatter={(value: any) => [`${value} véhicules`, 'Nombre']}
                     />
                     <Bar dataKey="count" fill="#00E5CC" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Frequency Bar Chart (7 days) */}
+      {widgetConfig['alert-frequency'].visible && (
+        <div
+          className={`${
+            widgetConfig['alert-frequency'].size === 'expanded'
+              ? 'lg:col-span-2'
+              : widgetConfig['alert-frequency'].size === 'normal'
+                ? 'lg:col-span-2'
+                : ''
+          }`}
+        >
+          <div className="relative group">
+            <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
+            </div>
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Fréquence des alertes</h3>
+                <p className="text-xs text-[#6B6B80] mt-1">Nombre d'alertes par jour (7 derniers jours)</p>
+              </div>
+              <div className="px-6 py-4">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={alertFrequencyData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                    <XAxis dataKey="day" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#12121A',
+                        border: '1px solid #1F1F2E',
+                        borderRadius: '8px',
+                        color: '#F0F0F5',
+                      }}
+                      formatter={(value: any) => [`${value} alertes`, 'Nombre']}
+                    />
+                    <Bar dataKey="count" fill="#FFB547" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
