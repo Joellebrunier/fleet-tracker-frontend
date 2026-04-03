@@ -208,13 +208,13 @@ export default function TestEnvironmentPage() {
   }
 
   return (
-    <div className="space-y-6 bg-[#0A0A0F] min-h-screen p-6">
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">
+        <h1 className="text-3xl font-bold text-gray-900 font-sans">
           Environnement de test
         </h1>
-        <p className="mt-2 text-[#6B6B80]">
+        <p className="mt-2 text-gray-500">
           Testez l'API Fleet Tracker avant la mise en production
         </p>
       </div>
@@ -223,13 +223,13 @@ export default function TestEnvironmentPage() {
         {/* Main Testing Panel */}
         <div className="lg:col-span-2 space-y-6">
           {/* Environment Settings */}
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Configuration</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#F0F0F5] mb-2">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Environnement
                 </label>
                 <div className="flex gap-2">
@@ -242,8 +242,8 @@ export default function TestEnvironmentPage() {
                       className={cn(
                         'px-4 py-2 rounded-lg font-medium transition-colors',
                         environment === env
-                          ? 'bg-[#00E5CC] text-[#0A0A0F]'
-                          : 'bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#2A2A3D]'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                       )}
                     >
                       {env.charAt(0).toUpperCase() + env.slice(1)}
@@ -260,7 +260,7 @@ export default function TestEnvironmentPage() {
                     onChange={(e) => setSandboxMode(e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm font-medium text-[#F0F0F5]">
+                  <span className="text-sm font-medium text-gray-900">
                     Mode Sandbox
                   </span>
                 </label>
@@ -272,7 +272,7 @@ export default function TestEnvironmentPage() {
           </Card>
 
           {/* API Request Builder */}
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Testeur de requête</CardTitle>
             </CardHeader>
@@ -282,7 +282,7 @@ export default function TestEnvironmentPage() {
                 <select
                   value={method}
                   onChange={(e) => setMethod(e.target.value as HttpMethod)}
-                  className="px-3 py-2 border border-[#1F1F2E] rounded-lg font-medium bg-[#12121A]"
+                  className="px-3 py-2 border border-gray-200 rounded-lg font-medium bg-white"
                 >
                   <option>GET</option>
                   <option>POST</option>
@@ -300,14 +300,14 @@ export default function TestEnvironmentPage() {
               {/* Body */}
               {method !== 'GET' && (
                 <div>
-                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
                     Body (JSON)
                   </label>
                   <textarea
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     placeholder='{"name": "..."}'
-                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg font-mono text-sm h-40 resize-none"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg font-mono text-sm h-40 resize-none"
                   />
                 </div>
               )}
@@ -326,13 +326,13 @@ export default function TestEnvironmentPage() {
 
           {/* Response */}
           {response && (
-            <Card className={
+            <Card className={`rounded-xl shadow-sm ${
               response.status && response.status >= 200 && response.status < 300
-                ? 'border-[#00E5CC] bg-[#12121A]'
+                ? 'border-blue-600 bg-white border'
                 : response.error
-                  ? 'border-[#FF4D6A] bg-[#12121A]'
-                  : 'border-[#1F1F2E] bg-[#12121A]'
-            }>
+                  ? 'border-red-500 bg-white border'
+                  : 'border-gray-200 bg-white border'
+            }`}>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">Réponse</CardTitle>
@@ -346,7 +346,7 @@ export default function TestEnvironmentPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-xs overflow-x-auto">
+                <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs overflow-x-auto">
                   <code className="whitespace-pre-wrap break-words">
                     {JSON.stringify(response.data || response.error || response, null, 2)}
                   </code>
@@ -359,7 +359,7 @@ export default function TestEnvironmentPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Mock Data Generator */}
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">
                 Générateur de données
@@ -391,14 +391,14 @@ export default function TestEnvironmentPage() {
           </Card>
 
           {/* Request History */}
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Historique</CardTitle>
                 {requestHistory.length > 0 && (
                   <button
                     onClick={clearHistory}
-                    className="p-1 hover:bg-[#1A1A25] rounded"
+                    className="p-1 hover:bg-gray-100 rounded"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -407,13 +407,13 @@ export default function TestEnvironmentPage() {
             </CardHeader>
             <CardContent className="space-y-2 max-h-80 overflow-y-auto">
               {requestHistory.length === 0 ? (
-                <p className="text-sm text-[#6B6B80]">Aucune requête</p>
+                <p className="text-sm text-gray-500">Aucune requête</p>
               ) : (
                 requestHistory.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleHistoryClick(item)}
-                    className="w-full text-left p-2 hover:bg-[#0A0A0F] rounded-lg border border-[#1F1F2E] transition-colors"
+                    className="w-full text-left p-2 hover:bg-blue-50/50 rounded-lg border border-gray-200 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <Badge variant={getMethodBadgeVariant(item.method)}>
@@ -424,18 +424,18 @@ export default function TestEnvironmentPage() {
                           className={cn(
                             'text-xs font-medium',
                             item.status >= 200 && item.status < 300
-                              ? 'text-[#00E5CC]'
-                              : 'text-[#FF4D6A]'
+                              ? 'text-blue-600'
+                              : 'text-red-500'
                           )}
                         >
                           {item.status}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#6B6B80] truncate">
+                    <p className="text-xs text-gray-500 truncate">
                       {item.url}
                     </p>
-                    <p className="text-xs text-[#6B6B80]">
+                    <p className="text-xs text-gray-500">
                       {item.timestamp.toLocaleTimeString()}
                     </p>
                   </button>
@@ -445,17 +445,17 @@ export default function TestEnvironmentPage() {
           </Card>
 
           {/* Documentation Links */}
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Documentation</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-sm text-[#6B6B80]">
+              <p className="text-sm text-gray-500">
                 Besoin d'aide pour les endpoints ?
               </p>
               <Button
                 variant="outline"
-                className="w-full justify-start text-[#00E5CC] hover:text-[#00E5CC]"
+                className="w-full justify-start text-blue-600 hover:text-blue-600"
                 onClick={() =>
                   window.open('/api-docs', '_blank')
                 }
@@ -464,7 +464,7 @@ export default function TestEnvironmentPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start text-[#00E5CC] hover:text-[#00E5CC]"
+                className="w-full justify-start text-blue-600 hover:text-blue-600"
                 onClick={() =>
                   window.open('/sdk-examples', '_blank')
                 }

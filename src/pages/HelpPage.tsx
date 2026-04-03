@@ -41,54 +41,54 @@ const faqItems = [
 
 export default function HelpPage() {
   return (
-    <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Aide et documentation</h1>
-        <p className="mt-1 text-sm text-[#6B6B80]">Trouvez des réponses à vos questions et apprenez à utiliser Fleet Tracker</p>
+        <h1 className="text-3xl font-bold text-gray-900 font-sans">Aide et documentation</h1>
+        <p className="mt-1 text-sm text-gray-500">Trouvez des réponses à vos questions et apprenez à utiliser Fleet Tracker</p>
       </div>
 
       {/* Quick Links */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D]">
+        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-white rounded-xl border border-gray-200 shadow-sm hover:border-gray-300">
           <CardContent className="pt-6 text-center">
-            <Book size={32} className="mx-auto mb-3 text-[#00E5CC]" />
-            <p className="font-medium text-[#F0F0F5]">Guide de démarrage</p>
-            <p className="text-sm text-[#6B6B80] mt-1">Apprenez les bases de Fleet Tracker</p>
+            <Book size={32} className="mx-auto mb-3 text-blue-600" />
+            <p className="font-medium text-gray-900">Guide de démarrage</p>
+            <p className="text-sm text-gray-500 mt-1">Apprenez les bases de Fleet Tracker</p>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D]">
+        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-white rounded-xl border border-gray-200 shadow-sm hover:border-gray-300">
           <CardContent className="pt-6 text-center">
-            <Globe size={32} className="mx-auto mb-3 text-[#00E5CC]" />
-            <p className="font-medium text-[#F0F0F5]">Documentation API</p>
-            <p className="text-sm text-[#6B6B80] mt-1">Intégrez Fleet Tracker à vos systèmes</p>
+            <Globe size={32} className="mx-auto mb-3 text-blue-600" />
+            <p className="font-medium text-gray-900">Documentation API</p>
+            <p className="text-sm text-gray-500 mt-1">Intégrez Fleet Tracker à vos systèmes</p>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D]">
+        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-white rounded-xl border border-gray-200 shadow-sm hover:border-gray-300">
           <CardContent className="pt-6 text-center">
-            <Mail size={32} className="mx-auto mb-3 text-[#FF4D6A]" />
-            <p className="font-medium text-[#F0F0F5]">Contacter le support</p>
-            <p className="text-sm text-[#6B6B80] mt-1">Besoin d'aide ? Écrivez-nous</p>
+            <Mail size={32} className="mx-auto mb-3 text-red-500" />
+            <p className="font-medium text-gray-900">Contacter le support</p>
+            <p className="text-sm text-gray-500 mt-1">Besoin d'aide ? Écrivez-nous</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Keyboard Shortcuts */}
-      <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+      <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#F0F0F5] font-syne">
+          <CardTitle className="flex items-center gap-2 text-gray-900 font-sans">
             <Keyboard size={18} />
             Raccourcis clavier
           </CardTitle>
-          <CardDescription className="text-[#6B6B80]">Naviguez plus rapidement avec ces raccourcis</CardDescription>
+          <CardDescription className="text-gray-500">Naviguez plus rapidement avec ces raccourcis</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-2 sm:grid-cols-2">
             {shortcuts.map(s => (
-              <div key={s.key} className="flex items-center gap-3 p-2 rounded hover:bg-[#1A1A25] transition-colors">
-                <kbd className="px-2 py-1 bg-[#1A1A25] border border-[#1F1F2E] rounded text-xs font-mono font-bold text-[#6B6B80] min-w-[32px] text-center">
+              <div key={s.key} className="flex items-center gap-3 p-2 rounded hover:bg-gray-100 transition-colors">
+                <kbd className="px-2 py-1 bg-gray-100 border border-gray-200 rounded text-xs font-mono font-bold text-gray-500 min-w-[32px] text-center">
                   {s.key}
                 </kbd>
-                <span className="text-sm text-[#6B6B80]">{s.description}</span>
+                <span className="text-sm text-gray-500">{s.description}</span>
               </div>
             ))}
           </div>
@@ -96,9 +96,9 @@ export default function HelpPage() {
       </Card>
 
       {/* FAQ */}
-      <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+      <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#F0F0F5] font-syne">
+          <CardTitle className="flex items-center gap-2 text-gray-900 font-sans">
             <HelpCircle size={18} />
             Questions fréquentes
           </CardTitle>
@@ -106,9 +106,9 @@ export default function HelpPage() {
         <CardContent>
           <div className="space-y-4">
             {faqItems.map((item, idx) => (
-              <div key={idx} className="border-b border-[#1F1F2E] pb-4 last:border-0 last:pb-0">
-                <p className="font-medium text-[#F0F0F5] text-sm">{item.question}</p>
-                <p className="text-sm text-[#6B6B80] mt-1">{item.answer}</p>
+              <div key={idx} className="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                <p className="font-medium text-gray-900 text-sm">{item.question}</p>
+                <p className="text-sm text-gray-500 mt-1">{item.answer}</p>
               </div>
             ))}
           </div>
@@ -116,15 +116,15 @@ export default function HelpPage() {
       </Card>
 
       {/* Support multilingue */}
-      <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+      <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-[#F0F0F5] font-syne">
+          <CardTitle className="flex items-center gap-2 text-gray-900 font-sans">
             <Globe size={18} />
             Langues supportées
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-[#6B6B80]">
+          <p className="text-sm text-gray-500">
             Fleet Tracker est actuellement disponible en français. Le support multilingue (anglais, espagnol, allemand) est prévu dans une future mise à jour.
             Vous pouvez changer la langue dans les Paramètres &gt; Préférences &gt; Langue.
           </p>

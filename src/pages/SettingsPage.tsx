@@ -623,11 +623,11 @@ export default function SettingsPage() {
   const isAdmin = user?.role === ('ADMIN' as any) || user?.role === ('SUPER_ADMIN' as any) || (user?.role as string) === 'admin' || (user?.role as string) === 'administrator'
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#F0F0F5]">Paramètres</h1>
-        <p className="mt-2 text-[#6B6B80]">Gérez votre profil et vos préférences</p>
+        <h1 className="text-3xl font-bold text-gray-900">Paramètres</h1>
+        <p className="mt-2 text-gray-500">Gérez votre profil et vos préférences</p>
       </div>
 
       {/* Profile section */}
@@ -641,7 +641,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-[#6B6B80]">Prénom</label>
+            <label className="block text-sm font-medium text-gray-500">Prénom</label>
             <Input
               type="text"
               value={user?.firstName || ''}
@@ -650,7 +650,7 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#6B6B80]">Nom</label>
+            <label className="block text-sm font-medium text-gray-500">Nom</label>
             <Input
               type="text"
               value={user?.lastName || ''}
@@ -659,11 +659,11 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#6B6B80]">Email</label>
+            <label className="block text-sm font-medium text-gray-500">Email</label>
             <Input type="email" value={user?.email || ''} disabled className="mt-1" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#6B6B80]">Rôle</label>
+            <label className="block text-sm font-medium text-gray-500">Rôle</label>
             <Input type="text" value={user?.role || ''} disabled className="mt-1" />
           </div>
           <Button
@@ -686,18 +686,18 @@ export default function SettingsPage() {
           <CardDescription>Sécurisez votre compte avec l'authentification à deux facteurs</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-100">
             <div className="flex items-center gap-3">
-              <Lock size={18} className={twoFactorEnabled ? 'text-[#22C55E]' : 'text-[#6B6B80]'} />
+              <Lock size={18} className={twoFactorEnabled ? 'text-[#22C55E]' : 'text-gray-500'} />
               <div>
-                <p className="font-medium text-[#F0F0F5]">Statut 2FA</p>
-                <p className="text-sm text-[#6B6B80]">
+                <p className="font-medium text-gray-900">Statut 2FA</p>
+                <p className="text-sm text-gray-500">
                   {twoFactorEnabled ? 'Activé' : 'Désactivé'}
                 </p>
               </div>
             </div>
             {!twoFactorEnabled ? (
-              <Button onClick={handleEnable2FA} className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80">
+              <Button onClick={handleEnable2FA} className="bg-blue-600 text-white hover:bg-blue-600/80">
                 Activer
               </Button>
             ) : (
@@ -708,19 +708,19 @@ export default function SettingsPage() {
           </div>
 
           {show2FASetup && !twoFactorEnabled && (
-            <div className="space-y-4 p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+            <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-100">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-[#F0F0F5]">Code QR</p>
-                <div className="flex justify-center p-4 bg-[#0A0A0F] rounded-lg border border-[#1F1F2E]">
-                  <div className="w-40 h-40 bg-gradient-to-br from-[#00E5CC] to-[#0A0A0F] rounded-lg flex items-center justify-center">
-                    <span className="text-[#6B6B80] text-xs text-center">QR Code Placeholder</span>
+                <p className="text-sm font-medium text-gray-900">Code QR</p>
+                <div className="flex justify-center p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="w-40 h-40 bg-gradient-to-br from-blue-600 to-[#FFFFFF] rounded-lg flex items-center justify-center">
+                    <span className="text-gray-500 text-xs text-center">QR Code Placeholder</span>
                   </div>
                 </div>
-                <p className="text-xs text-[#6B6B80] text-center">Scannez ce code avec votre application authenticateur</p>
+                <p className="text-xs text-gray-500 text-center">Scannez ce code avec votre application authenticateur</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#6B6B80] mb-2">Code de vérification (6 chiffres)</label>
+                <label className="block text-sm font-medium text-gray-500 mb-2">Code de vérification (6 chiffres)</label>
                 <Input
                   type="text"
                   placeholder="000000"
@@ -742,18 +742,18 @@ export default function SettingsPage() {
           )}
 
           {twoFactorEnabled && showBackupCodes && (
-            <div className="space-y-3 p-4 border border-[#FFB547] rounded-lg bg-[#FFB547]/10">
+            <div className="space-y-3 p-4 border border-amber-500 rounded-lg bg-amber-500/10">
               <div className="flex items-start gap-2">
-                <AlertCircle size={18} className="text-[#FFB547] flex-shrink-0 mt-0.5" />
+                <AlertCircle size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-[#F0F0F5]">Codes de sauvegarde</p>
-                  <p className="text-xs text-[#6B6B80] mt-1">Conservez ces codes en sécurité. Vous en aurez besoin si vous perdez l'accès à votre appareil.</p>
+                  <p className="text-sm font-medium text-gray-900">Codes de sauvegarde</p>
+                  <p className="text-xs text-gray-500 mt-1">Conservez ces codes en sécurité. Vous en aurez besoin si vous perdez l'accès à votre appareil.</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 p-3 bg-[#0A0A0F] rounded-lg">
+              <div className="grid grid-cols-2 gap-2 p-3 bg-white rounded-lg">
                 {backupCodes.map((code, idx) => (
-                  <div key={idx} className="flex items-center gap-2 font-mono text-sm text-[#F0F0F5]">
-                    <span className="flex-shrink-0 text-[#6B6B80]">{idx + 1}.</span>
+                  <div key={idx} className="flex items-center gap-2 font-mono text-sm text-gray-900">
+                    <span className="flex-shrink-0 text-gray-500">{idx + 1}.</span>
                     <span>{code}</span>
                   </div>
                 ))}
@@ -770,7 +770,7 @@ export default function SettingsPage() {
               </Button>
               <Button
                 onClick={() => setShowBackupCodes(false)}
-                className="w-full bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80"
+                className="w-full bg-blue-600 text-white hover:bg-blue-600/80"
               >
                 J'ai sauvegardé les codes
               </Button>
@@ -789,10 +789,10 @@ export default function SettingsPage() {
           <CardDescription>Contrôlez l'accès à partir d'adresses IP spécifiques</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-100">
             <div>
-              <p className="font-medium text-[#F0F0F5]">Restrictions d'IP activées</p>
-              <p className="text-sm text-[#6B6B80]">{whitelistedIPs.length} IP autorisée(s)</p>
+              <p className="font-medium text-gray-900">Restrictions d'IP activées</p>
+              <p className="text-sm text-gray-500">{whitelistedIPs.length} IP autorisée(s)</p>
             </div>
             <input
               type="checkbox"
@@ -802,15 +802,15 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div className="p-3 bg-[#1A1A25] rounded-lg border border-[#1F1F2E]">
-            <p className="text-sm text-[#6B6B80] mb-2">Votre adresse IP actuelle</p>
-            <div className="flex items-center gap-2 font-mono text-[#F0F0F5]">
+          <div className="p-3 bg-gray-100 rounded-lg border border-gray-200">
+            <p className="text-sm text-gray-500 mb-2">Votre adresse IP actuelle</p>
+            <div className="flex items-center gap-2 font-mono text-gray-900">
               <span className="font-bold">{currentIP}</span>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => navigator.clipboard.writeText(currentIP)}
-                className="text-[#00E5CC] hover:text-[#00E5CC]"
+                className="text-blue-600 hover:text-blue-600"
               >
                 <Copy size={14} />
               </Button>
@@ -818,26 +818,26 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-[#F0F0F5]">Ajouter une IP à la liste blanche</h4>
+            <h4 className="text-sm font-medium text-gray-900">Ajouter une IP à la liste blanche</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <Input
                 type="text"
                 placeholder="192.168.1.100"
                 value={newIPAddress}
                 onChange={(e) => setNewIPAddress(e.target.value)}
-                className="bg-[#0A0A0F] border-[#1F1F2E]"
+                className="bg-white border-gray-200"
               />
               <Input
                 type="text"
                 placeholder="Description (ex: Bureau)"
                 value={newIPDescription}
                 onChange={(e) => setNewIPDescription(e.target.value)}
-                className="bg-[#0A0A0F] border-[#1F1F2E]"
+                className="bg-white border-gray-200"
               />
               <Button
                 onClick={handleAddIPAddress}
                 disabled={!newIPAddress.trim()}
-                className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80"
+                className="bg-blue-600 text-white hover:bg-blue-600/80"
               >
                 <Plus size={16} />
                 Ajouter
@@ -846,20 +846,20 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-[#F0F0F5]">IPs autorisées</h4>
+            <h4 className="text-sm font-medium text-gray-900">IPs autorisées</h4>
             {whitelistedIPs.length > 0 ? (
               <div className="space-y-2">
                 {whitelistedIPs.map((ip) => (
-                  <div key={ip.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+                  <div key={ip.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-100">
                     <div className="flex-1">
-                      <p className="font-mono text-[#F0F0F5] font-medium">{ip.ip}</p>
-                      <p className="text-xs text-[#6B6B80]">{ip.description} • Ajoutée le {ip.addedDate}</p>
+                      <p className="font-mono text-gray-900 font-medium">{ip.ip}</p>
+                      <p className="text-xs text-gray-500">{ip.description} • Ajoutée le {ip.addedDate}</p>
                     </div>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => handleRemoveIPAddress(ip.id)}
-                      className="text-[#FF4D6A] hover:text-[#FF4D6A]"
+                      className="text-red-500 hover:text-red-500"
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -867,7 +867,7 @@ export default function SettingsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-[#6B6B80]">Aucune IP ajoutée pour le moment</p>
+              <p className="text-sm text-gray-500">Aucune IP ajoutée pour le moment</p>
             )}
           </div>
         </CardContent>
@@ -885,42 +885,42 @@ export default function SettingsPage() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#6B6B80] mb-2">Du</label>
+              <label className="block text-sm font-medium text-gray-500 mb-2">Du</label>
               <Input
                 type="date"
                 value={logStartDate}
                 onChange={(e) => setLogStartDate(e.target.value)}
-                className="bg-[#0A0A0F] border-[#1F1F2E]"
+                className="bg-white border-gray-200"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#6B6B80] mb-2">Au</label>
+              <label className="block text-sm font-medium text-gray-500 mb-2">Au</label>
               <Input
                 type="date"
                 value={logEndDate}
                 onChange={(e) => setLogEndDate(e.target.value)}
-                className="bg-[#0A0A0F] border-[#1F1F2E]"
+                className="bg-white border-gray-200"
               />
             </div>
           </div>
 
-          <div className="overflow-x-auto border border-[#1F1F2E] rounded-lg">
+          <div className="overflow-x-auto border border-gray-200 rounded-lg">
             <table className="w-full text-sm">
-              <thead className="bg-[#1A1A25] border-b border-[#1F1F2E]">
+              <thead className="bg-gray-100 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-[#6B6B80] font-medium">Date</th>
-                  <th className="px-4 py-3 text-left text-[#6B6B80] font-medium">Action</th>
-                  <th className="px-4 py-3 text-left text-[#6B6B80] font-medium">IP</th>
-                  <th className="px-4 py-3 text-left text-[#6B6B80] font-medium">Navigateur</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">Date</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">Action</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">IP</th>
+                  <th className="px-4 py-3 text-left text-gray-500 font-medium">Navigateur</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1F1F2E]">
+              <tbody className="divide-y divide-gray-200">
                 {activityLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-[#1A1A25] transition-colors">
-                    <td className="px-4 py-3 text-[#F0F0F5] font-mono text-xs">{log.date}</td>
-                    <td className="px-4 py-3 text-[#F0F0F5]">{log.action}</td>
-                    <td className="px-4 py-3 text-[#F0F0F5] font-mono text-xs">{log.ip}</td>
-                    <td className="px-4 py-3 text-[#6B6B80]">{log.browser}</td>
+                  <tr key={log.id} className="hover:bg-gray-100 transition-colors">
+                    <td className="px-4 py-3 text-gray-900 font-mono text-xs">{log.date}</td>
+                    <td className="px-4 py-3 text-gray-900">{log.action}</td>
+                    <td className="px-4 py-3 text-gray-900 font-mono text-xs">{log.ip}</td>
+                    <td className="px-4 py-3 text-gray-500">{log.browser}</td>
                   </tr>
                 ))}
               </tbody>
@@ -942,13 +942,13 @@ export default function SettingsPage() {
           {/* Pending Invitations */}
           {pendingInvitations.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-[#F0F0F5]">Invitations en attente</h4>
+              <h4 className="text-sm font-medium text-gray-900">Invitations en attente</h4>
               <div className="space-y-2">
                 {pendingInvitations.map((invite) => (
-                  <div key={invite.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+                  <div key={invite.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-100">
                     <div className="flex-1">
-                      <p className="font-medium text-[#F0F0F5]">{invite.email}</p>
-                      <p className="text-xs text-[#6B6B80]">
+                      <p className="font-medium text-gray-900">{invite.email}</p>
+                      <p className="text-xs text-gray-500">
                         Rôle: {invite.role} • {invite.status}
                         {invite.status === 'En attente' && ` • Expire le ${invite.expiryDate}`}
                       </p>
@@ -960,7 +960,7 @@ export default function SettingsPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleResendInvitation(invite.id)}
-                            className="text-[#00E5CC] hover:text-[#00E5CC]"
+                            className="text-blue-600 hover:text-blue-600"
                           >
                             <Send size={14} />
                           </Button>
@@ -968,7 +968,7 @@ export default function SettingsPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleCancelInvitation(invite.id)}
-                            className="text-[#FF4D6A] hover:text-[#FF4D6A]"
+                            className="text-red-500 hover:text-red-500"
                           >
                             <X size={14} />
                           </Button>
@@ -982,9 +982,9 @@ export default function SettingsPage() {
           )}
 
           {/* Email Invitation Form */}
-          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25]">
+          <div className="space-y-3 p-4 border border-gray-200 rounded-lg bg-gray-100">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-medium text-[#F0F0F5]">Inviter par e-mail</h4>
+              <h4 className="text-sm font-medium text-gray-900">Inviter par e-mail</h4>
               <Button
                 size="sm"
                 variant="ghost"
@@ -997,21 +997,21 @@ export default function SettingsPage() {
             {showInviteForm && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-2">Adresse email</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-2">Adresse email</label>
                   <Input
                     type="email"
                     placeholder="collaborateur@example.com"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    className="bg-[#0A0A0F] border-[#1F1F2E]"
+                    className="bg-white border-gray-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-2">Rôle</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-2">Rôle</label>
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value)}
-                    className="w-full rounded-md border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5]"
+                    className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900"
                   >
                     <option>Opérateur</option>
                     <option>Superviseur</option>
@@ -1021,7 +1021,7 @@ export default function SettingsPage() {
                 <Button
                   onClick={handleInviteCollaborator}
                   disabled={!inviteEmail.trim()}
-                  className="w-full bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80"
+                  className="w-full bg-blue-600 text-white hover:bg-blue-600/80"
                 >
                   <Send size={16} className="mr-2" />
                   Envoyer l'invitation
@@ -1032,22 +1032,22 @@ export default function SettingsPage() {
 
           {/* Current Collaborators */}
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-[#F0F0F5]">Collaborateurs actuels</h4>
+            <h4 className="text-sm font-medium text-gray-900">Collaborateurs actuels</h4>
             {collabsLoading ? (
-              <p className="text-sm text-[#6B6B80]">Chargement...</p>
+              <p className="text-sm text-gray-500">Chargement...</p>
             ) : collaborators.length > 0 ? (
               <div className="space-y-2">
                 {collaborators.map((collab) => (
-                  <div key={collab.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] rounded-lg hover:bg-[#1A1A25]">
+                  <div key={collab.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-100">
                     <div className="flex-1">
-                      <p className="font-medium text-[#F0F0F5]">{collab.name}</p>
-                      <p className="text-xs text-[#6B6B80]">{collab.email}</p>
+                      <p className="font-medium text-gray-900">{collab.name}</p>
+                      <p className="text-xs text-gray-500">{collab.email}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <select
                         value={collab.role}
                         onChange={(e) => handleUpdateCollaboratorRole(collab.id, e.target.value)}
-                        className="rounded-md border border-[#1F1F2E] bg-[#1A1A25] px-2 py-1 text-xs text-[#F0F0F5]"
+                        className="rounded-md border border-gray-200 bg-gray-100 px-2 py-1 text-xs text-gray-900"
                       >
                         <option>Opérateur</option>
                         <option>Superviseur</option>
@@ -1057,7 +1057,7 @@ export default function SettingsPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleDeleteCollaborator(collab.id)}
-                        className="text-[#FF4D6A] hover:text-[#FF4D6A]"
+                        className="text-red-500 hover:text-red-500"
                       >
                         <Trash2 size={14} />
                       </Button>
@@ -1066,7 +1066,7 @@ export default function SettingsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-[#6B6B80]">Aucun collaborateur pour le moment</p>
+              <p className="text-sm text-gray-500">Aucun collaborateur pour le moment</p>
             )}
           </div>
         </CardContent>
@@ -1083,11 +1083,11 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {orgLoading ? (
-            <p className="text-sm text-[#6B6B80]">Chargement...</p>
+            <p className="text-sm text-gray-500">Chargement...</p>
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-[#6B6B80]">Nom de l'organisation</label>
+                <label className="block text-sm font-medium text-gray-500">Nom de l'organisation</label>
                 <Input
                   type="text"
                   value={organization.name}
@@ -1097,7 +1097,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#6B6B80]">Adresse</label>
+                <label className="block text-sm font-medium text-gray-500">Adresse</label>
                 <Input
                   type="text"
                   value={organization.address}
@@ -1107,7 +1107,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#6B6B80]">Téléphone</label>
+                <label className="block text-sm font-medium text-gray-500">Téléphone</label>
                 <Input
                   type="text"
                   value={organization.phone}
@@ -1141,25 +1141,25 @@ export default function SettingsPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium text-[#6B6B80]">Alertes email</label>
-                <p className="text-xs text-[#6B6B80]">Recevoir les alertes par email</p>
+                <label className="text-sm font-medium text-gray-500">Alertes email</label>
+                <p className="text-xs text-gray-500">Recevoir les alertes par email</p>
               </div>
               <input type="checkbox" defaultChecked className="h-4 w-4" />
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium text-[#6B6B80]">Notifications push</label>
-                <p className="text-xs text-[#6B6B80]">Configurer l'app mobile</p>
+                <label className="text-sm font-medium text-gray-500">Notifications push</label>
+                <p className="text-xs text-gray-500">Configurer l'app mobile</p>
               </div>
               <input type="checkbox" disabled className="h-4 w-4" />
             </div>
           </div>
 
           {/* Quiet Hours Section */}
-          <div className="pt-4 border-t border-[#1F1F2E] space-y-3">
+          <div className="pt-4 border-t border-gray-200 space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-[#6B6B80]">Heures silencieuses</label>
+              <label className="text-sm font-medium text-gray-500">Heures silencieuses</label>
               <input
                 type="checkbox"
                 checked={quietHoursEnabled}
@@ -1168,25 +1168,25 @@ export default function SettingsPage() {
               />
             </div>
             {quietHoursEnabled && (
-              <div className="space-y-3 p-3 bg-[#1A1A25] rounded-lg">
-                <p className="text-xs text-[#6B6B80]">Aucune notification ne sera envoyée pendant ces heures</p>
+              <div className="space-y-3 p-3 bg-gray-100 rounded-lg">
+                <p className="text-xs text-gray-500">Aucune notification ne sera envoyée pendant ces heures</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-[#6B6B80] mb-1">De</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">De</label>
                     <input
                       type="time"
                       value={quietHoursStart}
                       onChange={(e) => setQuietHoursStart(e.target.value)}
-                      className="w-full rounded-md border border-[#1F1F2E] px-2 py-2 text-sm"
+                      className="w-full rounded-md border border-gray-200 px-2 py-2 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#6B6B80] mb-1">À</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">À</label>
                     <input
                       type="time"
                       value={quietHoursEnd}
                       onChange={(e) => setQuietHoursEnd(e.target.value)}
-                      className="w-full rounded-md border border-[#1F1F2E] px-2 py-2 text-sm"
+                      className="w-full rounded-md border border-gray-200 px-2 py-2 text-sm"
                     />
                   </div>
                 </div>
@@ -1194,7 +1194,7 @@ export default function SettingsPage() {
                   onClick={handleSaveQuietHours}
                   disabled={quietHoursSaving}
                   size="sm"
-                  className="w-full gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
+                  className="w-full gap-2 bg-white hover:bg-gray-50 text-white"
                 >
                   {quietHoursSaved ? (
                     <><Check size={14} /> Enregistré</>
@@ -1224,7 +1224,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-[#6B6B80]">Activer la marque blanche</label>
+              <label className="text-sm font-medium text-gray-500">Activer la marque blanche</label>
               <input
                 type="checkbox"
                 checked={whiteLabelEnabled}
@@ -1236,7 +1236,7 @@ export default function SettingsPage() {
             {whiteLabelEnabled && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">URL du logo</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">URL du logo</label>
                   <Input
                     type="url"
                     value={whiteLabel.logoUrl}
@@ -1246,7 +1246,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Nom de l'entreprise</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Nom de l'entreprise</label>
                   <Input
                     type="text"
                     value={whiteLabel.companyName}
@@ -1256,13 +1256,13 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Couleur primaire</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Couleur primaire</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       value={whiteLabel.primaryColor}
                       onChange={(e) => setWhiteLabel({...whiteLabel, primaryColor: e.target.value})}
-                      className="h-10 w-20 rounded border border-[#1F1F2E] cursor-pointer"
+                      className="h-10 w-20 rounded border border-gray-200 cursor-pointer"
                     />
                     <Input
                       type="text"
@@ -1275,7 +1275,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Domaine personnalisé</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Domaine personnalisé</label>
                   <Input
                     type="text"
                     value={whiteLabel.customDomain}
@@ -1287,7 +1287,7 @@ export default function SettingsPage() {
                 <Button
                   onClick={handleSaveWhiteLabel}
                   disabled={whiteLabelSaving}
-                  className="w-full gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
+                  className="w-full gap-2 bg-white hover:bg-gray-50 text-white"
                 >
                   {whiteLabelSaved ? (
                     <><Check size={16} /> Enregistré</>
@@ -1314,11 +1314,11 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Flespi */}
-          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
+          <div className="space-y-3 p-4 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${providers.flespi.enabled ? 'bg-green-500' : 'bg-[#1F1F2E]'}`} />
-                <label className="font-medium text-[#F0F0F5]">Flespi</label>
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.flespi.enabled ? 'bg-green-500' : 'bg-gray-50'}`} />
+                <label className="font-medium text-gray-900">Flespi</label>
               </div>
               <input
                 type="checkbox"
@@ -1330,7 +1330,7 @@ export default function SettingsPage() {
             {providers.flespi.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Token API</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Token API</label>
                   <Input
                     type="password"
                     placeholder="Entrer le token API Flespi"
@@ -1339,7 +1339,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">ID du canal</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">ID du canal</label>
                   <Input
                     type="text"
                     placeholder="Entrer l'ID du canal"
@@ -1352,11 +1352,11 @@ export default function SettingsPage() {
           </div>
 
           {/* Echoes */}
-          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
+          <div className="space-y-3 p-4 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${providers.echoes.enabled ? 'bg-green-500' : 'bg-[#1F1F2E]'}`} />
-                <label className="font-medium text-[#F0F0F5]">Echoes</label>
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.echoes.enabled ? 'bg-green-500' : 'bg-gray-50'}`} />
+                <label className="font-medium text-gray-900">Echoes</label>
               </div>
               <input
                 type="checkbox"
@@ -1368,7 +1368,7 @@ export default function SettingsPage() {
             {providers.echoes.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">URL API</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">URL API</label>
                   <Input
                     type="text"
                     placeholder="https://api.echoes.com"
@@ -1377,7 +1377,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Clé de confidentialité</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Clé de confidentialité</label>
                   <Input
                     type="password"
                     placeholder="Entrer la clé de confidentialité"
@@ -1390,11 +1390,11 @@ export default function SettingsPage() {
           </div>
 
           {/* KeepTrace */}
-          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
+          <div className="space-y-3 p-4 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${providers.keeptrace.enabled ? 'bg-green-500' : 'bg-[#1F1F2E]'}`} />
-                <label className="font-medium text-[#F0F0F5]">KeepTrace</label>
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.keeptrace.enabled ? 'bg-green-500' : 'bg-gray-50'}`} />
+                <label className="font-medium text-gray-900">KeepTrace</label>
               </div>
               <input
                 type="checkbox"
@@ -1405,7 +1405,7 @@ export default function SettingsPage() {
             </div>
             {providers.keeptrace.enabled && (
               <div>
-                <label className="block text-sm font-medium text-[#6B6B80] mb-1">Clé API</label>
+                <label className="block text-sm font-medium text-gray-500 mb-1">Clé API</label>
                 <Input
                   type="password"
                   placeholder="Entrer la clé API KeepTrace"
@@ -1417,11 +1417,11 @@ export default function SettingsPage() {
           </div>
 
           {/* Ubiwan */}
-          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
+          <div className="space-y-3 p-4 border border-gray-200 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${providers.ubiwan.enabled ? 'bg-green-500' : 'bg-[#1F1F2E]'}`} />
-                <label className="font-medium text-[#F0F0F5]">Ubiwan</label>
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.ubiwan.enabled ? 'bg-green-500' : 'bg-gray-50'}`} />
+                <label className="font-medium text-gray-900">Ubiwan</label>
               </div>
               <input
                 type="checkbox"
@@ -1433,7 +1433,7 @@ export default function SettingsPage() {
             {providers.ubiwan.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">URL du point d'accès</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">URL du point d'accès</label>
                   <Input
                     type="text"
                     placeholder="https://api.ubiwan.com"
@@ -1442,7 +1442,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Identifiants</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Identifiants</label>
                   <Input
                     type="password"
                     placeholder="Entrer les identifiants"
@@ -1459,7 +1459,7 @@ export default function SettingsPage() {
             <Button
               onClick={handleSaveProviders}
               disabled={providersSaving}
-              className="gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
+              className="gap-2 bg-white hover:bg-gray-50 text-white"
             >
               {providersSaved ? (
                 <><Check size={16} /> Enregistré</>
@@ -1472,9 +1472,9 @@ export default function SettingsPage() {
           </div>
 
           {/* Custom GPS Providers Section */}
-          <div className="border-t border-[#1F1F2E] pt-6">
+          <div className="border-t border-gray-200 pt-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-[#F0F0F5]">Fournisseurs personnalisés</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Fournisseurs personnalisés</h3>
               <Button
                 size="sm"
                 variant="outline"
@@ -1487,9 +1487,9 @@ export default function SettingsPage() {
             </div>
 
             {showAddCustomProvider && (
-              <div className="space-y-4 p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25] mb-4">
+              <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-100 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Nom du fournisseur</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Nom du fournisseur</label>
                   <Input
                     type="text"
                     placeholder="Ex: MonFournisseur GPS"
@@ -1498,18 +1498,18 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Type de connexion</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Type de connexion</label>
                   <select
                     value={newCustomProvider.type}
                     onChange={(e) => setNewCustomProvider({ ...newCustomProvider, type: e.target.value as 'HTTP' | 'MQTT' })}
-                    className="w-full rounded-md border border-[#1F1F2E] bg-white px-3 py-2 text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
+                    className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100"
                   >
                     <option value="HTTP">HTTP / REST</option>
                     <option value="MQTT">MQTT</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">URL du point d'accès</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">URL du point d'accès</label>
                   <Input
                     type="text"
                     placeholder="https://api.example.com/gps"
@@ -1518,7 +1518,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Clé API</label>
+                  <label className="block text-sm font-medium text-gray-500 mb-1">Clé API</label>
                   <Input
                     type="password"
                     placeholder="Entrer votre clé API"
@@ -1552,15 +1552,15 @@ export default function SettingsPage() {
             {customProviders.length > 0 && (
               <div className="space-y-2">
                 {customProviders.map((provider) => (
-                  <div key={provider.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] rounded-lg">
+                  <div key={provider.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-[#F0F0F5]">{provider.name}</p>
-                      <p className="text-xs text-[#6B6B80]">{provider.type} • {provider.endpoint}</p>
+                      <p className="text-sm font-medium text-gray-900">{provider.name}</p>
+                      <p className="text-xs text-gray-500">{provider.type} • {provider.endpoint}</p>
                     </div>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-[#FF4D6A] hover:text-[#FF4D6A] hover:bg-[#1A1A25]"
+                      className="text-red-500 hover:text-red-500 hover:bg-gray-100"
                       onClick={() => provider.id && handleDeleteCustomProvider(provider.id)}
                     >
                       <Trash2 size={14} />
@@ -1584,7 +1584,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-2">Votre clé API</label>
+            <label className="block text-sm font-medium text-gray-500 mb-2">Votre clé API</label>
             <div className="flex gap-2">
               <Input
                 type={showApiKey ? 'text' : 'password'}
@@ -1609,7 +1609,7 @@ export default function SettingsPage() {
                 <Copy size={16} />
               </Button>
             </div>
-            <p className="text-xs text-[#6B6B80] mt-2">Gardez votre clé API en sécurité. Ne la partagez jamais.</p>
+            <p className="text-xs text-gray-500 mt-2">Gardez votre clé API en sécurité. Ne la partagez jamais.</p>
           </div>
           <Button
             variant="destructive"
@@ -1633,11 +1633,11 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Période de conservation de l'historique GPS</label>
+            <label className="block text-sm font-medium text-gray-500 mb-3">Période de conservation de l'historique GPS</label>
             <select
               value={dataRetention}
               onChange={(e) => setDataRetention(e.target.value)}
-              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 w-full text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
+              className="rounded-md border border-gray-200 bg-white px-4 py-2 w-full text-sm font-medium text-gray-500 hover:bg-gray-100"
             >
               <option value="30">30 jours</option>
               <option value="60">60 jours</option>
@@ -1645,14 +1645,14 @@ export default function SettingsPage() {
               <option value="180">180 jours</option>
               <option value="365">1 an</option>
             </select>
-            <p className="text-xs text-[#6B6B80] mt-2">
+            <p className="text-xs text-gray-500 mt-2">
               Les données plus anciennes que la période sélectionnée seront automatiquement supprimées.
             </p>
           </div>
           <Button
             onClick={handleSaveDataRetention}
             disabled={dataRetentionSaving}
-            className="w-full gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
+            className="w-full gap-2 bg-white hover:bg-gray-50 text-white"
           >
             {dataRetentionSaved ? (
               <><Check size={16} /> Enregistré</>
@@ -1677,7 +1677,7 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#6B6B80] mb-1">Latitude du centre</label>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Latitude du centre</label>
               <Input
                 type="text"
                 value={mapDefaults.centerLat}
@@ -1686,7 +1686,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#6B6B80] mb-1">Longitude du centre</label>
+              <label className="block text-sm font-medium text-gray-500 mb-1">Longitude du centre</label>
               <Input
                 type="text"
                 value={mapDefaults.centerLng}
@@ -1696,7 +1696,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-1">Niveau de zoom par défaut</label>
+            <label className="block text-sm font-medium text-gray-500 mb-1">Niveau de zoom par défaut</label>
             <Input
               type="text"
               value={mapDefaults.zoom}
@@ -1705,11 +1705,11 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#6B6B80] mb-1">Couche de tuiles</label>
+            <label className="block text-sm font-medium text-gray-500 mb-1">Couche de tuiles</label>
             <select
               value={mapDefaults.tileLayer}
               onChange={(e) => handleMapDefaultChange('tileLayer', e.target.value)}
-              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 w-full text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
+              className="rounded-md border border-gray-200 bg-white px-4 py-2 w-full text-sm font-medium text-gray-500 hover:bg-gray-100"
             >
               <option value="streets">Mapbox Plan (streets-v12)</option>
               <option value="satellite">Mapbox Satellite (satellite-streets-v12)</option>
@@ -1720,7 +1720,7 @@ export default function SettingsPage() {
           <Button
             onClick={handleSaveMapDefaults}
             disabled={mapDefaultsSaving}
-            className="w-full gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
+            className="w-full gap-2 bg-white hover:bg-gray-50 text-white"
           >
             {mapDefaultsSaved ? (
               <><Check size={16} /> Enregistré</>
@@ -1736,10 +1736,10 @@ export default function SettingsPage() {
       {/* Danger zone */}
       <Card className="border-red-200">
         <CardHeader>
-          <CardTitle className="text-[#FF4D6A]">Zone dangereuse</CardTitle>
+          <CardTitle className="text-red-500">Zone dangereuse</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-[#6B6B80]">La suppression de votre compte est irréversible. Soyez certain de votre choix.</p>
+          <p className="text-sm text-gray-500">La suppression de votre compte est irréversible. Soyez certain de votre choix.</p>
           <Button variant="destructive" className="w-full">
             Supprimer le compte
           </Button>

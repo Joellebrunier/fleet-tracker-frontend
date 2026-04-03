@@ -109,21 +109,21 @@ export default function NotificationCenter() {
   }, [])
 
   const getNotificationColor = (type: string, severity?: string) => {
-    if (severity === 'critical') return 'text-[#FF4D6A]'
-    if (severity === 'high') return 'text-[#FFB547]'
-    if (type === 'alert') return 'text-[#FF4D6A]'
-    if (type === 'location') return 'text-[#00E5CC]'
-    if (type === 'status') return 'text-[#FFB547]'
-    return 'text-[#6B6B80]'
+    if (severity === 'critical') return 'text-[#DC2626]'
+    if (severity === 'high') return 'text-[#B45309]'
+    if (type === 'alert') return 'text-[#DC2626]'
+    if (type === 'location') return 'text-[#0891B2]'
+    if (type === 'status') return 'text-[#B45309]'
+    return 'text-[#6B7280]'
   }
 
   const getNotificationBgColor = (type: string, severity?: string) => {
-    if (severity === 'critical') return 'bg-[rgba(255,77,106,0.15)]'
-    if (severity === 'high') return 'bg-[rgba(255,181,71,0.15)]'
-    if (type === 'alert') return 'bg-[rgba(255,77,106,0.15)]'
-    if (type === 'location') return 'bg-[rgba(0,229,204,0.15)]'
-    if (type === 'status') return 'bg-[rgba(255,181,71,0.15)]'
-    return 'bg-[rgba(107,107,128,0.15)]'
+    if (severity === 'critical') return 'bg-[#FEE2E2]'
+    if (severity === 'high') return 'bg-[#FFFBEB]'
+    if (type === 'alert') return 'bg-[#FEE2E2]'
+    if (type === 'location') return 'bg-[#CFFAFE]'
+    if (type === 'status') return 'bg-[#FFFBEB]'
+    return 'bg-[#F3F4F6]'
   }
 
   return (
@@ -131,11 +131,11 @@ export default function NotificationCenter() {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative text-[#6B6B80] hover:text-[#F0F0F5] transition-colors"
+        className="relative text-[#6B7280] hover:text-[#1F2937] transition-colors"
       >
         <Bell size={20} />
         {store.unreadCount > 0 && (
-          <span className="absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FF4D6A] text-xs font-bold text-white">
+          <span className="absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#EF4444] text-xs font-bold text-white">
             {store.unreadCount > 9 ? '9+' : store.unreadCount}
           </span>
         )}
@@ -143,14 +143,14 @@ export default function NotificationCenter() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 max-h-96 rounded-lg border border-[#1F1F2E] bg-[#12121A] shadow-lg overflow-hidden flex flex-col">
+        <div className="absolute right-0 mt-2 w-96 max-h-96 rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] shadow-lg overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F1F2E] bg-[#0A0A0F]">
-            <h3 className="font-semibold text-[#F0F0F5]">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-[#F9FAFB]">
+            <h3 className="font-semibold text-[#1F2937]">Notifications</h3>
             {store.unreadCount > 0 && (
               <button
                 onClick={() => store.markAllAsRead()}
-                className="text-xs text-[#00E5CC] hover:text-[#00D4B8] font-medium"
+                className="text-xs text-[#4361EE] hover:text-[#3651DE] font-medium"
               >
                 Mark all as read
               </button>
@@ -163,8 +163,8 @@ export default function NotificationCenter() {
               store.notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`border-b border-[#1F1F2E] p-3 hover:bg-[#1A1A25] transition-colors cursor-pointer ${
-                    notification.read ? 'bg-[#12121A]' : 'bg-[rgba(0,229,204,0.08)]'
+                  className={`border-b border-[#E5E7EB] p-3 hover:bg-[#F9FAFB] transition-colors cursor-pointer ${
+                    notification.read ? 'bg-[#FFFFFF]' : 'bg-[#F0F9FF]'
                   }`}
                   onClick={() => store.markAsRead(notification.id)}
                 >
@@ -190,18 +190,18 @@ export default function NotificationCenter() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-sm font-medium text-[#F0F0F5]">
+                          <p className="text-sm font-medium text-[#1F2937]">
                             {notification.title}
                           </p>
-                          <p className="text-xs text-[#6B6B80] mt-0.5 line-clamp-2">
+                          <p className="text-xs text-[#6B7280] mt-0.5 line-clamp-2">
                             {notification.message}
                           </p>
                         </div>
                         {!notification.read && (
-                          <div className="flex-shrink-0 h-2 w-2 rounded-full bg-[#00E5CC] mt-1" />
+                          <div className="flex-shrink-0 h-2 w-2 rounded-full bg-[#4361EE] mt-1" />
                         )}
                       </div>
-                      <p className="text-xs text-[#44445A] mt-1">
+                      <p className="text-xs text-[#9CA3AF] mt-1">
                         {formatTimeAgo(notification.timestamp)}
                       </p>
                     </div>
@@ -212,7 +212,7 @@ export default function NotificationCenter() {
                         e.stopPropagation()
                         store.removeNotification(notification.id)
                       }}
-                      className="flex-shrink-0 text-[#44445A] hover:text-[#6B6B80] p-1"
+                      className="flex-shrink-0 text-[#9CA3AF] hover:text-[#6B7280] p-1"
                     >
                       <X size={14} />
                     </button>
@@ -221,16 +221,16 @@ export default function NotificationCenter() {
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Bell size={24} className="text-[#44445A] mb-2" />
-                <p className="text-sm text-[#6B6B80]">No notifications</p>
+                <Bell size={24} className="text-[#9CA3AF] mb-2" />
+                <p className="text-sm text-[#6B7280]">No notifications</p>
               </div>
             )}
           </div>
 
           {/* Footer */}
           {store.notifications.length > 0 && (
-            <div className="px-4 py-3 border-t border-[#1F1F2E] bg-[#0A0A0F]">
-              <button className="w-full text-center text-sm font-medium text-[#00E5CC] hover:text-[#00D4B8]">
+            <div className="px-4 py-3 border-t border-[#E5E7EB] bg-[#F9FAFB]">
+              <button className="w-full text-center text-sm font-medium text-[#4361EE] hover:text-[#3651DE]">
                 View all notifications
               </button>
             </div>

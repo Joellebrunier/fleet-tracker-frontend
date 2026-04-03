@@ -73,24 +73,24 @@ const COLOR_OPTIONS = [
 ]
 
 const DARK_COLOR_OPTIONS = [
-  { value: 'bg-[rgba(255,77,106,0.12)] text-[#FF4D6A]', label: 'Red' },
-  { value: 'bg-[rgba(255,181,71,0.12)] text-[#FFB547]', label: 'Orange' },
-  { value: 'bg-[rgba(255,181,71,0.12)] text-[#FFB547]', label: 'Amber' },
-  { value: 'bg-[rgba(255,181,71,0.12)] text-[#FFB547]', label: 'Yellow' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Lime' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Green' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Emerald' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Teal' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Cyan' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Sky' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Blue' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Indigo' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Violet' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Purple' },
-  { value: 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]', label: 'Fuchsia' },
-  { value: 'bg-[rgba(255,77,106,0.12)] text-[#FF4D6A]', label: 'Pink' },
-  { value: 'bg-[rgba(255,77,106,0.12)] text-[#FF4D6A]', label: 'Rose' },
-  { value: 'bg-[rgba(107,107,128,0.12)] text-[#6B6B80]', label: 'Slate' },
+  { value: 'bg-[rgba(255,77,106,0.12)] text-red-500', label: 'Red' },
+  { value: 'bg-[rgba(255,181,71,0.12)] text-amber-500', label: 'Orange' },
+  { value: 'bg-[rgba(255,181,71,0.12)] text-amber-500', label: 'Amber' },
+  { value: 'bg-[rgba(255,181,71,0.12)] text-amber-500', label: 'Yellow' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Lime' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Green' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Emerald' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Teal' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Cyan' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Sky' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Blue' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Indigo' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Violet' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Purple' },
+  { value: 'bg-[rgba(0,229,204,0.12)] text-blue-600', label: 'Fuchsia' },
+  { value: 'bg-[rgba(255,77,106,0.12)] text-red-500', label: 'Pink' },
+  { value: 'bg-[rgba(255,77,106,0.12)] text-red-500', label: 'Rose' },
+  { value: 'bg-[rgba(107,107,128,0.12)] text-gray-500', label: 'Slate' },
 ]
 
 export default function VehicleGroupsPage() {
@@ -312,18 +312,18 @@ export default function VehicleGroupsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Groupes de véhicules</h1>
-          <p className="mt-1 text-sm text-[#6B6B80]">
+          <h1 className="text-3xl font-bold text-gray-900 font-sans">Groupes de véhicules</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Organisez les véhicules de votre flotte en groupes hiérarchiques et gérez les attributions
           </p>
         </div>
         <Button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+          className="flex items-center gap-2 bg-blue-600 text-white font-bold hover:bg-[#3B82F6]"
         >
           <FolderPlus className="h-4 w-4" />
           Nouveau groupe
@@ -332,10 +332,10 @@ export default function VehicleGroupsPage() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-[#6B6B80]" />
+        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
         <Input
           placeholder="Rechercher des groupes..."
-          className="pl-10 bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+          className="pl-10 bg-white border-gray-200 text-gray-900 rounded-lg focus:border-blue-600 placeholder-[#9CA3AF]"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -345,27 +345,27 @@ export default function VehicleGroupsPage() {
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+            <Card key={i} className="bg-white border border-gray-200 rounded-xl">
               <CardHeader>
-                <Skeleton className="h-6 w-2/3 bg-[#1A1A25]" />
+                <Skeleton className="h-6 w-2/3 bg-gray-100" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-4 w-full bg-[#1A1A25]" />
+                <Skeleton className="h-4 w-full bg-gray-100" />
               </CardContent>
             </Card>
           ))}
         </div>
       ) : error ? (
-        <Card className="border-[#FF4D6A] bg-rgba(255, 77, 106, 0.1)">
+        <Card className="border-red-500 bg-rgba(255, 77, 106, 0.1)">
           <CardContent className="pt-6">
-            <p className="text-[#FF4D6A]">Failed to load vehicle groups</p>
+            <p className="text-red-500">Failed to load vehicle groups</p>
           </CardContent>
         </Card>
       ) : filteredGroups.length === 0 ? (
-        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+        <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Folder className="mb-4 h-12 w-12 text-[#44445A]" />
-            <p className="text-[#6B6B80]">
+            <Folder className="mb-4 h-12 w-12 text-[#9CA3AF]" />
+            <p className="text-gray-500">
               {searchQuery
                 ? 'Aucun groupe ne correspond à votre recherche'
                 : 'Aucun groupe de véhicules. Créez-en un pour organiser votre flotte.'}
@@ -382,14 +382,14 @@ export default function VehicleGroupsPage() {
 
             return (
               <div key={group.id} className="space-y-2">
-                <Card className="overflow-hidden transition-shadow hover:shadow-md bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D]">
+                <Card className="overflow-hidden transition-shadow hover:shadow-md bg-white border border-gray-200 rounded-xl hover:border-[#E5E7EB]">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-3 flex-1 min-w-0">
                         {/* Drag Handle */}
                         <button
                           onMouseDown={() => setDraggedGroupId(group.id)}
-                          className="mt-1 p-0 text-[#6B6B80] hover:text-[#F0F0F5] cursor-grab active:cursor-grabbing flex-shrink-0"
+                          className="mt-1 p-0 text-gray-500 hover:text-gray-900 cursor-grab active:cursor-grabbing flex-shrink-0"
                         >
                           <GripVertical className="h-5 w-5" />
                         </button>
@@ -398,7 +398,7 @@ export default function VehicleGroupsPage() {
                         {(childGroups.length > 0 || group.vehicleCount > 0) && (
                           <button
                             onClick={() => toggleExpandedGroup(group.id)}
-                            className="mt-1 p-0 text-[#6B6B80] hover:text-[#F0F0F5] flex-shrink-0"
+                            className="mt-1 p-0 text-gray-500 hover:text-gray-900 flex-shrink-0"
                           >
                             {isExpanded ? (
                               <ChevronDown className="h-5 w-5" />
@@ -411,13 +411,13 @@ export default function VehicleGroupsPage() {
                         {/* Group Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2">
-                            <Folder className="h-5 w-5 text-[#44445A] flex-shrink-0" />
-                            <CardTitle className="truncate font-syne text-[#F0F0F5]">
+                            <Folder className="h-5 w-5 text-[#9CA3AF] flex-shrink-0" />
+                            <CardTitle className="truncate font-sans text-gray-900">
                               {group.name}
                             </CardTitle>
                           </div>
                           {group.description && (
-                            <p className="text-sm text-[#6B6B80] line-clamp-2">
+                            <p className="text-sm text-gray-500 line-clamp-2">
                               {group.description}
                             </p>
                           )}
@@ -428,7 +428,7 @@ export default function VehicleGroupsPage() {
                       {group.color && (
                         <div className="flex-shrink-0">
                           <div
-                            className={`h-8 w-8 rounded-full border-2 border-[#1F1F2E] ${DARK_COLOR_OPTIONS[10].value}`}
+                            className={`h-8 w-8 rounded-full border-2 border-gray-200 ${DARK_COLOR_OPTIONS[10].value}`}
                           />
                         </div>
                       )}
@@ -437,27 +437,27 @@ export default function VehicleGroupsPage() {
 
                   <CardContent className="pt-0">
                     {/* Statistics Bar */}
-                    <div className="grid grid-cols-4 gap-2 mb-4 p-3 bg-[#0A0A0F] rounded-[8px] border border-[#1F1F2E]">
+                    <div className="grid grid-cols-4 gap-2 mb-4 p-3 bg-white rounded-lg border border-gray-200">
                       <div className="text-center">
-                        <p className="text-xs text-[#6B6B80]">Km aujourd'hui</p>
-                        <p className="text-sm font-semibold text-[#00E5CC]">{stats.totalKmToday}</p>
+                        <p className="text-xs text-gray-500">Km aujourd'hui</p>
+                        <p className="text-sm font-semibold text-blue-600">{stats.totalKmToday}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-[#6B6B80]">Actifs</p>
-                        <p className="text-sm font-semibold text-[#00E5CC]">{stats.activeVehicles}</p>
+                        <p className="text-xs text-gray-500">Actifs</p>
+                        <p className="text-sm font-semibold text-blue-600">{stats.activeVehicles}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-[#6B6B80]">Alertes</p>
-                        <p className="text-sm font-semibold text-[#FF4D6A]">{stats.alertCount}</p>
+                        <p className="text-xs text-gray-500">Alertes</p>
+                        <p className="text-sm font-semibold text-red-500">{stats.alertCount}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-[#6B6B80]">Vit. moy.</p>
-                        <p className="text-sm font-semibold text-[#FFB547]">{stats.avgSpeed} km/h</p>
+                        <p className="text-xs text-gray-500">Vit. moy.</p>
+                        <p className="text-sm font-semibold text-amber-500">{stats.avgSpeed} km/h</p>
                       </div>
                     </div>
 
                     {/* Metadata */}
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-[#6B6B80] mb-4">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-4">
                       <div className="flex items-center gap-1">
                         <Hash className="h-4 w-4" />
                         <span>{group.vehicleCount} véhicule{group.vehicleCount !== 1 ? 's' : ''}</span>
@@ -468,7 +468,7 @@ export default function VehicleGroupsPage() {
                           <span>{childGroups.length} sous-groupe{childGroups.length !== 1 ? 's' : ''}</span>
                         </div>
                       )}
-                      <div className="text-xs text-[#44445A]">
+                      <div className="text-xs text-[#9CA3AF]">
                         Créé le {new Date(group.createdAt).toLocaleDateString('fr-FR')}
                       </div>
                     </div>
@@ -479,7 +479,7 @@ export default function VehicleGroupsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenModal(group)}
-                        className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+                        className="bg-gray-100 border border-gray-200 text-gray-900 hover:bg-gray-200"
                       >
                         <Edit2 className="h-4 w-4 mr-1" />
                         Modifier
@@ -488,7 +488,7 @@ export default function VehicleGroupsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedGroupForPermissions(group)}
-                        className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+                        className="bg-gray-100 border border-gray-200 text-gray-900 hover:bg-gray-200"
                       >
                         <Lock className="h-4 w-4 mr-1" />
                         Permissions
@@ -497,7 +497,7 @@ export default function VehicleGroupsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedGroupForBulkAssign(group.id)}
-                        className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+                        className="bg-gray-100 border border-gray-200 text-gray-900 hover:bg-gray-200"
                       >
                         <Users className="h-4 w-4 mr-1" />
                         Ajouter véhicules
@@ -505,7 +505,7 @@ export default function VehicleGroupsPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="bg-[#1A1A25] border border-[#1F1F2E] text-[#FF4D6A] hover:bg-[#2A2A3D]"
+                        className="bg-gray-100 border border-gray-200 text-red-500 hover:bg-gray-200"
                         onClick={() => handleDelete(group.id)}
                         disabled={deleteMutation.isPending}
                       >
@@ -518,26 +518,26 @@ export default function VehicleGroupsPage() {
 
                 {/* Expanded Content */}
                 {isExpanded && (
-                  <div className="ml-4 space-y-3 border-l-2 border-[#1F1F2E] pl-4">
+                  <div className="ml-4 space-y-3 border-l-2 border-gray-200 pl-4">
                     {/* Child Groups */}
                     {childGroups.length > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold text-[#6B6B80] uppercase">
+                        <h4 className="text-xs font-semibold text-gray-500 uppercase">
                           Sous-groupes
                         </h4>
                         {childGroups.map((childGroup) => (
-                          <Card key={childGroup.id} className="bg-[#0A0A0F] border border-[#1F1F2E] rounded-[12px]">
+                          <Card key={childGroup.id} className="bg-white border border-gray-200 rounded-xl">
                             <CardHeader className="pb-2">
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <Folder className="h-4 w-4 text-[#44445A] flex-shrink-0" />
+                                  <Folder className="h-4 w-4 text-[#9CA3AF] flex-shrink-0" />
                                   <div className="min-w-0">
-                                    <CardTitle className="text-sm truncate font-syne text-[#F0F0F5]">
+                                    <CardTitle className="text-sm truncate font-sans text-gray-900">
                                       {childGroup.name}
                                     </CardTitle>
                                   </div>
                                 </div>
-                                <Badge variant="secondary" className="flex-shrink-0 bg-[rgba(0,229,204,0.12)] text-[#00E5CC]">
+                                <Badge variant="secondary" className="flex-shrink-0 bg-[rgba(0,229,204,0.12)] text-blue-600">
                                   {childGroup.vehicleCount}
                                 </Badge>
                               </div>
@@ -550,7 +550,7 @@ export default function VehicleGroupsPage() {
                     {/* Vehicles in Group */}
                     {group.vehicleCount > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-semibold text-[#6B6B80] uppercase">
+                        <h4 className="text-xs font-semibold text-gray-500 uppercase">
                           Véhicules
                         </h4>
                         {vehicles.length > 0 ? (
@@ -558,18 +558,18 @@ export default function VehicleGroupsPage() {
                             {vehicles.map((vehicle) => (
                               <Card
                                 key={vehicle.id}
-                                className="bg-[#0A0A0F] border border-[#1F1F2E] rounded-[12px] overflow-hidden"
+                                className="bg-white border border-gray-200 rounded-xl overflow-hidden"
                               >
                                 <CardContent className="pt-3">
                                   <div className="space-y-1">
                                     <div className="flex items-start justify-between gap-2">
                                       <div className="min-w-0 flex-1">
-                                        <p className="font-medium text-[#F0F0F5] truncate">
+                                        <p className="font-medium text-gray-900 truncate">
                                           {vehicle.name}
                                         </p>
                                       </div>
                                     </div>
-                                    <div className="text-xs text-[#6B6B80] space-y-0.5">
+                                    <div className="text-xs text-gray-500 space-y-0.5">
                                       <div>
                                         <span className="font-semibold">VIN:</span>{' '}
                                         {vehicle.vin}
@@ -585,7 +585,7 @@ export default function VehicleGroupsPage() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-[#44445A] italic">
+                          <p className="text-sm text-[#9CA3AF] italic">
                             Aucun véhicule assigné pour le moment
                           </p>
                         )}
@@ -601,12 +601,12 @@ export default function VehicleGroupsPage() {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-lg bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="max-w-lg bg-white border-gray-200">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">
+            <DialogTitle className="text-gray-900 font-sans">
               {editingGroup ? 'Modifier le groupe de véhicules' : 'Créer un nouveau groupe de véhicules'}
             </DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">
+            <DialogDescription className="text-gray-500">
               {editingGroup
                 ? 'Mettez à jour les informations et paramètres du groupe'
                 : 'Créez un nouveau groupe de véhicules pour organiser votre flotte'}
@@ -615,19 +615,19 @@ export default function VehicleGroupsPage() {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 Nom du groupe
               </label>
               <Input
                 value={formData.name}
                 onChange={(e) => handleFormChange('name', e.target.value)}
                 placeholder="Ex: Flotte de livraison, Véhicules de service"
-                className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                className="bg-white border-gray-200 text-gray-900 rounded-lg focus:border-blue-600 placeholder-[#9CA3AF]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 Description
               </label>
               <Input
@@ -636,15 +636,15 @@ export default function VehicleGroupsPage() {
                   handleFormChange('description', e.target.value)
                 }
                 placeholder="Description optionnelle pour ce groupe"
-                className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                className="bg-white border-gray-200 text-gray-900 rounded-lg focus:border-blue-600 placeholder-[#9CA3AF]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 Couleur
               </label>
-              <p className="text-xs text-[#6B6B80] mb-3">
+              <p className="text-xs text-gray-500 mb-3">
                 Choisissez une couleur pour distinguer visuellement ce groupe
               </p>
               <div className="grid grid-cols-6 gap-2">
@@ -654,8 +654,8 @@ export default function VehicleGroupsPage() {
                     onClick={() => handleColorSelect(color.value)}
                     className={`h-8 rounded border-2 transition-transform ${
                       selectedVehicleColor === color.value
-                        ? 'ring-2 ring-[#00E5CC] scale-110 border-[#00E5CC]'
-                        : 'border-[#1F1F2E]'
+                        ? 'ring-2 ring-blue-600 scale-110 border-blue-600'
+                        : 'border-gray-200'
                     } ${color.value}`}
                     title={color.label}
                   />
@@ -665,7 +665,7 @@ export default function VehicleGroupsPage() {
 
             {groups.length > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">
+                <label className="text-sm font-medium text-gray-900">
                   Groupe parent (Optionnel)
                 </label>
                 <select
@@ -673,7 +673,7 @@ export default function VehicleGroupsPage() {
                   onChange={(e) =>
                     handleFormChange('parentGroupId', e.target.value)
                   }
-                  className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC] focus:outline-none focus:ring-1 focus:ring-[#00E5CC]"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder-[#9CA3AF] focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
                 >
                   <option value="">Aucun (Groupe racine)</option>
                   {groups
@@ -693,14 +693,14 @@ export default function VehicleGroupsPage() {
               variant="outline"
               onClick={handleCloseModal}
               disabled={upsertMutation.isPending}
-              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+              className="bg-gray-100 border border-gray-200 text-gray-900 hover:bg-gray-200"
             >
               Annuler
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={upsertMutation.isPending}
-              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+              className="bg-blue-600 text-white font-bold hover:bg-[#3B82F6]"
             >
               {upsertMutation.isPending
                 ? 'Enregistrement...'
@@ -714,18 +714,18 @@ export default function VehicleGroupsPage() {
 
       {/* Permissions Dialog */}
       <Dialog open={!!selectedGroupForPermissions} onOpenChange={() => setSelectedGroupForPermissions(null)}>
-        <DialogContent className="max-w-md bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="max-w-md bg-white border-gray-200">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">
+            <DialogTitle className="text-gray-900 font-sans">
               Permissions du groupe
             </DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">
+            <DialogDescription className="text-gray-500">
               {selectedGroupForPermissions?.name}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <p className="text-sm text-[#F0F0F5]">Rôles autorisés à accéder à ce groupe:</p>
+            <p className="text-sm text-gray-900">Rôles autorisés à accéder à ce groupe:</p>
 
             <div className="space-y-3">
               {[
@@ -733,7 +733,7 @@ export default function VehicleGroupsPage() {
                 { key: 'manager', label: 'Responsable' },
                 { key: 'operator', label: 'Opérateur' },
               ].map(role => (
-                <label key={role.key} className="flex items-center gap-3 cursor-pointer p-3 bg-[#0A0A0F] border border-[#1F1F2E] rounded-[8px] hover:border-[#00E5CC] transition-colors">
+                <label key={role.key} className="flex items-center gap-3 cursor-pointer p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-600 transition-colors">
                   <input
                     type="checkbox"
                     checked={permissions[role.key as keyof typeof permissions]}
@@ -745,7 +745,7 @@ export default function VehicleGroupsPage() {
                     }
                     className="rounded"
                   />
-                  <span className="text-[#F0F0F5]">{role.label}</span>
+                  <span className="text-gray-900">{role.label}</span>
                 </label>
               ))}
             </div>
@@ -755,13 +755,13 @@ export default function VehicleGroupsPage() {
             <Button
               variant="outline"
               onClick={() => setSelectedGroupForPermissions(null)}
-              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+              className="bg-gray-100 border border-gray-200 text-gray-900 hover:bg-gray-200"
             >
               Fermer
             </Button>
             <Button
               onClick={() => setSelectedGroupForPermissions(null)}
-              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+              className="bg-blue-600 text-white font-bold hover:bg-[#3B82F6]"
             >
               Enregistrer
             </Button>
@@ -771,12 +771,12 @@ export default function VehicleGroupsPage() {
 
       {/* Bulk Assign Vehicles Dialog */}
       <Dialog open={!!selectedGroupForBulkAssign} onOpenChange={() => setSelectedGroupForBulkAssign(null)}>
-        <DialogContent className="max-w-2xl bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="max-w-2xl bg-white border border-gray-200 rounded-xl shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">
+            <DialogTitle className="text-gray-900 font-sans">
               Ajouter des véhicules au groupe
             </DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">
+            <DialogDescription className="text-gray-500">
               Sélectionnez les véhicules à ajouter au groupe
             </DialogDescription>
           </DialogHeader>
@@ -787,7 +787,7 @@ export default function VehicleGroupsPage() {
                 <div className="grid grid-cols-1 gap-2">
                   {/* Mock vehicle list - replace with actual data */}
                   {[...Array(5)].map((_, i) => (
-                    <label key={i} className="flex items-center gap-3 cursor-pointer p-3 bg-[#0A0A0F] border border-[#1F1F2E] rounded-[8px] hover:border-[#00E5CC] transition-colors">
+                    <label key={i} className="flex items-center gap-3 cursor-pointer p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-600 transition-colors">
                       <input
                         type="checkbox"
                         checked={bulkAssignVehicleIds.has(`vehicle-${i}`)}
@@ -802,7 +802,7 @@ export default function VehicleGroupsPage() {
                         }}
                         className="rounded"
                       />
-                      <span className="text-[#F0F0F5]">Véhicule {i + 1}</span>
+                      <span className="text-gray-900">Véhicule {i + 1}</span>
                     </label>
                   ))}
                 </div>
@@ -814,14 +814,14 @@ export default function VehicleGroupsPage() {
             <Button
               variant="outline"
               onClick={() => setSelectedGroupForBulkAssign(null)}
-              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+              className="bg-gray-100 border border-gray-200 text-gray-900 hover:bg-gray-200"
             >
               Annuler
             </Button>
             <Button
               onClick={handleBulkAssignVehicles}
               disabled={bulkAssignMutation.isPending || bulkAssignVehicleIds.size === 0}
-              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+              className="bg-blue-600 text-white font-bold hover:bg-[#3B82F6]"
             >
               {bulkAssignMutation.isPending
                 ? 'Assignation...'

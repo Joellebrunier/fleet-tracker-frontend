@@ -31,34 +31,31 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0A0A0F] px-4">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&display=swap');
-      `}</style>
-      <Card className="w-full max-w-md bg-[#12121A] border border-[#1F1F2E] rounded-[12px] shadow-2xl relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#1E2A4A] to-[#2D3F6B] flex items-center justify-center px-4">
+      <Card className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 relative overflow-hidden">
         {/* Accent glow effect */}
         <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute inset-0 rounded-[12px] border border-[#00E5CC] shadow-lg shadow-[#00E5CC]/20"></div>
+          <div className="absolute inset-0 rounded-2xl border border-blue-600 shadow-lg shadow-[#4361EE]/20"></div>
         </div>
 
-        <CardHeader className="space-y-4 relative z-10">
+        <CardHeader className="space-y-4 relative z-10 p-0">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-[#F0F0F5]" style={{ fontFamily: 'Syne, sans-serif' }}>
-              FLEET TRACKER
+            <h1 className="text-4xl font-bold text-gray-900 font-sans">
+              FLEET <span className="text-blue-600">TRACKER</span>
             </h1>
-            <p className="mt-2 text-sm text-[#6B6B80]" style={{ fontFamily: 'monospace' }}>
+            <p className="mt-2 text-sm text-gray-500 font-mono">
               MATÉRIEL TECH+
             </p>
           </div>
-          <CardTitle className="text-center text-[#F0F0F5]">Login to your account</CardTitle>
-          <CardDescription className="text-center text-[#6B6B80]">
+          <CardTitle className="text-center text-gray-900">Login to your account</CardTitle>
+          <CardDescription className="text-center text-gray-500">
             Enter your credentials to access Fleet Tracker
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="relative z-10">
+        <CardContent className="relative z-10 p-0">
           {(error || localError) && (
-            <div className="mb-4 flex items-center space-x-3 rounded-lg border border-[#FF4D6A] bg-[#FF4D6A]/10 p-4 text-[#FF4D6A]">
+            <div className="mb-4 flex items-center space-x-3 rounded-lg border border-red-500 bg-red-500/10 p-4 text-red-500">
               <AlertCircle size={20} />
               <p className="text-sm">{error || localError}</p>
             </div>
@@ -66,41 +63,41 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#F0F0F5]">Email</label>
+              <label className="block text-sm font-medium text-gray-900">Email</label>
               <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="mt-1 bg-[#0A0A0F] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] rounded-[8px] focus:border-[#00E5CC] focus:ring-1 focus:ring-[#00E5CC]/50"
+                className="mt-1 bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 rounded-lg focus:border-blue-600 focus:ring-1 focus:ring-blue-600/50"
                 disabled={isLoading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#F0F0F5]">Password</label>
+              <label className="block text-sm font-medium text-gray-900">Password</label>
               <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="mt-1 bg-[#0A0A0F] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] rounded-[8px] focus:border-[#00E5CC] focus:ring-1 focus:ring-[#00E5CC]/50"
+                className="mt-1 bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 rounded-lg focus:border-blue-600 focus:ring-1 focus:ring-blue-600/50"
                 disabled={isLoading}
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#00E5CC] to-[#00C4B0] text-[#0A0A0F] font-bold hover:opacity-90 transition-opacity rounded-[8px]"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg py-3 transition-colors"
               disabled={isLoading}
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-[#6B6B80]">
+          <p className="mt-4 text-center text-sm text-gray-500">
             Don't have an account?{' '}
-            <a href="#" className="font-medium text-[#00E5CC] hover:text-[#00C4B0] transition-colors">
+            <a href="#" className="font-medium text-blue-600 hover:text-[#3B82F6] transition-colors">
               Contact your administrator
             </a>
           </p>

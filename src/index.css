@@ -1,45 +1,35 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @theme {
-  /* ─── FLEET TRACKER DESIGN TOKENS ─── */
-  --color-tz-bg: #0A0A0F;
-  --color-tz-card: #12121A;
-  --color-tz-hover: #1A1A25;
-  --color-tz-active: #1E1E2A;
-  --color-tz-border: #1F1F2E;
-  --color-tz-border-hover: #2A2A3D;
-  --color-tz-text: #F0F0F5;
-  --color-tz-muted: #6B6B80;
-  --color-tz-dim: #44445A;
-  --color-tz-accent: #00E5CC;
-  --color-tz-accent-dim: rgba(0,229,204,0.12);
-  --color-tz-accent-glow: rgba(0,229,204,0.25);
-  --color-tz-danger: #FF4D6A;
-  --color-tz-danger-dim: rgba(255,77,106,0.12);
-  --color-tz-warning: #FFB547;
-  --color-tz-warning-dim: rgba(255,181,71,0.12);
-  --color-tz-success: #00E5CC;
-  --color-tz-success-dim: rgba(0,229,204,0.12);
+  /* ─── FLEET TRACKER LIGHT DESIGN TOKENS ─── */
+  --color-ft-bg: #F5F7FA;
+  --color-ft-card: #FFFFFF;
+  --color-ft-hover: #F9FAFB;
+  --color-ft-active: #EFF6FF;
+  --color-ft-border: #E5E7EB;
+  --color-ft-border-hover: #D1D5DB;
+  --color-ft-text: #1F2937;
+  --color-ft-muted: #6B7280;
+  --color-ft-dim: #9CA3AF;
+  --color-ft-primary: #4361EE;
+  --color-ft-primary-hover: #3B53D5;
+  --color-ft-success: #22C55E;
+  --color-ft-danger: #EF4444;
+  --color-ft-warning: #F59E0B;
 
-  /* Legacy compat */
-  --color-success: #00E5CC;
-  --color-warning: #FFB547;
-  --color-error: #FF4D6A;
-  --color-info: #00E5CC;
-
-  --font-syne: 'Syne', sans-serif;
-  --font-mono: 'Space Mono', monospace;
-  --font-sans: 'Syne', sans-serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 :root {
-  --tz-radius: 12px;
-  --tz-radius-sm: 8px;
-  --tz-radius-lg: 16px;
-  --tz-shadow: 0 4px 24px rgba(0,0,0,0.4);
-  --tz-shadow-lg: 0 8px 48px rgba(0,0,0,0.5);
-  --tz-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --ft-radius: 12px;
+  --ft-radius-sm: 8px;
+  --ft-radius-lg: 16px;
+  --ft-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --ft-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --ft-shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+  --ft-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -48,21 +38,21 @@
 }
 
 body {
-  font-family: 'Syne', sans-serif;
-  background: #0A0A0F;
-  color: #F0F0F5;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #F5F7FA;
+  color: #1F2937;
   overflow: hidden;
 }
 
-html.dark {
-  color-scheme: dark;
+html {
+  color-scheme: light;
 }
 
 /* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1F1F2E; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #44445A; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
 
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -89,8 +79,8 @@ html.dark {
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(0,229,204,0.25); }
-  50% { box-shadow: 0 0 20px rgba(0,229,204,0.25); }
+  0%, 100% { box-shadow: 0 0 8px rgba(67,97,238,0.15); }
+  50% { box-shadow: 0 0 20px rgba(67,97,238,0.25); }
 }
 
 @keyframes countUp {
@@ -126,50 +116,56 @@ html.dark {
 }
 
 .spinner {
-  border: 2px solid #1F1F2E;
-  border-top: 2px solid #00E5CC;
+  border: 2px solid #E5E7EB;
+  border-top: 2px solid #4361EE;
   border-radius: 50%;
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;
 }
 
-/* ─── GLASS CARD ─── */
-.tz-card {
-  background: #12121A;
-  border: 1px solid #1F1F2E;
-  border-radius: var(--tz-radius);
-  transition: var(--tz-transition);
+/* ─── FLEET TRACKER CARD ─── */
+.ft-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: var(--ft-radius);
+  box-shadow: var(--ft-shadow);
+  transition: var(--ft-transition);
 }
 
-.tz-card:hover {
-  border-color: #2A2A3D;
-  box-shadow: var(--tz-shadow);
+.ft-card:hover {
+  border-color: #D1D5DB;
+  box-shadow: var(--ft-shadow-md);
 }
 
-.tz-card-glow {
-  background: #12121A;
-  border: 1px solid rgba(0,229,204,0.15);
-  border-radius: var(--tz-radius);
-  box-shadow: 0 0 20px rgba(0,229,204,0.05);
+.ft-card-elevated {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: var(--ft-radius);
+  box-shadow: var(--ft-shadow-lg);
 }
 
-/* ─── ACCENT BUTTON ─── */
-.tz-btn-accent {
-  background: linear-gradient(135deg, #00E5CC, #00C4B0);
-  color: #0A0A0F;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  border-radius: var(--tz-radius-sm);
+/* ─── PRIMARY BUTTON ─── */
+.ft-btn-primary {
+  background: #4361EE;
+  color: #FFFFFF;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  border-radius: var(--ft-radius-sm);
   padding: 0.5rem 1.25rem;
-  transition: var(--tz-transition);
+  transition: var(--ft-transition);
   border: none;
   cursor: pointer;
 }
 
-.tz-btn-accent:hover {
-  box-shadow: 0 0 24px rgba(0,229,204,0.35);
-  transform: translateY(-1px);
+.ft-btn-primary:hover {
+  background: #3B53D5;
+  box-shadow: 0 4px 12px rgba(67,97,238,0.3);
+}
+
+.ft-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(67,97,238,0.2);
 }
 
 /* ─── LEAFLET OVERRIDES ─── */
@@ -179,20 +175,28 @@ html.dark {
 }
 
 .leaflet-container {
-  background: #0A0A0F !important;
+  background: #FFFFFF !important;
+}
+
+.leaflet-tile {
+  filter: brightness(1.1) contrast(0.95);
 }
 
 .leaflet-popup-content-wrapper {
-  background: #12121A !important;
-  color: #F0F0F5 !important;
-  border: 1px solid #1F1F2E !important;
-  border-radius: var(--tz-radius) !important;
-  box-shadow: var(--tz-shadow-lg) !important;
+  background: #FFFFFF !important;
+  color: #1F2937 !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: var(--ft-radius) !important;
+  box-shadow: var(--ft-shadow-lg) !important;
 }
 
 .leaflet-popup-tip {
-  background: #12121A !important;
-  border: 1px solid #1F1F2E !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+}
+
+.leaflet-popup-content {
+  color: #1F2937 !important;
 }
 
 /* ─── STAGGER CHILDREN ─── */

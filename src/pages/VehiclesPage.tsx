@@ -518,24 +518,24 @@ export default function VehiclesPage() {
   }
 
   return (
-    <div className="space-y-6 bg-[#0A0A0F] min-h-screen p-6">
+    <div className="space-y-6 bg-[#F5F7FA] min-h-screen p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Catalogue Véhicules</h1>
-          <p className="text-sm text-[#6B6B80] mt-1">Gestion de la flotte Matériel Tech+</p>
+          <h1 className="text-3xl font-bold text-gray-900 font-sans">Catalogue Véhicules</h1>
+          <p className="text-sm text-gray-500 mt-1">Gestion de la flotte Matériel Tech+</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[#1F1F2E]">
+      <div className="border-b border-gray-200">
         <div className="flex gap-8">
           <button
             onClick={() => setActiveTab('vehicles')}
             className={`py-3 px-1 border-b-2 font-semibold text-sm transition-colors ${
               activeTab === 'vehicles'
-                ? 'border-[#00E5CC] text-[#00E5CC]'
-                : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             VÉHICULES ({vehicles.length})
@@ -544,8 +544,8 @@ export default function VehiclesPage() {
             onClick={() => setActiveTab('groups')}
             className={`py-3 px-1 border-b-2 font-semibold text-sm transition-colors ${
               activeTab === 'groups'
-                ? 'border-[#00E5CC] text-[#00E5CC]'
-                : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             GROUPES ({groups.length})
@@ -558,7 +558,7 @@ export default function VehiclesPage() {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+          className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200"
           onClick={() => setIsImportDialogOpen(true)}
         >
           <Upload size={16} />
@@ -569,50 +569,50 @@ export default function VehiclesPage() {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+            className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200"
             onClick={() => setShowExportMenu(!showExportMenu)}
           >
             <FileDown size={16} />
             EXPORTER
           </Button>
           {showExportMenu && (
-            <div className="absolute top-10 left-0 bg-[#12121A] border border-[#1F1F2E] rounded-[8px] shadow-lg z-50 w-48">
-              <button onClick={() => { exportToCSV(); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+            <div className="absolute top-10 left-0 bg-white border border-gray-200 rounded-lg shadow-sm z-50 w-48">
+              <button onClick={() => { exportToCSV(); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 border-b border-gray-100">
                 CSV (Tous)
               </button>
-              <button onClick={() => { exportToFormat('xlsx'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+              <button onClick={() => { exportToFormat('xlsx'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 border-b border-gray-100">
                 Excel XLSX
               </button>
-              <button onClick={() => { exportToFormat('kml'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+              <button onClick={() => { exportToFormat('kml'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 border-b border-gray-100">
                 Google Earth (KML)
               </button>
-              <button onClick={() => { exportToFormat('gpx'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25]">
+              <button onClick={() => { exportToFormat('gpx'); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50">
                 GPS Format (GPX)
               </button>
             </div>
           )}
         </div>
 
-        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]" onClick={exportConducteursCSV}>
+        <Button variant="outline" size="sm" className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200" onClick={exportConducteursCSV}>
           <FileDown size={16} />
           CONDUCTEURS CSV
         </Button>
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+          className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200"
           onClick={() => setShowScheduledExports(!showScheduledExports)}
         >
           <Clock size={16} />
           EXPORTS PROGRAMMÉS
         </Button>
-        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">
+        <Button variant="outline" size="sm" className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200">
           RÔLES
         </Button>
-        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">
+        <Button variant="outline" size="sm" className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200">
           AUDIT
         </Button>
-        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">
+        <Button variant="outline" size="sm" className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200">
           ATTRIBUTION
         </Button>
       </div>
@@ -621,7 +621,7 @@ export default function VehiclesPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-3 text-[#44445A]" size={18} />
+            <Search className="absolute left-3 top-3 text-[#9CA3AF]" size={18} />
             <Input
               type="search"
               placeholder="Rechercher par nom ou immatriculation..."
@@ -630,7 +630,7 @@ export default function VehiclesPage() {
                 setSearchTerm(e.target.value)
                 setPage(1)
               }}
-              className="pl-10 bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]"
+              className="pl-10 bg-white border border-gray-200 text-gray-900 placeholder:text-[#9CA3AF] focus:border-blue-600 rounded-lg"
             />
           </div>
         </div>
@@ -640,7 +640,7 @@ export default function VehiclesPage() {
             setSelectedType(e.target.value)
             setPage(1)
           }}
-          className="rounded-[12px] border border-[#1F1F2E] bg-[#12121A] px-4 py-2 text-sm font-medium text-[#F0F0F5] hover:bg-[#1A1A25]"
+          className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
         >
           <option value="">Tous types</option>
           <option value="voiture">Voiture</option>
@@ -657,7 +657,7 @@ export default function VehiclesPage() {
             setSelectedGroup(e.target.value)
             setPage(1)
           }}
-          className="rounded-[12px] border border-[#1F1F2E] bg-[#12121A] px-4 py-2 text-sm font-medium text-[#F0F0F5] hover:bg-[#1A1A25]"
+          className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
         >
           <option value="">Filtrer par groupe</option>
           {groups.map(group => (
@@ -670,7 +670,7 @@ export default function VehiclesPage() {
             setSelectedSource(e.target.value)
             setPage(1)
           }}
-          className="rounded-[12px] border border-[#1F1F2E] bg-[#12121A] px-4 py-2 text-sm font-medium text-[#F0F0F5] hover:bg-[#1A1A25]"
+          className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
         >
           <option value="">Toutes sources</option>
           <option value="echoes">ECHOES</option>
@@ -683,13 +683,13 @@ export default function VehiclesPage() {
             setSelectedStatus(e.target.value)
             setPage(1)
           }}
-          className="rounded-[12px] border border-[#1F1F2E] bg-[#12121A] px-4 py-2 text-sm font-medium text-[#F0F0F5] hover:bg-[#1A1A25]"
+          className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
         >
           <option value="">Tous statuts</option>
           <option value="active">ACTIF</option>
           <option value="offline">HORS LIGNE</option>
         </select>
-        <div className="text-sm font-medium text-[#F0F0F5]">
+        <div className="text-sm font-medium text-gray-900">
           {vehicles.length} résultat{vehicles.length !== 1 ? 's' : ''}
         </div>
       </div>
@@ -700,7 +700,7 @@ export default function VehiclesPage() {
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
-            className="gap-2 bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+            className="gap-2 bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200"
             onClick={() => setViewMode('list')}
           >
             <List size={16} />
@@ -708,13 +708,13 @@ export default function VehiclesPage() {
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
-            className="gap-2 bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+            className="gap-2 bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200"
             onClick={() => setViewMode('grid')}
           >
             <LayoutGrid size={16} />
           </Button>
         </div>
-        <Button className="gap-2 bg-[#00E5CC] hover:bg-[#00CCA6] text-[#0A0A0F] font-semibold" onClick={openCreateModal}>
+        <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold" onClick={openCreateModal}>
           <Plus size={18} />
           AJOUTER UN TRACEUR
         </Button>
@@ -726,21 +726,21 @@ export default function VehiclesPage() {
           {isLoading ? (
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-2'}>
               {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className={`${viewMode === 'grid' ? 'h-48' : 'h-12'} bg-[#12121A]`} />
+                <Skeleton key={i} className={`${viewMode === 'grid' ? 'h-48' : 'h-12'} bg-white`} />
               ))}
             </div>
           ) : vehicles.length === 0 ? (
-            <Card className="bg-[#12121A] border-[#1F1F2E] text-center">
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm text-center">
               <CardContent className="pt-12">
-                <p className="text-[#F0F0F5]">Aucun véhicule trouvé</p>
+                <p className="text-gray-900">Aucun véhicule trouvé</p>
               </CardContent>
             </Card>
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {vehicles.map((vehicle) => (
-                <Card key={vehicle.id} className="bg-[#12121A] border-[#1F1F2E] hover:border-[#2A2A3D] transition-all">
+                <Card key={vehicle.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                   {/* Vehicle Photo Thumbnail */}
-                  <div className="h-32 bg-[#0A0A0F] border-b border-[#1F1F2E] flex items-center justify-center overflow-hidden relative group">
+                  <div className="h-32 bg-white border-b border-gray-200 flex items-center justify-center overflow-hidden relative group">
                     {(vehicle.metadata as any)?.photoUrl ? (
                       <img
                         src={(vehicle.metadata as any).photoUrl}
@@ -749,7 +749,7 @@ export default function VehiclesPage() {
                         onClick={() => window.open((vehicle.metadata as any).photoUrl, '_blank')}
                       />
                     ) : (
-                      <div className="flex flex-col items-center gap-2 text-[#44445A]">
+                      <div className="flex flex-col items-center gap-2 text-[#9CA3AF]">
                         <ImageIcon size={32} />
                         <span className="text-xs">Pas de photo</span>
                       </div>
@@ -760,12 +760,12 @@ export default function VehiclesPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle
-                          className="text-[#F0F0F5] cursor-pointer hover:text-[#00E5CC] transition-colors font-syne"
+                          className="text-gray-900 cursor-pointer hover:text-blue-600 transition-colors font-sans"
                           onClick={() => navigate(`/vehicles/${vehicle.id}`)}
                         >
                           {vehicle.name}
                         </CardTitle>
-                        <p className="text-sm text-[#6B6B80] mt-1">{vehicle.plate || 'N/A'}</p>
+                        <p className="text-sm text-gray-500 mt-1">{vehicle.plate || 'N/A'}</p>
                       </div>
                       <input
                         type="checkbox"
@@ -778,8 +778,8 @@ export default function VehiclesPage() {
                   <CardContent className="space-y-3">
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <p className="text-[#6B6B80]">Type</p>
-                        <p className="font-medium text-[#F0F0F5] font-mono">
+                        <p className="text-gray-500">Type</p>
+                        <p className="font-medium text-gray-900 font-mono">
                           {vehicle.type === 'voiture' && 'Voiture'}
                           {vehicle.type === 'camion' && 'Camion'}
                           {vehicle.type === 'utilitaire' && 'Utilitaire'}
@@ -791,23 +791,23 @@ export default function VehiclesPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-[#6B6B80]">VIN</p>
-                        <p className="font-medium text-[#F0F0F5] truncate font-mono">
+                        <p className="text-gray-500">VIN</p>
+                        <p className="font-medium text-gray-900 truncate font-mono">
                           {vehicle.vin ? vehicle.vin.substring(0, 8) : 'N/A'}
                         </p>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center">
-                      <Badge variant={vehicle.status === 'active' ? 'default' : 'destructive'} className={vehicle.status === 'active' ? 'bg-[#00E5CC] bg-opacity-20 text-[#00E5CC]' : 'bg-[#FF4D6A] bg-opacity-20 text-[#FF4D6A]'}>
+                      <Badge variant={vehicle.status === 'active' ? 'default' : 'destructive'} className={vehicle.status === 'active' ? 'bg-blue-600 bg-opacity-20 text-blue-600' : 'bg-red-500 bg-opacity-20 text-red-500'}>
                         {vehicle.status === 'active' ? 'ACTIF' : 'HORS LIGNE'}
                       </Badge>
-                      <span className="text-xs text-[#44445A]">{(vehicle.metadata as any)?.source || 'ECHOES'}</span>
+                      <span className="text-xs text-[#9CA3AF]">{(vehicle.metadata as any)?.source || 'ECHOES'}</span>
                     </div>
                     <div className="flex gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 gap-2 bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+                        className="flex-1 gap-2 bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200"
                         onClick={() => openEditModal(vehicle)}
                       >
                         <Edit2 size={14} />
@@ -816,7 +816,7 @@ export default function VehiclesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-[#FF4D6A] hover:text-[#FF4D6A] hover:bg-[#FF4D6A] hover:bg-opacity-10 bg-[#1A1A25] border-[#1F1F2E]"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 bg-gray-100 border border-gray-200"
                         onClick={() => setDeleteConfirmId(vehicle.id)}
                       >
                         <Trash2 size={14} />
@@ -827,12 +827,12 @@ export default function VehiclesPage() {
               ))}
             </div>
           ) : (
-            <Card className="bg-[#12121A] border-[#1F1F2E]">
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-[#1F1F2E] bg-[#0A0A0F]">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-[#F0F0F5] w-12">
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 w-12 uppercase tracking-wider">
                         <input
                           type="checkbox"
                           checked={selectAllChecked && vehicles.length > 0}
@@ -841,23 +841,23 @@ export default function VehiclesPage() {
                           title="Sélectionner tous"
                         />
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">NOM</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">VIN / IMEI</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">PLAQUE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">CATÉGORIE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">ÉTAT</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">DISPONIBILITÉ</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">SOURCE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">ACTIONS</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">NOM</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">VIN / IMEI</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">PLAQUE</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">CATÉGORIE</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ÉTAT</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">DISPONIBILITÉ</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">SOURCE</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ACTIONS</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1F1F2E]">
+                  <tbody className="divide-y divide-gray-200">
                     {vehicles.map((vehicle) => (
                       <tr
                         key={vehicle.id}
-                        className="hover:bg-[#1A1A25] transition-colors"
+                        className="hover:bg-blue-50/50 border-b border-gray-100 transition-colors"
                       >
-                        <td className="px-4 py-4 text-sm font-medium text-[#F0F0F5] w-12">
+                        <td className="px-4 py-4 text-sm font-medium text-gray-900 w-12">
                           <input
                             type="checkbox"
                             checked={selectedIds.has(vehicle.id)}
@@ -865,21 +865,21 @@ export default function VehiclesPage() {
                             className="rounded"
                           />
                         </td>
-                        <td className="px-6 py-4 text-sm font-medium text-[#F0F0F5]">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
                           <button
                             onClick={() => navigate(`/vehicles/${vehicle.id}`)}
-                            className="hover:text-[#00E5CC] hover:underline transition-colors"
+                            className="hover:text-blue-600 hover:underline transition-colors"
                           >
                             {vehicle.name}
                           </button>
                         </td>
-                        <td className="px-6 py-4 text-sm text-[#F0F0F5] font-mono">
+                        <td className="px-6 py-4 text-sm text-gray-900 font-mono">
                           {(vehicle.vin || (vehicle.metadata as any)?.imei || (vehicle.metadata as any)?.deviceId || '—')}
                         </td>
-                        <td className="px-6 py-4 text-sm text-[#F0F0F5] font-mono">
+                        <td className="px-6 py-4 text-sm text-gray-900 font-mono">
                           {vehicle.plate || '—'}
                         </td>
-                        <td className="px-6 py-4 text-sm text-[#F0F0F5] capitalize">
+                        <td className="px-6 py-4 text-sm text-gray-900 capitalize">
                           {vehicle.type ? (
                             <>
                               {(() => {
@@ -898,22 +898,22 @@ export default function VehiclesPage() {
                         </td>
                         <td className="px-6 py-4 text-sm">
                           {vehicle.status === 'active' ? (
-                            <span className="text-[#00E5CC] font-semibold">ACTIF</span>
+                            <span className="text-blue-600 font-semibold">ACTIF</span>
                           ) : (
-                            <span className="text-[#6B6B80] font-semibold">HORS LIGNE</span>
+                            <span className="text-gray-500 font-semibold">HORS LIGNE</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm">
                           {vehicle.status === 'active' ? (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#0D3B2E] text-[#00E5CC] border border-[#00E5CC]/30">Disponible</span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">Disponible</span>
                           ) : vehicle.status === 'maintenance' ? (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#3B2D0D] text-[#FFB547] border border-[#FFB547]/30">En maintenance</span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">En maintenance</span>
                           ) : (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#3B0D1A] text-[#FF4D6A] border border-[#FF4D6A]/30">Indisponible</span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">Indisponible</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm">
-                          <span className="text-[#00E5CC] font-semibold">
+                          <span className="text-blue-600 font-semibold">
                             {(vehicle.metadata as any)?.source || 'ECHOES'}
                           </span>
                         </td>
@@ -927,7 +927,7 @@ export default function VehiclesPage() {
                                 openEditModal(vehicle)
                               }}
                               title="Modifier"
-                              className="text-[#F0F0F5] hover:text-[#00E5CC]"
+                              className="text-gray-900 hover:text-blue-600"
                             >
                               <Edit2 size={16} />
                             </Button>
@@ -939,7 +939,7 @@ export default function VehiclesPage() {
                                 setDeleteConfirmId(vehicle.id)
                               }}
                               title="Supprimer"
-                              className="text-[#F0F0F5] hover:text-[#FF4D6A]"
+                              className="text-gray-900 hover:text-red-500"
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -955,7 +955,7 @@ export default function VehiclesPage() {
 
           {/* Pagination */}
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[#F0F0F5]">
+            <p className="text-sm text-gray-900">
               Page {page} sur {totalPages} — {vehiclesData?.total || vehicles.length} véhicule{(vehiclesData?.total || vehicles.length) > 1 ? 's' : ''} au total
             </p>
             {totalPages > 1 && (
@@ -965,7 +965,7 @@ export default function VehiclesPage() {
                   size="sm"
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+                  className="text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200"
                 >
                   Précédent
                 </Button>
@@ -974,7 +974,7 @@ export default function VehiclesPage() {
                   size="sm"
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  className="text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+                  className="text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200"
                 >
                   Suivant
                 </Button>
@@ -990,26 +990,26 @@ export default function VehiclesPage() {
           {groupsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-48 bg-[#12121A]" />
+                <Skeleton key={i} className="h-48 bg-white" />
               ))}
             </div>
           ) : groups.length === 0 ? (
-            <Card className="bg-[#12121A] border-[#1F1F2E] text-center">
+            <Card className="bg-white rounded-xl border border-gray-200 shadow-sm text-center">
               <CardContent className="pt-12">
-                <p className="text-[#F0F0F5]">Aucun groupe configuré</p>
+                <p className="text-gray-900">Aucun groupe configuré</p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {groups.map((group) => (
-                <Card key={group.id} className="bg-[#12121A] border-[#1F1F2E] hover:border-[#2A2A3D] transition-all">
+                <Card key={group.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                   <CardHeader>
-                    <CardTitle className="text-[#F0F0F5] font-syne">{group.name}</CardTitle>
-                    <p className="text-sm text-[#6B6B80] mt-2">{group.description || 'Pas de description'}</p>
+                    <CardTitle className="text-gray-900 font-sans">{group.name}</CardTitle>
+                    <p className="text-sm text-gray-500 mt-2">{group.description || 'Pas de description'}</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="bg-[#1A1A25] text-[#F0F0F5] border-[#1F1F2E]">
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-700 border border-gray-200">
                         {group.vehicleCount || 0} véhicules
                       </Badge>
                     </div>
@@ -1017,7 +1017,7 @@ export default function VehiclesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 gap-2 bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+                        className="flex-1 gap-2 bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200"
                       >
                         <Edit2 size={14} />
                         Éditer
@@ -1025,7 +1025,7 @@ export default function VehiclesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-[#FF4D6A] hover:text-[#FF4D6A] hover:bg-[#FF4D6A] hover:bg-opacity-10 bg-[#1A1A25] border-[#1F1F2E]"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 bg-gray-100 border border-gray-200"
                       >
                         <Trash2 size={14} />
                       </Button>
@@ -1040,8 +1040,8 @@ export default function VehiclesPage() {
 
       {/* Floating Action Bar for Selection */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#12121A] border border-[#1F1F2E] rounded-[12px] shadow-lg p-4 flex items-center gap-3 flex-wrap max-w-3xl z-40">
-          <span className="text-sm font-medium text-[#F0F0F5] w-full sm:w-auto">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 flex items-center gap-3 flex-wrap max-w-3xl z-40">
+          <span className="text-sm font-medium text-gray-900 w-full sm:w-auto">
             {selectedIds.size} véhicule{selectedIds.size > 1 ? 's' : ''} sélectionné{selectedIds.size > 1 ? 's' : ''}
           </span>
           <div className="relative">
@@ -1049,23 +1049,23 @@ export default function VehiclesPage() {
               variant="outline"
               size="sm"
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+              className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200"
             >
               <Download size={16} />
               Exporter
             </Button>
             {showExportMenu && (
-              <div className="absolute bottom-10 left-0 bg-[#12121A] border border-[#1F1F2E] rounded-[8px] shadow-lg z-50 w-48">
-                <button onClick={() => { exportSelected(); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+              <div className="absolute bottom-10 left-0 bg-white border border-gray-200 rounded-lg shadow-sm z-50 w-48">
+                <button onClick={() => { exportSelected(); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 border-b border-gray-100">
                   CSV
                 </button>
-                <button onClick={() => { exportToFormat('xlsx', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+                <button onClick={() => { exportToFormat('xlsx', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 border-b border-gray-100">
                   Excel XLSX
                 </button>
-                <button onClick={() => { exportToFormat('kml', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]">
+                <button onClick={() => { exportToFormat('kml', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 border-b border-gray-100">
                   KML
                 </button>
-                <button onClick={() => { exportToFormat('gpx', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-[#F0F0F5] hover:bg-[#1A1A25]">
+                <button onClick={() => { exportToFormat('gpx', vehicles.filter(v => selectedIds.has(v.id))); setShowExportMenu(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-50">
                   GPX
                 </button>
               </div>
@@ -1076,7 +1076,7 @@ export default function VehiclesPage() {
             variant="outline"
             size="sm"
             onClick={() => setShowBulkChangeGroup(true)}
-            className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
+            className="gap-2 text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200"
           >
             <ChevronDown size={16} />
             Changer groupe
@@ -1086,7 +1086,7 @@ export default function VehiclesPage() {
             variant="destructive"
             size="sm"
             onClick={() => setShowBulkDeleteConfirm(true)}
-            className="gap-2 bg-[#FF4D6A] hover:bg-[#E63D5C] text-white"
+            className="gap-2 bg-red-600 hover:bg-red-700 text-white"
           >
             <Trash2 size={16} />
             Supprimer ({selectedIds.size})
@@ -1096,10 +1096,10 @@ export default function VehiclesPage() {
 
       {/* Import Dialog */}
       <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent className="max-w-2xl bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="max-w-2xl bg-white border border-gray-200 rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">Importer des véhicules</DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">
+            <DialogTitle className="text-gray-900 font-sans">Importer des véhicules</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Importez des véhicules à partir d'un fichier CSV ou XLSX
             </DialogDescription>
           </DialogHeader>
@@ -1107,8 +1107,8 @@ export default function VehiclesPage() {
           <div className="space-y-4 py-4">
             {/* File Upload */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">Fichier CSV/XLSX</label>
-              <div className="border-2 border-dashed border-[#1F1F2E] rounded-[8px] p-6 text-center hover:border-[#00E5CC] transition-colors cursor-pointer"
+              <label className="text-sm font-medium text-gray-900">Fichier CSV/XLSX</label>
+              <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-blue-600 transition-colors cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <input
@@ -1118,24 +1118,24 @@ export default function VehiclesPage() {
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <Upload className="h-8 w-8 mx-auto mb-2 text-[#44445A]" />
-                <p className="text-[#F0F0F5]">{importFile ? importFile.name : 'Cliquez pour sélectionner un fichier'}</p>
-                <p className="text-xs text-[#6B6B80] mt-1">CSV ou XLSX acceptés</p>
+                <Upload className="h-8 w-8 mx-auto mb-2 text-[#9CA3AF]" />
+                <p className="text-gray-900">{importFile ? importFile.name : 'Cliquez pour sélectionner un fichier'}</p>
+                <p className="text-xs text-gray-500 mt-1">CSV ou XLSX acceptés</p>
               </div>
             </div>
 
             {/* Column Mapping */}
             {importPreviewData.length > 0 && (
               <div className="space-y-3">
-                <label className="text-sm font-medium text-[#F0F0F5]">Mappage des colonnes</label>
+                <label className="text-sm font-medium text-gray-900">Mappage des colonnes</label>
                 <div className="grid grid-cols-2 gap-3">
                   {Object.keys(columnMapping).map(field => (
                     <div key={field} className="space-y-1">
-                      <label className="text-xs text-[#6B6B80]">{field} {['Nom', 'Plaque'].includes(field) ? '*' : ''}</label>
+                      <label className="text-xs text-gray-500">{field} {['Nom', 'Plaque'].includes(field) ? '*' : ''}</label>
                       <select
                         value={columnMapping[field]}
                         onChange={(e) => setColumnMapping({ ...columnMapping, [field]: e.target.value })}
-                        className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
+                        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-600"
                       >
                         <option value="">Sélectionner...</option>
                         {Object.keys(importPreviewData[0] || {}).map(header => (
@@ -1151,27 +1151,27 @@ export default function VehiclesPage() {
             {/* Preview */}
             {importPreviewData.length > 0 && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">Aperçu (premières 5 lignes)</label>
-                <div className="border border-[#1F1F2E] rounded-[8px] overflow-x-auto">
+                <label className="text-sm font-medium text-gray-900">Aperçu (premières 5 lignes)</label>
+                <div className="border border-gray-200 rounded-lg overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-[#0A0A0F] border-b border-[#1F1F2E]">
+                    <thead className="bg-white border-b border-gray-200">
                       <tr>
                         {Object.keys(columnMapping)
                           .filter(field => columnMapping[field])
                           .map(field => (
-                            <th key={field} className="px-4 py-2 text-left text-[#F0F0F5] font-medium">
+                            <th key={field} className="px-4 py-2 text-left text-gray-900 font-medium">
                               {field}
                             </th>
                           ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#1F1F2E]">
+                    <tbody className="divide-y divide-gray-200">
                       {importPreviewData.map((row, idx) => (
-                        <tr key={idx} className="hover:bg-[#1A1A25]">
+                        <tr key={idx} className="hover:bg-gray-100">
                           {Object.keys(columnMapping)
                             .filter(field => columnMapping[field])
                             .map(field => (
-                              <td key={field} className="px-4 py-2 text-[#F0F0F5]">
+                              <td key={field} className="px-4 py-2 text-gray-900">
                                 {row[columnMapping[field]]}
                               </td>
                             ))}
@@ -1185,10 +1185,10 @@ export default function VehiclesPage() {
 
             {/* Errors */}
             {importErrors.length > 0 && (
-              <div className="bg-[#FF4D6A] bg-opacity-10 border border-[#FF4D6A] rounded-[8px] p-3">
+              <div className="bg-red-500 bg-opacity-10 border border-red-500 rounded-lg p-3">
                 <div className="flex gap-2 items-start">
-                  <AlertCircle className="h-5 w-5 text-[#FF4D6A] flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-[#FF4D6A]">
+                  <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-red-500">
                     {importErrors.map((error, idx) => (
                       <div key={idx}>{error}</div>
                     ))}
@@ -1200,13 +1200,13 @@ export default function VehiclesPage() {
             {/* Progress */}
             {isImporting && importProgress > 0 && (
               <div className="space-y-2">
-                <div className="flex justify-between text-sm text-[#F0F0F5]">
+                <div className="flex justify-between text-sm text-gray-900">
                   <span>Import en cours...</span>
                   <span>{importProgress}%</span>
                 </div>
-                <div className="w-full bg-[#1A1A25] rounded-full h-2 border border-[#1F1F2E]">
+                <div className="w-full bg-gray-100 rounded-full h-2 border border-gray-200">
                   <div
-                    className="bg-[#00E5CC] h-full rounded-full transition-all"
+                    className="bg-blue-600 h-full rounded-full transition-all"
                     style={{ width: `${importProgress}%` }}
                   />
                 </div>
@@ -1219,14 +1219,14 @@ export default function VehiclesPage() {
               variant="outline"
               onClick={() => setIsImportDialogOpen(false)}
               disabled={isImporting}
-              className="bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+              className="bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200"
             >
               Annuler
             </Button>
             <Button
               onClick={handleImportVehicles}
               disabled={isImporting || importPreviewData.length === 0}
-              className="bg-[#00E5CC] hover:bg-[#00CCA6] text-[#0A0A0F] font-semibold"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
             >
               {isImporting ? `Import en cours (${importProgress}%)` : `Importer ${importPreviewData.length} véhicules`}
             </Button>
@@ -1236,10 +1236,10 @@ export default function VehiclesPage() {
 
       {/* Bulk Change Group Dialog */}
       <Dialog open={showBulkChangeGroup} onOpenChange={setShowBulkChangeGroup}>
-        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="bg-white border border-gray-200 rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">Changer le groupe</DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">
+            <DialogTitle className="text-gray-900 font-sans">Changer le groupe</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Sélectionnez le groupe pour les {selectedIds.size} véhicules sélectionnés
             </DialogDescription>
           </DialogHeader>
@@ -1248,7 +1248,7 @@ export default function VehiclesPage() {
             <select
               value={bulkChangeGroupId}
               onChange={(e) => setBulkChangeGroupId(e.target.value)}
-              className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-[#F0F0F5] focus:border-[#00E5CC]"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-gray-900 focus:border-blue-600"
             >
               <option value="">Sélectionner un groupe...</option>
               {groups.map(group => (
@@ -1261,14 +1261,14 @@ export default function VehiclesPage() {
             <Button
               variant="outline"
               onClick={() => setShowBulkChangeGroup(false)}
-              className="bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+              className="bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200"
             >
               Annuler
             </Button>
             <Button
               onClick={handleBulkChangeGroup}
               disabled={!bulkChangeGroupId}
-              className="bg-[#00E5CC] hover:bg-[#00CCA6] text-[#0A0A0F] font-semibold"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
             >
               Confirmer
             </Button>
@@ -1278,10 +1278,10 @@ export default function VehiclesPage() {
 
       {/* Bulk Delete Confirmation Dialog */}
       <Dialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
-        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="bg-white border border-gray-200 rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">Confirmer la suppression</DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">
+            <DialogTitle className="text-gray-900 font-sans">Confirmer la suppression</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Êtes-vous sûr de vouloir supprimer {selectedIds.size} véhicules ? Cette action est irréversible.
             </DialogDescription>
           </DialogHeader>
@@ -1290,13 +1290,13 @@ export default function VehiclesPage() {
             <Button
               variant="outline"
               onClick={() => setShowBulkDeleteConfirm(false)}
-              className="bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+              className="bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200"
             >
               Annuler
             </Button>
             <Button
               onClick={handleBulkDelete}
-              className="bg-[#FF4D6A] hover:bg-[#E63D5C] text-white"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Supprimer
             </Button>
@@ -1306,30 +1306,30 @@ export default function VehiclesPage() {
 
       {/* Create/Edit Vehicle Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-lg bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="max-w-lg bg-white border border-gray-200 rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">{editingVehicle ? 'Modifier le véhicule' : 'Nouveau véhicule'}</DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">{editingVehicle ? 'Mettre à jour les informations du véhicule' : 'Ajouter un nouveau véhicule à votre flotte'}</DialogDescription>
+            <DialogTitle className="text-gray-900 font-sans">{editingVehicle ? 'Modifier le véhicule' : 'Nouveau véhicule'}</DialogTitle>
+            <DialogDescription className="text-gray-500">{editingVehicle ? 'Mettre à jour les informations du véhicule' : 'Ajouter un nouveau véhicule à votre flotte'}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">Nom *</label>
-                <Input value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} placeholder="Camion A1" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
+                <label className="text-sm font-medium text-gray-900">Nom *</label>
+                <Input value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} placeholder="Camion A1" className="bg-white border border-gray-200 text-gray-900 placeholder:text-[#9CA3AF] focus:border-blue-600 rounded-lg" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">Immatriculation *</label>
-                <Input value={formData.plate} onChange={(e) => setFormData(p => ({...p, plate: e.target.value}))} placeholder="AB-123-CD" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
+                <label className="text-sm font-medium text-gray-900">Immatriculation *</label>
+                <Input value={formData.plate} onChange={(e) => setFormData(p => ({...p, plate: e.target.value}))} placeholder="AB-123-CD" className="bg-white border border-gray-200 text-gray-900 placeholder:text-[#9CA3AF] focus:border-blue-600 rounded-lg" />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">VIN</label>
-              <Input value={formData.vin} onChange={(e) => setFormData(p => ({...p, vin: e.target.value}))} placeholder="WDB1234567F123456" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
+              <label className="text-sm font-medium text-gray-900">VIN</label>
+              <Input value={formData.vin} onChange={(e) => setFormData(p => ({...p, vin: e.target.value}))} placeholder="WDB1234567F123456" className="bg-white border border-gray-200 text-gray-900 placeholder:text-[#9CA3AF] focus:border-blue-600 rounded-lg" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">Type</label>
-                <select value={formData.type} onChange={(e) => setFormData(p => ({...p, type: e.target.value}))} className="w-full rounded-[12px] border border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] px-3 py-2 text-sm">
+                <label className="text-sm font-medium text-gray-900">Type</label>
+                <select value={formData.type} onChange={(e) => setFormData(p => ({...p, type: e.target.value}))} className="w-full rounded-lg border border-gray-200 bg-white text-gray-900 px-3 py-2 text-sm">
                   <option value="voiture">Voiture</option>
                   <option value="camion">Camion</option>
                   <option value="utilitaire">Véhicule utilitaire</option>
@@ -1340,28 +1340,28 @@ export default function VehiclesPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">Année</label>
-                <Input type="number" value={formData.year} onChange={(e) => setFormData(p => ({...p, year: parseInt(e.target.value) || 0}))} placeholder="2024" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
+                <label className="text-sm font-medium text-gray-900">Année</label>
+                <Input type="number" value={formData.year} onChange={(e) => setFormData(p => ({...p, year: parseInt(e.target.value) || 0}))} placeholder="2024" className="bg-white border border-gray-200 text-gray-900 placeholder:text-[#9CA3AF] focus:border-blue-600 rounded-lg" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">Marque</label>
-                <Input value={formData.brand} onChange={(e) => setFormData(p => ({...p, brand: e.target.value}))} placeholder="Renault" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
+                <label className="text-sm font-medium text-gray-900">Marque</label>
+                <Input value={formData.brand} onChange={(e) => setFormData(p => ({...p, brand: e.target.value}))} placeholder="Renault" className="bg-white border border-gray-200 text-gray-900 placeholder:text-[#9CA3AF] focus:border-blue-600 rounded-lg" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">Modèle</label>
-                <Input value={formData.model} onChange={(e) => setFormData(p => ({...p, model: e.target.value}))} placeholder="Master" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
+                <label className="text-sm font-medium text-gray-900">Modèle</label>
+                <Input value={formData.model} onChange={(e) => setFormData(p => ({...p, model: e.target.value}))} placeholder="Master" className="bg-white border border-gray-200 text-gray-900 placeholder:text-[#9CA3AF] focus:border-blue-600 rounded-lg" />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">Notes</label>
-              <textarea value={formData.notes} onChange={(e) => setFormData(p => ({...p, notes: e.target.value}))} placeholder="Informations supplémentaires..." className="w-full px-3 py-2 border border-[#1F1F2E] rounded-[12px] text-sm text-[#F0F0F5] bg-[#12121A] focus:outline-none focus:ring-2 focus:ring-[#00E5CC] placeholder:text-[#44445A]" rows={3} />
+              <label className="text-sm font-medium text-gray-900">Notes</label>
+              <textarea value={formData.notes} onChange={(e) => setFormData(p => ({...p, notes: e.target.value}))} placeholder="Informations supplémentaires..." className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 placeholder:text-[#9CA3AF]" rows={3} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)} className="text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">Annuler</Button>
-            <Button onClick={handleSubmitVehicle} disabled={createVehicle.isPending || updateVehicleMutation.isPending} className="bg-[#00E5CC] hover:bg-[#00CCA6] text-[#0A0A0F] font-semibold">
+            <Button variant="outline" onClick={() => setIsModalOpen(false)} className="text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200">Annuler</Button>
+            <Button onClick={handleSubmitVehicle} disabled={createVehicle.isPending || updateVehicleMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
               {(createVehicle.isPending || updateVehicleMutation.isPending) ? 'Enregistrement...' : editingVehicle ? 'Mettre à jour' : 'Créer'}
             </Button>
           </DialogFooter>
@@ -1370,14 +1370,14 @@ export default function VehiclesPage() {
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
-        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="bg-white border border-gray-200 rounded-lg shadow-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">Confirmer la suppression</DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible.</DialogDescription>
+            <DialogTitle className="text-gray-900 font-sans">Confirmer la suppression</DialogTitle>
+            <DialogDescription className="text-gray-500">Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)} className="text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">Annuler</Button>
-            <Button variant="destructive" onClick={handleDeleteVehicle} disabled={deleteVehicleMutation.isPending} className="bg-[#FF4D6A] hover:bg-[#E63D5C]">
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)} className="text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200">Annuler</Button>
+            <Button variant="destructive" onClick={handleDeleteVehicle} disabled={deleteVehicleMutation.isPending} className="bg-red-600 hover:bg-red-700">
               {deleteVehicleMutation.isPending ? 'Suppression...' : 'Supprimer'}
             </Button>
           </DialogFooter>

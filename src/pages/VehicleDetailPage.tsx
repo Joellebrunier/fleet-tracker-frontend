@@ -521,7 +521,7 @@ export default function VehicleDetailPage() {
   if (!vehicle) {
     return (
       <div className="text-center py-12">
-        <p className="text-[#6B6B80]">Véhicule introuvable</p>
+        <p className="text-gray-500">Véhicule introuvable</p>
         <Button variant="outline" className="mt-4" onClick={() => navigate('/vehicles')}>
           Retour à la liste
         </Button>
@@ -541,38 +541,38 @@ export default function VehicleDetailPage() {
   else if (meta.ubiwanId) provider = 'Ubiwan'
 
   return (
-    <div className="bg-[#0A0A0F] min-h-screen space-y-6 p-6">
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="sm"
-          className="text-[#6B6B80] hover:text-[#F0F0F5]"
+          className="text-gray-500 hover:text-gray-900"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft size={18} />
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="font-syne text-2xl font-bold text-[#F0F0F5]">{vehicle.name}</h1>
+            <h1 className="font-sans text-2xl font-bold text-gray-900">{vehicle.name}</h1>
             <Badge variant={isMoving ? 'default' : 'secondary'}>
               {isMoving ? 'En route' : hasGps ? 'Arrêté' : 'Hors ligne'}
             </Badge>
           </div>
-          <p className="mt-0.5 text-sm text-[#6B6B80]">
+          <p className="mt-0.5 text-sm text-gray-500">
             {vehicle.plate} · {provider} · IMEI: {vehicle.deviceImei || 'N/A'}
           </p>
         </div>
         <div className="flex gap-2">
           <Button
-            className="gap-2 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+            className="gap-2 bg-white border border-gray-200 text-gray-900 hover:bg-gray-100 hover:border-[#E5E7EB]"
             onClick={() => setShowReplay(true)}
           >
             <Play size={16} />
             Replay GPS
           </Button>
           <Button
-            className="gap-2 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+            className="gap-2 bg-white border border-gray-200 text-gray-900 hover:bg-gray-100 hover:border-[#E5E7EB]"
             onClick={() => setShowExport(true)}
           >
             <Download size={16} />
@@ -599,23 +599,23 @@ export default function VehicleDetailPage() {
       />
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-[#1F1F2E]">
+      <div className="flex gap-2 border-b border-gray-200">
         <button
           onClick={() => setActiveTab('gps')}
-          className={`font-syne px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+          className={`font-sans px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
             activeTab === 'gps'
-              ? 'border-[#00E5CC] text-[#00E5CC]'
-              : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-900'
           }`}
         >
           GPS
         </button>
         <button
           onClick={() => setActiveTab('trips')}
-          className={`font-syne px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+          className={`font-sans px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
             activeTab === 'trips'
-              ? 'border-[#00E5CC] text-[#00E5CC]'
-              : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-900'
           }`}
         >
           Trajets
@@ -628,11 +628,11 @@ export default function VehicleDetailPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Mini map */}
           <Card
-            className="lg:col-span-2 overflow-hidden bg-[#12121A] border border-[#1F1F2E]"
+            className="lg:col-span-2 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-sm"
             title="Affiche la position GPS actuelle et l historique récent du véhicule"
           >
             <CardHeader className="pb-2">
-              <CardTitle className="font-syne text-base text-[#F0F0F5]">Position actuelle</CardTitle>
+              <CardTitle className="font-sans text-base text-gray-900">Position actuelle</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {hasGps ? (
@@ -663,8 +663,8 @@ export default function VehicleDetailPage() {
                         center={[pos.lat, pos.lng]}
                         radius={3}
                         pathOptions={{
-                          color: '#00E5CC',
-                          fillColor: '#00E5CC',
+                          color: '#4361EE',
+                          fillColor: '#4361EE',
                           fillOpacity: 0.5 - idx * 0.01,
                           weight: 1,
                         }}
@@ -673,8 +673,8 @@ export default function VehicleDetailPage() {
                   </MapContainer>
                 </div>
               ) : (
-                <div className="h-72 flex items-center justify-center bg-[#1A1A25]">
-                  <div className="text-center text-[#44445A]">
+                <div className="h-72 flex items-center justify-center bg-gray-100">
+                  <div className="text-center text-[#9CA3AF]">
                     <MapPin size={32} className="mx-auto mb-2" />
                     <p className="text-sm">Aucune position GPS disponible</p>
                   </div>
@@ -684,40 +684,40 @@ export default function VehicleDetailPage() {
           </Card>
 
           {/* Current Status */}
-          <Card className="bg-[#12121A] border border-[#1F1F2E]">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="font-syne text-base text-[#F0F0F5]" title="Informations en temps réel du véhicule">Statut en temps réel</CardTitle>
+              <CardTitle className="font-sans text-base text-gray-900" title="Informations en temps réel du véhicule">Statut en temps réel</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-[12px] bg-[#1A1A25] p-4 text-center border border-[#1F1F2E]">
-                <Gauge size={20} className="mx-auto text-[#6B6B80] mb-1" />
-                <p className="font-mono font-bold text-3xl text-[#00E5CC]">
+              <div className="rounded-xl bg-gray-100 p-4 text-center border border-gray-200">
+                <Gauge size={20} className="mx-auto text-gray-500 mb-1" />
+                <p className="font-mono font-bold text-3xl text-blue-600">
                   {(vehicle.currentSpeed || 0).toFixed(0)}
                 </p>
-                <p className="text-xs text-[#6B6B80]">km/h</p>
+                <p className="text-xs text-gray-500">km/h</p>
               </div>
 
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-2">
-                  <Power size={14} className={((vehicle as any).ignition ? 'text-[#00E5CC]' : 'text-[#44445A]')} />
-                  <span className="text-[#6B6B80] flex-1">Contact</span>
-                  <span className={`font-medium text-xs ${(vehicle as any).ignition ? 'text-[#00E5CC]' : 'text-[#44445A]'}`}>
+                  <Power size={14} className={((vehicle as any).ignition ? 'text-blue-600' : 'text-[#9CA3AF]')} />
+                  <span className="text-gray-500 flex-1">Contact</span>
+                  <span className={`font-medium text-xs ${(vehicle as any).ignition ? 'text-blue-600' : 'text-[#9CA3AF]'}`}>
                     {(vehicle as any).ignition ? 'ON' : 'OFF'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span title="Niveau de batterie du dispositif GPS"><Battery size={14} className={(() => {
                     const batteryLevel = (vehicle as any).batteryLevel || (meta.batteryLevel !== undefined ? meta.batteryLevel : (((vehicle as any).batteryVoltage || meta.batteryVoltage || 0) * 100 / 14))
-                    if (batteryLevel > 50) return 'text-[#00E5CC]'
-                    if (batteryLevel > 20) return 'text-[#FFB547]'
-                    return 'text-[#FF4D6A]'
+                    if (batteryLevel > 50) return 'text-blue-600'
+                    if (batteryLevel > 20) return 'text-amber-500'
+                    return 'text-red-500'
                   })()} /></span>
-                  <span className="text-[#6B6B80] flex-1">Batterie</span>
+                  <span className="text-gray-500 flex-1">Batterie</span>
                   <span className={`font-medium text-xs ${(() => {
                     const batteryLevel = (vehicle as any).batteryLevel || (meta.batteryLevel !== undefined ? meta.batteryLevel : (((vehicle as any).batteryVoltage || meta.batteryVoltage || 0) * 100 / 14))
-                    if (batteryLevel > 50) return 'text-[#00E5CC]'
-                    if (batteryLevel > 20) return 'text-[#FFB547]'
-                    return 'text-[#FF4D6A]'
+                    if (batteryLevel > 50) return 'text-blue-600'
+                    if (batteryLevel > 20) return 'text-amber-500'
+                    return 'text-red-500'
                   })()}`}>
                     {(() => {
                       const batteryLevel = (vehicle as any).batteryLevel || meta.batteryLevel
@@ -728,65 +728,65 @@ export default function VehicleDetailPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Compass size={14} className="text-[#6B6B80]" />
-                  <span className="text-[#6B6B80] flex-1">Cap</span>
-                  <span className="font-mono text-[#F0F0F5]">{(vehicle.currentHeading || 0).toFixed(0)}°</span>
+                  <Compass size={14} className="text-gray-500" />
+                  <span className="text-gray-500 flex-1">Cap</span>
+                  <span className="font-mono text-gray-900">{(vehicle.currentHeading || 0).toFixed(0)}°</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin size={14} className="text-[#6B6B80]" />
-                  <span className="text-[#6B6B80] flex-1">Position</span>
-                  <span className="font-mono text-xs text-[#00E5CC]">
+                  <MapPin size={14} className="text-gray-500" />
+                  <span className="text-gray-500 flex-1">Position</span>
+                  <span className="font-mono text-xs text-blue-600">
                     {vehicle.currentLat?.toFixed(5)}, {vehicle.currentLng?.toFixed(5)}
                   </span>
                 </div>
                 {currentAddress && (
                   <div className="flex items-start gap-2">
-                    <MapPin size={14} className="text-[#6B6B80] mt-0.5" />
+                    <MapPin size={14} className="text-gray-500 mt-0.5" />
                     <div className="flex-1">
-                      <span className="text-[#6B6B80] text-xs block">Adresse</span>
-                      <span className="text-[#F0F0F5] text-xs leading-tight">{currentAddress}</span>
+                      <span className="text-gray-500 text-xs block">Adresse</span>
+                      <span className="text-gray-900 text-xs leading-tight">{currentAddress}</span>
                     </div>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
-                  <span title="Heure de la dernière communication du véhicule"><Clock size={14} className="text-[#6B6B80]" /></span>
-                  <span className="text-[#6B6B80] flex-1">Dernière com.</span>
-                  <span className="font-medium text-xs text-[#F0F0F5]">
+                  <span title="Heure de la dernière communication du véhicule"><Clock size={14} className="text-gray-500" /></span>
+                  <span className="text-gray-500 flex-1">Dernière com.</span>
+                  <span className="font-medium text-xs text-gray-900">
                     {vehicle.lastCommunication ? formatTimeAgo(vehicle.lastCommunication) : 'Jamais'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span title="IMEI du dispositif GPS"><Cpu size={14} className="text-[#6B6B80]" /></span>
-                  <span className="text-[#6B6B80] flex-1">IMEI</span>
-                  <span className="font-mono text-xs text-[#00E5CC]">
+                  <span title="IMEI du dispositif GPS"><Cpu size={14} className="text-gray-500" /></span>
+                  <span className="text-gray-500 flex-1">IMEI</span>
+                  <span className="font-mono text-xs text-blue-600">
                     {(vehicle as any).metadata?.imei || (vehicle as any).imei || (vehicle as any).deviceId || vehicle.deviceImei || 'N/A'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span title="Force du signal GPS"><Signal size={14} className={((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || 0) > 75 ? 'text-[#00E5CC]' : ((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || 0) > 40 ? 'text-[#FFB547]' : 'text-[#FF4D6A]'} /></span>
-                  <span className="text-[#6B6B80] flex-1">Signal GPS</span>
-                  <span className="font-medium text-xs text-[#F0F0F5]">
+                  <span title="Force du signal GPS"><Signal size={14} className={((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || 0) > 75 ? 'text-blue-600' : ((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || 0) > 40 ? 'text-amber-500' : 'text-red-500'} /></span>
+                  <span className="text-gray-500 flex-1">Signal GPS</span>
+                  <span className="font-medium text-xs text-gray-900">
                     {(vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality ? `${((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality).toFixed(0)}%` : 'N/A'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span title="Heures moteur accumulées"><Activity size={14} className="text-[#6B6B80]" /></span>
-                  <span className="text-[#6B6B80] flex-1">Heures moteur</span>
-                  <span className="font-medium text-xs text-[#F0F0F5]">
+                  <span title="Heures moteur accumulées"><Activity size={14} className="text-gray-500" /></span>
+                  <span className="text-gray-500 flex-1">Heures moteur</span>
+                  <span className="font-medium text-xs text-gray-900">
                     {(vehicle as any).metadata?.engineHours || (vehicle as any).engineHours ? `${((vehicle as any).metadata?.engineHours || (vehicle as any).engineHours).toFixed(0)} h` : 'N/A'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span title="État du contact du moteur"><Power size={14} className={((vehicle as any).metadata?.ignition ? 'text-[#00E5CC]' : 'text-[#44445A]')} /></span>
-                  <span className="text-[#6B6B80] flex-1">Contact</span>
-                  <span className={`font-medium text-xs ${(vehicle as any).metadata?.ignition ? 'text-[#00E5CC]' : 'text-[#44445A]'}`}>
+                  <span title="État du contact du moteur"><Power size={14} className={((vehicle as any).metadata?.ignition ? 'text-blue-600' : 'text-[#9CA3AF]')} /></span>
+                  <span className="text-gray-500 flex-1">Contact</span>
+                  <span className={`font-medium text-xs ${(vehicle as any).metadata?.ignition ? 'text-blue-600' : 'text-[#9CA3AF]'}`}>
                     {(vehicle as any).metadata?.ignition ? 'ON' : 'OFF'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span title="Fournisseur de service GPS"><Cpu size={14} className="text-[#6B6B80]" /></span>
-                  <span className="text-[#6B6B80] flex-1">Provider</span>
-                  <Badge variant="outline" className="text-xs bg-[#1A1A25] border-[#1F1F2E] text-[#00E5CC]">{provider}</Badge>
+                  <span title="Fournisseur de service GPS"><Cpu size={14} className="text-gray-500" /></span>
+                  <span className="text-gray-500 flex-1">Provider</span>
+                  <Badge variant="outline" className="text-xs bg-gray-100 border-gray-200 text-blue-600">{provider}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -795,59 +795,59 @@ export default function VehicleDetailPage() {
 
         {/* Vehicle info cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Marque et modèle du véhicule">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Marque et modèle du véhicule">
             <CardContent className="pt-5 pb-4">
-              <Car size={18} className="text-[#6B6B80] mb-2" />
-              <p className="text-xs text-[#6B6B80]">Marque / Modèle</p>
-              <p className="font-syne font-semibold text-[#F0F0F5] mt-0.5">
+              <Car size={18} className="text-gray-500 mb-2" />
+              <p className="text-xs text-gray-500">Marque / Modèle</p>
+              <p className="font-sans font-semibold text-gray-900 mt-0.5">
                 {vehicle.brand || '—'} {vehicle.model || ''}
               </p>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Plaque dimmatriculation du véhicule">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Plaque dimmatriculation du véhicule">
             <CardContent className="pt-5 pb-4">
-              <Navigation size={18} className="text-[#6B6B80] mb-2" />
-              <p className="text-xs text-[#6B6B80]">Plaque</p>
-              <p className="font-syne font-semibold text-[#F0F0F5] mt-0.5">{vehicle.plate || '—'}</p>
+              <Navigation size={18} className="text-gray-500 mb-2" />
+              <p className="text-xs text-gray-500">Plaque</p>
+              <p className="font-sans font-semibold text-gray-900 mt-0.5">{vehicle.plate || '—'}</p>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Identifiant unique du dispositif GPS">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Identifiant unique du dispositif GPS">
             <CardContent className="pt-5 pb-4">
-              <Cpu size={18} className="text-[#6B6B80] mb-2" />
-              <p className="text-xs text-[#6B6B80]">IMEI</p>
-              <p className="font-mono text-xs text-[#00E5CC] mt-0.5">{vehicle.deviceImei || (vehicle as any).metadata?.imei || (vehicle as any).imei || '—'}</p>
+              <Cpu size={18} className="text-gray-500 mb-2" />
+              <p className="text-xs text-gray-500">IMEI</p>
+              <p className="font-mono text-xs text-blue-600 mt-0.5">{vehicle.deviceImei || (vehicle as any).metadata?.imei || (vehicle as any).imei || '—'}</p>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Date de création du véhicule dans le système">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Date de création du véhicule dans le système">
             <CardContent className="pt-5 pb-4">
-              <Clock size={18} className="text-[#6B6B80] mb-2" />
-              <p className="text-xs text-[#6B6B80]">Créé le</p>
-              <p className="font-syne font-semibold text-[#F0F0F5] mt-0.5 text-sm">
+              <Clock size={18} className="text-gray-500 mb-2" />
+              <p className="text-xs text-gray-500">Créé le</p>
+              <p className="font-sans font-semibold text-gray-900 mt-0.5 text-sm">
                 {vehicle.createdAt ? formatDateTime(vehicle.createdAt) : '—'}
               </p>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Distance totale parcourue ou kilométrage">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Distance totale parcourue ou kilométrage">
             <CardContent className="pt-5 pb-4">
-              <Route size={18} className="text-[#6B6B80] mb-2" />
-              <p className="text-xs text-[#6B6B80]">Odomètre</p>
-              <p className="font-syne font-semibold text-[#F0F0F5] mt-0.5">
+              <Route size={18} className="text-gray-500 mb-2" />
+              <p className="text-xs text-gray-500">Odomètre</p>
+              <p className="font-sans font-semibold text-gray-900 mt-0.5">
                 {((vehicle as any).odometer || vehicle.totalDistance || 0).toLocaleString('fr-FR')} km
               </p>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Numéro didentification du véhicule">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Numéro didentification du véhicule">
             <CardContent className="pt-5 pb-4">
-              <Zap size={18} className="text-[#6B6B80] mb-2" />
-              <p className="text-xs text-[#6B6B80]">VIN</p>
-              <p className="font-mono text-xs text-[#00E5CC] mt-0.5">{(vehicle as any).vin || vehicle.vin || '—'}</p>
+              <Zap size={18} className="text-gray-500 mb-2" />
+              <p className="text-xs text-gray-500">VIN</p>
+              <p className="font-mono text-xs text-blue-600 mt-0.5">{(vehicle as any).vin || vehicle.vin || '—'}</p>
             </CardContent>
           </Card>
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Classification du type de véhicule">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Classification du type de véhicule">
             <CardContent className="pt-5 pb-4">
-              <Car size={18} className="text-[#6B6B80] mb-2" />
-              <p className="text-xs text-[#6B6B80]">Type</p>
-              <p className="font-syne font-semibold text-[#F0F0F5] mt-0.5">
+              <Car size={18} className="text-gray-500 mb-2" />
+              <p className="text-xs text-gray-500">Type</p>
+              <p className="font-sans font-semibold text-gray-900 mt-0.5">
                 {(vehicle as any).vehicleType || vehicle.type || '—'}
               </p>
             </CardContent>
@@ -857,18 +857,18 @@ export default function VehicleDetailPage() {
         {/* Telemetry cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {/* Engine Hours */}
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Nombre total dheures moteur du véhicule">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Nombre total dheures moteur du véhicule">
             <CardContent className="pt-5 pb-4">
-              <Activity size={18} className="text-[#6B6B80] mb-2" />
-              <p className="text-xs text-[#6B6B80]">Heures moteur</p>
-              <p className="font-mono font-semibold text-[#F0F0F5] mt-0.5 text-lg">
+              <Activity size={18} className="text-gray-500 mb-2" />
+              <p className="text-xs text-gray-500">Heures moteur</p>
+              <p className="font-mono font-semibold text-gray-900 mt-0.5 text-lg">
                 {((vehicle as any).metadata?.engineHours || (vehicle as any).engineHours || 0).toLocaleString('fr-FR')} h
               </p>
             </CardContent>
           </Card>
 
           {/* Battery Level Display */}
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Niveau de batterie du dispositif GPS">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Niveau de batterie du dispositif GPS">
             <CardContent className="pt-5 pb-4">
               <Battery
                 size={18}
@@ -876,12 +876,12 @@ export default function VehicleDetailPage() {
                   const batteryLevel = (vehicle as any).metadata?.batteryLevel || (vehicle as any).batteryLevel
                   const batteryVoltage = (vehicle as any).metadata?.batteryVoltage || (vehicle as any).batteryVoltage || 0
                   let level = batteryLevel !== undefined ? batteryLevel : (batteryVoltage > 0 ? (batteryVoltage * 100 / 14) : 0)
-                  if (level > 50) return 'text-[#00E5CC]'
-                  if (level > 20) return 'text-[#FFB547]'
-                  return 'text-[#FF4D6A]'
+                  if (level > 50) return 'text-blue-600'
+                  if (level > 20) return 'text-amber-500'
+                  return 'text-red-500'
                 })()}`}
               />
-              <p className="text-xs text-[#6B6B80]">Niveau batterie</p>
+              <p className="text-xs text-gray-500">Niveau batterie</p>
               <div className="mt-2 flex gap-0.5 mb-2">
                 {[...Array(5)].map((_, idx) => {
                   const batteryLevel = (vehicle as any).metadata?.batteryLevel || (vehicle as any).batteryLevel
@@ -892,13 +892,13 @@ export default function VehicleDetailPage() {
                     <div
                       key={idx}
                       className={`h-2 flex-1 rounded-sm ${
-                        filled ? 'bg-[#00E5CC]' : 'bg-[#1F1F2E]'
+                        filled ? 'bg-blue-600' : 'bg-gray-50'
                       }`}
                     />
                   )
                 })}
               </div>
-              <p className="text-xs text-[#6B6B80]">
+              <p className="text-xs text-gray-500">
                 {(() => {
                   const batteryLevel = (vehicle as any).metadata?.batteryLevel || (vehicle as any).batteryLevel
                   const batteryVoltage = (vehicle as any).metadata?.batteryVoltage || (vehicle as any).batteryVoltage || 0
@@ -911,19 +911,19 @@ export default function VehicleDetailPage() {
           </Card>
 
           {/* Signal Strength & GPS Accuracy */}
-          <Card className="bg-[#12121A] border border-[#1F1F2E]" title="Force du signal GPS et précision">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm" title="Force du signal GPS et précision">
             <CardContent className="pt-5 pb-4">
               <Signal
                 size={18}
                 className={(() => {
                   const signalStrength = (vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || (vehicle as any).signalStrength || 0
-                  if (signalStrength > 75) return 'text-[#00E5CC]'
-                  if (signalStrength > 40) return 'text-[#FFB547]'
-                  return 'text-[#FF4D6A]'
+                  if (signalStrength > 75) return 'text-blue-600'
+                  if (signalStrength > 40) return 'text-amber-500'
+                  return 'text-red-500'
                 })()}
                 style={{marginBottom: '8px'}}
               />
-              <p className="text-xs text-[#6B6B80] mb-1">Signal GPS</p>
+              <p className="text-xs text-gray-500 mb-1">Signal GPS</p>
               <div className="mt-1 flex gap-0.5 mb-2">
                 {[...Array(5)].map((_, idx) => {
                   const signalStrength = (vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || (vehicle as any).signalStrength || 0
@@ -932,35 +932,35 @@ export default function VehicleDetailPage() {
                     <div
                       key={idx}
                       className={`h-1.5 flex-1 rounded-sm ${
-                        filled ? 'bg-[#00E5CC]' : 'bg-[#1F1F2E]'
+                        filled ? 'bg-blue-600' : 'bg-gray-50'
                       }`}
                     />
                   )
                 })}
               </div>
-              <p className="text-xs text-[#6B6B80] mb-3">
+              <p className="text-xs text-gray-500 mb-3">
                 {(vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality ? `${((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality).toFixed(0)}%` : 'N/A'}
               </p>
-              <p className="text-xs text-[#6B6B80] mb-1">Précision GPS</p>
+              <p className="text-xs text-gray-500 mb-1">Précision GPS</p>
               <div className="mt-1">
                 {(() => {
                   const gpsAccuracy = ((vehicle as any).gpsAccuracy || 0)
-                  let color = 'text-[#00E5CC]'
-                  let bgColor = 'bg-[#1A1A25]'
+                  let color = 'text-blue-600'
+                  let bgColor = 'bg-gray-100'
                   let label = 'Excellente'
 
                   if (gpsAccuracy > 15) {
-                    color = 'text-[#FF4D6A]'
-                    bgColor = 'bg-[#1A1A25]'
+                    color = 'text-red-500'
+                    bgColor = 'bg-gray-100'
                     label = 'Mauvaise'
                   } else if (gpsAccuracy > 5) {
-                    color = 'text-[#FFB547]'
-                    bgColor = 'bg-[#1A1A25]'
+                    color = 'text-amber-500'
+                    bgColor = 'bg-gray-100'
                     label = 'Acceptable'
                   }
 
                   return (
-                    <div className={`rounded-[8px] px-2 py-1 ${bgColor} border border-[#1F1F2E]`}>
+                    <div className={`rounded-lg px-2 py-1 ${bgColor} border border-gray-200`}>
                       <p className={`font-medium text-xs ${color}`}>
                         {gpsAccuracy.toFixed(1)} m - {label}
                       </p>
@@ -974,12 +974,12 @@ export default function VehicleDetailPage() {
 
         {/* Maintenance Reminders */}
         {maintenanceInfo.nextDate && (
-          <Card className={`bg-[#12121A] border ${maintenanceInfo.isOverdue ? 'border-[#FF4D6A]' : 'border-[#1F1F2E]'}`}>
+          <Card className={`bg-white border ${maintenanceInfo.isOverdue ? 'border-red-500' : 'border-gray-200'}`}>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <CardTitle className="font-syne text-base text-[#F0F0F5]">Maintenance</CardTitle>
+                <CardTitle className="font-sans text-base text-gray-900">Maintenance</CardTitle>
                 {maintenanceInfo.isOverdue && (
-                  <Badge variant="destructive" className="bg-[#FF4D6A] text-white gap-1">
+                  <Badge variant="destructive" className="bg-red-500 text-white gap-1">
                     <AlertTriangle size={12} />
                     En retard
                   </Badge>
@@ -988,26 +988,26 @@ export default function VehicleDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3">
-                  <p className="text-xs text-[#6B6B80] mb-1">Type</p>
-                  <p className="font-medium text-[#F0F0F5]">{maintenanceInfo.type}</p>
+                <div className="bg-gray-100 border border-gray-200 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Type</p>
+                  <p className="font-medium text-gray-900">{maintenanceInfo.type}</p>
                 </div>
-                <div className={`rounded-[8px] p-3 border ${maintenanceInfo.isOverdue ? 'bg-[#1A0A0A] border-[#FF4D6A]' : 'bg-[#1A1A25] border-[#1F1F2E]'}`}>
-                  <p className="text-xs text-[#6B6B80] mb-1">Prochaine date</p>
-                  <p className={`font-mono text-sm ${maintenanceInfo.isOverdue ? 'text-[#FF4D6A]' : 'text-[#00E5CC]'}`}>
+                <div className={`rounded-lg p-3 border ${maintenanceInfo.isOverdue ? 'bg-[#1A0A0A] border-red-500' : 'bg-gray-100 border-gray-200'}`}>
+                  <p className="text-xs text-gray-500 mb-1">Prochaine date</p>
+                  <p className={`font-mono text-sm ${maintenanceInfo.isOverdue ? 'text-red-500' : 'text-blue-600'}`}>
                     {maintenanceInfo.nextDate?.toLocaleDateString('fr-FR')}
                   </p>
                 </div>
                 {maintenanceInfo.nextKm && (
-                  <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3">
-                    <p className="text-xs text-[#6B6B80] mb-1">Prochain kilométrage</p>
-                    <p className="font-mono text-[#00E5CC]">{maintenanceInfo.nextKm.toLocaleString('fr-FR')} km</p>
+                  <div className="bg-gray-100 border border-gray-200 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 mb-1">Prochain kilométrage</p>
+                    <p className="font-mono text-blue-600">{maintenanceInfo.nextKm.toLocaleString('fr-FR')} km</p>
                   </div>
                 )}
                 {maintenanceInfo.lastDate && (
-                  <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-3">
-                    <p className="text-xs text-[#6B6B80] mb-1">Dernière date</p>
-                    <p className="font-mono text-[#6B6B80]">{maintenanceInfo.lastDate?.toLocaleDateString('fr-FR')}</p>
+                  <div className="bg-gray-100 border border-gray-200 rounded-lg p-3">
+                    <p className="text-xs text-gray-500 mb-1">Dernière date</p>
+                    <p className="font-mono text-gray-500">{maintenanceInfo.lastDate?.toLocaleDateString('fr-FR')}</p>
                   </div>
                 )}
               </div>
@@ -1017,31 +1017,31 @@ export default function VehicleDetailPage() {
 
         {/* GPS History */}
         {positions.length > 0 && (
-          <Card className="bg-[#12121A] border border-[#1F1F2E]">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="font-syne text-base text-[#F0F0F5]" title="Dernières positions enregistrées du véhicule">Historique GPS</CardTitle>
-              <CardDescription className="text-xs text-[#6B6B80]">Dernières positions enregistrées</CardDescription>
+              <CardTitle className="font-sans text-base text-gray-900" title="Dernières positions enregistrées du véhicule">Historique GPS</CardTitle>
+              <CardDescription className="text-xs text-gray-500">Dernières positions enregistrées</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-[#1F1F2E] text-left text-xs text-[#6B6B80]">
+                    <tr className="border-b border-gray-200 text-left text-xs text-gray-500">
                       <th className="pb-2 pr-4">Date</th>
                       <th className="pb-2 pr-4">Vitesse</th>
                       <th className="pb-2 pr-4">Cap</th>
                       <th className="pb-2">Position</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1F1F2E]">
+                  <tbody className="divide-y divide-gray-200">
                     {positions.slice(0, 15).map((pos: any, idx: number) => (
-                      <tr key={idx} className="text-xs text-[#F0F0F5]">
-                        <td className="py-2 pr-4 text-[#6B6B80]">
+                      <tr key={idx} className="text-xs text-gray-900">
+                        <td className="py-2 pr-4 text-gray-500">
                           {pos.createdAt ? formatDateTime(pos.createdAt) : formatDateTime(pos.timestamp)}
                         </td>
                         <td className="py-2 pr-4 font-mono font-semibold">{(pos.speed || 0).toFixed(0)} km/h</td>
-                        <td className="py-2 pr-4 text-[#6B6B80]">{(pos.heading || 0).toFixed(0)}°</td>
-                        <td className="py-2 font-mono text-[#00E5CC]">
+                        <td className="py-2 pr-4 text-gray-500">{(pos.heading || 0).toFixed(0)}°</td>
+                        <td className="py-2 font-mono text-blue-600">
                           {pos.lat?.toFixed(5)}, {pos.lng?.toFixed(5)}
                         </td>
                       </tr>
@@ -1054,15 +1054,15 @@ export default function VehicleDetailPage() {
         )}
 
         {/* Vehicle Photos */}
-        <Card className="bg-[#12121A] border border-[#1F1F2E]">
+        <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="font-syne text-base text-[#F0F0F5]" title="Galerie de photos du véhicule">Images du véhicule</CardTitle>
+            <CardTitle className="font-sans text-base text-gray-900" title="Galerie de photos du véhicule">Images du véhicule</CardTitle>
           </CardHeader>
           <CardContent>
             {photos.length === 0 ? (
-              <div className="border-2 border-dashed border-[#1F1F2E] rounded-lg p-8 text-center hover:border-[#2A2A3D] transition">
-                <Camera size={32} className="mx-auto text-[#6B6B80] mb-2" />
-                <p className="text-sm text-[#6B6B80] mb-4">Aucune image. Glissez-déposez ou cliquez pour ajouter.</p>
+              <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center hover:border-[#E5E7EB] transition">
+                <Camera size={32} className="mx-auto text-gray-500 mb-2" />
+                <p className="text-sm text-gray-500 mb-4">Aucune image. Glissez-déposez ou cliquez pour ajouter.</p>
                 <input
                   type="file"
                   accept="image/*"
@@ -1071,7 +1071,7 @@ export default function VehicleDetailPage() {
                   id="photo-input"
                 />
                 <Button
-                  className="bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+                  className="bg-white border border-gray-200 text-gray-900 hover:bg-gray-100 hover:border-[#E5E7EB]"
                   size="sm"
                   onClick={() => document.getElementById('photo-input')?.click()}
                 >
@@ -1083,7 +1083,7 @@ export default function VehicleDetailPage() {
               <div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
                   {photos.map(photo => (
-                    <div key={photo.id} className="relative group border border-[#1F1F2E] rounded-lg overflow-hidden bg-[#1A1A25]">
+                    <div key={photo.id} className="relative group border border-gray-200 rounded-lg overflow-hidden bg-gray-100">
                       <img
                         src={photo.data}
                         alt={photo.name}
@@ -1091,11 +1091,11 @@ export default function VehicleDetailPage() {
                       />
                       <button
                         onClick={() => deletePhoto(photo.id)}
-                        className="absolute top-2 right-2 bg-[#FF4D6A] text-white p-1 rounded opacity-0 group-hover:opacity-100 transition"
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition"
                       >
                         <X size={14} />
                       </button>
-                      <p className="text-xs text-[#6B6B80] p-2 truncate">{photo.name}</p>
+                      <p className="text-xs text-gray-500 p-2 truncate">{photo.name}</p>
                     </div>
                   ))}
                 </div>
@@ -1107,7 +1107,7 @@ export default function VehicleDetailPage() {
                   id="photo-input-add"
                 />
                 <Button
-                  className="gap-2 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+                  className="gap-2 bg-white border border-gray-200 text-gray-900 hover:bg-gray-100 hover:border-[#E5E7EB]"
                   size="sm"
                   onClick={() => document.getElementById('photo-input-add')?.click()}
                 >
@@ -1120,19 +1120,19 @@ export default function VehicleDetailPage() {
         </Card>
 
         {/* Vehicle Notes */}
-        <Card className="bg-[#12121A] border border-[#1F1F2E]">
+        <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="font-syne text-base text-[#F0F0F5]" title="Notes et annotations sur ce véhicule">Notes</CardTitle>
+            <CardTitle className="font-sans text-base text-gray-900" title="Notes et annotations sur ce véhicule">Notes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Textarea
               placeholder="Ajouter des notes et informations sur ce véhicule..."
               value={vehicleNotes}
               onChange={(e) => setVehicleNotes(e.target.value)}
-              className="min-h-24 text-sm bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]"
+              className="min-h-24 text-sm bg-gray-100 border border-gray-200 text-gray-900 placeholder-[#9CA3AF] focus:border-blue-600"
             />
             <Button
-              className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]"
+              className="bg-blue-600 text-white hover:bg-[#3B82F6]"
               size="sm"
               onClick={saveNotes}
               disabled={notesLoading}
@@ -1143,11 +1143,11 @@ export default function VehicleDetailPage() {
         </Card>
 
         {/* Custom Fields */}
-        <Card className="bg-[#12121A] border border-[#1F1F2E]">
+        <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
           <CardHeader className="pb-3 flex items-center justify-between">
-            <CardTitle className="font-syne text-base text-[#F0F0F5]" title="Champs supplémentaires personnalisés pour ce véhicule">Champs personnalisés</CardTitle>
+            <CardTitle className="font-sans text-base text-gray-900" title="Champs supplémentaires personnalisés pour ce véhicule">Champs personnalisés</CardTitle>
             <Button
-              className="gap-2 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+              className="gap-2 bg-white border border-gray-200 text-gray-900 hover:bg-gray-100 hover:border-[#E5E7EB]"
               size="sm"
               onClick={() => setShowAddField(!showAddField)}
             >
@@ -1157,25 +1157,25 @@ export default function VehicleDetailPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {showAddField && (
-              <div className="border border-[#1F1F2E] rounded-lg p-3 space-y-2 bg-[#1A1A25]">
+              <div className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-100">
                 <input
                   type="text"
                   placeholder="Nom du champ"
                   value={newFieldForm.key}
                   onChange={(e) => setNewFieldForm({ ...newFieldForm, key: e.target.value })}
-                  className="w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]"
+                  className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm bg-white text-gray-900 placeholder-[#9CA3AF] focus:border-blue-600"
                 />
                 <input
                   type="text"
                   placeholder="Valeur"
                   value={newFieldForm.value}
                   onChange={(e) => setNewFieldForm({ ...newFieldForm, value: e.target.value })}
-                  className="w-full px-2 py-1.5 border border-[#1F1F2E] rounded text-sm bg-[#12121A] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC]"
+                  className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm bg-white text-gray-900 placeholder-[#9CA3AF] focus:border-blue-600"
                 />
                 <div className="flex gap-2">
                   <Button
                     size="sm"
-                    className="flex-1 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]"
+                    className="flex-1 bg-blue-600 text-white hover:bg-[#3B82F6]"
                     onClick={() => {
                       if (newFieldForm.key && newFieldForm.value) {
                         setCustomFields([...customFields, { key: newFieldForm.key, value: newFieldForm.value }])
@@ -1188,7 +1188,7 @@ export default function VehicleDetailPage() {
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 bg-[#12121A] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
+                    className="flex-1 bg-white border border-gray-200 text-gray-900 hover:bg-gray-100 hover:border-[#E5E7EB]"
                     onClick={() => setShowAddField(false)}
                   >
                     Annuler
@@ -1199,21 +1199,21 @@ export default function VehicleDetailPage() {
             <div className="space-y-2">
               {customFields.length > 0 ? (
                 customFields.map((field, idx) => (
-                  <div key={idx} className="border border-[#1F1F2E] rounded-lg p-2.5 flex items-center justify-between text-sm bg-[#1A1A25]">
+                  <div key={idx} className="border border-gray-200 rounded-lg p-2.5 flex items-center justify-between text-sm bg-gray-100">
                     <div>
-                      <p className="font-medium text-[#F0F0F5]">{field.key}</p>
-                      <p className="text-xs text-[#6B6B80]">{field.value}</p>
+                      <p className="font-medium text-gray-900">{field.key}</p>
+                      <p className="text-xs text-gray-500">{field.value}</p>
                     </div>
                     <button
                       onClick={() => setCustomFields(customFields.filter((_, i) => i !== idx))}
-                      className="text-[#6B6B80] hover:text-[#F0F0F5]"
+                      className="text-gray-500 hover:text-gray-900"
                     >
                       <X size={16} />
                     </button>
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-[#6B6B80]">Aucun champ personnalisé</p>
+                <p className="text-xs text-gray-500">Aucun champ personnalisé</p>
               )}
             </div>
           </CardContent>
@@ -1225,43 +1225,43 @@ export default function VehicleDetailPage() {
       {activeTab === 'trips' && (
         <div className="space-y-6">
           {/* Date Range Selector with Export */}
-          <Card className="bg-[#12121A] border border-[#1F1F2E]">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="font-syne text-base text-[#F0F0F5]">Filtre et export des trajets</CardTitle>
+              <CardTitle className="font-sans text-base text-gray-900">Filtre et export des trajets</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {exportError && (
-                <div className="flex items-center gap-2 bg-[#1A0A0A] border border-[#FF4D6A] rounded-lg p-3">
-                  <AlertCircle size={16} className="text-[#FF4D6A] flex-shrink-0" />
-                  <p className="text-sm text-[#F0F0F5]">{exportError}</p>
+                <div className="flex items-center gap-2 bg-[#1A0A0A] border border-red-500 rounded-lg p-3">
+                  <AlertCircle size={16} className="text-red-500 flex-shrink-0" />
+                  <p className="text-sm text-gray-900">{exportError}</p>
                 </div>
               )}
               <div className="flex gap-4 items-end flex-wrap">
                 <div className="flex-1 min-w-[200px]">
-                  <label className="block text-sm font-medium text-[#F0F0F5] mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     À partir du
                   </label>
                   <input
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5] focus:border-[#00E5CC]"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-100 text-gray-900 focus:border-blue-600"
                   />
                 </div>
                 <div className="flex-1 min-w-[200px]">
-                  <label className="block text-sm font-medium text-[#F0F0F5] mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
                     Jusqu'au
                   </label>
                   <input
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm bg-[#1A1A25] text-[#F0F0F5] focus:border-[#00E5CC]"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-100 text-gray-900 focus:border-blue-600"
                   />
                 </div>
                 <div className="relative">
                   <Button
-                    className="gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]"
+                    className="gap-2 bg-blue-600 text-white hover:bg-[#3B82F6]"
                     onClick={() => setExportMenuOpen(!exportMenuOpen)}
                   >
                     <Download size={14} />
@@ -1269,28 +1269,28 @@ export default function VehicleDetailPage() {
                     <ChevronDown size={14} />
                   </Button>
                   {exportMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-[#12121A] border border-[#1F1F2E] rounded-lg shadow-lg z-10">
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                       <button
                         onClick={exportToCSV}
-                        className="w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]"
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 border-b border-gray-200"
                       >
                         CSV
                       </button>
                       <button
                         onClick={exportToKML}
-                        className="w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]"
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 border-b border-gray-200"
                       >
                         KML (Google Earth)
                       </button>
                       <button
                         onClick={exportToGPX}
-                        className="w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25] border-b border-[#1F1F2E]"
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100 border-b border-gray-200"
                       >
                         GPX
                       </button>
                       <button
                         onClick={exportToXLSX}
-                        className="w-full text-left px-4 py-2.5 text-sm text-[#F0F0F5] hover:bg-[#1A1A25]"
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-100"
                       >
                         Excel (FR)
                       </button>
@@ -1302,10 +1302,10 @@ export default function VehicleDetailPage() {
           </Card>
 
           {/* Trips List */}
-          <Card className="bg-[#12121A] border border-[#1F1F2E]">
+          <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
             <CardHeader className="pb-3">
-              <CardTitle className="font-syne text-base text-[#F0F0F5]">Trajets ({trips.length})</CardTitle>
-              <CardDescription className="text-[#6B6B80]">
+              <CardTitle className="font-sans text-base text-gray-900">Trajets ({trips.length})</CardTitle>
+              <CardDescription className="text-gray-500">
                 {tripsLoading ? 'Chargement...' : `${trips.length} trajet(s) trouvé(s)`}
               </CardDescription>
             </CardHeader>
@@ -1318,55 +1318,55 @@ export default function VehicleDetailPage() {
                 </div>
               ) : trips.length === 0 ? (
                 <div className="text-center py-8">
-                  <Route size={32} className="mx-auto text-[#6B6B80] mb-2" />
-                  <p className="text-[#6B6B80]">Aucun trajet trouvé pour cette période</p>
+                  <Route size={32} className="mx-auto text-gray-500 mb-2" />
+                  <p className="text-gray-500">Aucun trajet trouvé pour cette période</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {trips.map((trip, idx) => (
-                    <div key={idx} className="border border-[#1F1F2E] rounded-[12px] p-4 hover:bg-[#1A1A25] hover:border-[#2A2A3D] transition">
+                    <div key={idx} className="border border-gray-200 rounded-xl p-4 hover:bg-gray-100 hover:border-[#E5E7EB] transition">
                       <div className="grid grid-cols-2 gap-4 mb-3">
                         <div>
-                          <p className="text-xs text-[#6B6B80] mb-1">Départ</p>
-                          <p className="font-syne font-medium text-sm text-[#F0F0F5]">
+                          <p className="text-xs text-gray-500 mb-1">Départ</p>
+                          <p className="font-sans font-medium text-sm text-gray-900">
                             {trip.startAddress || `${trip.startLat.toFixed(4)}, ${trip.startLng.toFixed(4)}`}
                           </p>
-                          <p className="text-xs text-[#6B6B80]">
+                          <p className="text-xs text-gray-500">
                             {formatDateTime(trip.startTime)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-[#6B6B80] mb-1">Arrivée</p>
-                          <p className="font-syne font-medium text-sm text-[#F0F0F5]">
+                          <p className="text-xs text-gray-500 mb-1">Arrivée</p>
+                          <p className="font-sans font-medium text-sm text-gray-900">
                             {trip.endAddress || `${trip.endLat.toFixed(4)}, ${trip.endLng.toFixed(4)}`}
                           </p>
-                          <p className="text-xs text-[#6B6B80]">
+                          <p className="text-xs text-gray-500">
                             {formatDateTime(trip.endTime)}
                           </p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 text-sm">
-                        <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center">
-                          <p className="text-xs text-[#6B6B80] mb-1">Durée</p>
-                          <p className="font-mono font-semibold text-[#00E5CC]">{formatDuration(trip.duration)}</p>
+                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-2 text-center">
+                          <p className="text-xs text-gray-500 mb-1">Durée</p>
+                          <p className="font-mono font-semibold text-blue-600">{formatDuration(trip.duration)}</p>
                         </div>
-                        <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center">
-                          <p className="text-xs text-[#6B6B80] mb-1">Distance</p>
-                          <p className="font-mono font-semibold text-[#00E5CC]">{trip.distance.toFixed(1)} km</p>
+                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-2 text-center">
+                          <p className="text-xs text-gray-500 mb-1">Distance</p>
+                          <p className="font-mono font-semibold text-blue-600">{trip.distance.toFixed(1)} km</p>
                         </div>
-                        <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center">
-                          <p className="text-xs text-[#6B6B80] mb-1">Vitesse moy.</p>
-                          <p className="font-mono font-semibold text-[#00E5CC]">{trip.averageSpeed.toFixed(0)} km/h</p>
+                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-2 text-center">
+                          <p className="text-xs text-gray-500 mb-1">Vitesse moy.</p>
+                          <p className="font-mono font-semibold text-blue-600">{trip.averageSpeed.toFixed(0)} km/h</p>
                         </div>
-                        <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2 text-center">
-                          <p className="text-xs text-[#6B6B80] mb-1">Vitesse max</p>
-                          <p className="font-mono font-semibold text-[#00E5CC]">{trip.maxSpeed.toFixed(0)} km/h</p>
+                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-2 text-center">
+                          <p className="text-xs text-gray-500 mb-1">Vitesse max</p>
+                          <p className="font-mono font-semibold text-blue-600">{trip.maxSpeed.toFixed(0)} km/h</p>
                         </div>
                       </div>
 
                       <Button
-                        className="w-full gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D9BB]"
+                        className="w-full gap-2 bg-blue-600 text-white hover:bg-[#3B82F6]"
                         size="sm"
                         onClick={() => setReplayingTrip(trip)}
                       >
@@ -1382,20 +1382,20 @@ export default function VehicleDetailPage() {
 
           {/* Trip Replay */}
           {replayingTrip && (
-            <Card className="bg-[#12121A] border border-[#1F1F2E]">
+            <Card className="bg-white border border-gray-200 rounded-xl shadow-sm">
               <CardHeader className="pb-3 flex items-center justify-between">
-                <CardTitle className="font-syne text-base text-[#F0F0F5]">Affichage du trajet</CardTitle>
+                <CardTitle className="font-sans text-base text-gray-900">Affichage du trajet</CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-[#6B6B80] hover:text-[#F0F0F5]"
+                  className="text-gray-500 hover:text-gray-900"
                   onClick={() => setReplayingTrip(null)}
                 >
                   <X size={18} />
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="h-96 rounded-lg overflow-hidden mb-4 border border-[#1F1F2E]">
+                <div className="h-96 rounded-lg overflow-hidden mb-4 border border-gray-200">
                   <MapContainer
                     center={[replayingTrip.startLat, replayingTrip.startLng]}
                     zoom={14}
@@ -1433,8 +1433,8 @@ export default function VehicleDetailPage() {
                         center={[pt.lat, pt.lng]}
                         radius={2}
                         pathOptions={{
-                          color: '#00E5CC',
-                          fillColor: '#00E5CC',
+                          color: '#4361EE',
+                          fillColor: '#4361EE',
                           fillOpacity: 0.6 - (idx / replayingTrip.points!.length) * 0.5,
                           weight: 1,
                         }}
@@ -1443,13 +1443,13 @@ export default function VehicleDetailPage() {
                   </MapContainer>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2">
-                    <p className="text-xs text-[#6B6B80]">Durée</p>
-                    <p className="font-mono font-semibold text-[#F0F0F5]">{formatDuration(replayingTrip.duration)}</p>
+                  <div className="bg-gray-100 border border-gray-200 rounded-lg p-2">
+                    <p className="text-xs text-gray-500">Durée</p>
+                    <p className="font-mono font-semibold text-gray-900">{formatDuration(replayingTrip.duration)}</p>
                   </div>
-                  <div className="bg-[#1A1A25] border border-[#1F1F2E] rounded-[8px] p-2">
-                    <p className="text-xs text-[#6B6B80]">Distance</p>
-                    <p className="font-mono font-semibold text-[#F0F0F5]">{replayingTrip.distance.toFixed(1)} km</p>
+                  <div className="bg-gray-100 border border-gray-200 rounded-lg p-2">
+                    <p className="text-xs text-gray-500">Distance</p>
+                    <p className="font-mono font-semibold text-gray-900">{replayingTrip.distance.toFixed(1)} km</p>
                   </div>
                 </div>
               </CardContent>

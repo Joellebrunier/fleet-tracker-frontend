@@ -111,16 +111,16 @@ function KeyboardShortcuts({ onShortcut }: { onShortcut: (action: string) => voi
     <div className="relative">
       <button
         onClick={() => setShowHelp(!showHelp)}
-        className="absolute bottom-16 right-4 z-[1000] bg-[#12121A] shadow-md rounded-[12px] p-2 hover:bg-[#1A1A25] border border-[#1F1F2E]"
+        className="absolute bottom-16 right-4 z-[1000] bg-white shadow-lg rounded-xl p-2 hover:bg-gray-50 border border-gray-200"
         title="Press ? for help"
       >
-        <HelpCircle size={16} className="text-[#6B6B80]" />
+        <HelpCircle size={16} className="text-gray-500" />
       </button>
 
       {showHelp && (
-        <div className="absolute bottom-28 right-4 z-[1000] bg-[#12121A] shadow-lg rounded-[12px] p-3 border border-[#1F1F2E] w-56 text-xs backdrop-blur">
-          <p className="font-syne font-semibold mb-2 text-[#F0F0F5]">Raccourcis clavier</p>
-          <div className="space-y-1.5 text-[#6B6B80]">
+        <div className="absolute bottom-28 right-4 z-[1000] bg-white shadow-lg rounded-xl p-3 border border-gray-200 w-56 text-xs backdrop-blur">
+          <p className="font-sans font-semibold mb-2 text-gray-900">Raccourcis clavier</p>
+          <div className="space-y-1.5 text-gray-500">
             <div className="flex justify-between">
               <span>F</span>
               <span>Basculer plein écran</span>
@@ -192,7 +192,7 @@ function MiniMapOverview({ vehicles }: { vehicles: any[] }) {
   const map = useMap()
 
   return (
-    <div className="absolute bottom-32 left-56 z-[1000] w-56 h-56 border-2 border-[#1F1F2E] rounded-lg overflow-hidden shadow-lg bg-[#12121A] pointer-events-none">
+    <div className="absolute bottom-32 left-56 z-[1000] w-56 h-56 border border-gray-200 rounded-xl overflow-hidden shadow-lg bg-white pointer-events-none">
       <MapContainer
         center={map.getCenter()}
         zoom={map.getZoom() - 4}
@@ -212,7 +212,7 @@ function MiniMapOverview({ vehicles }: { vehicles: any[] }) {
             key={`minimap-${v.id}`}
             position={[v.currentLat, v.currentLng]}
             icon={L.divIcon({
-              html: `<div style="width: 6px; height: 6px; background: #00E5CC; border-radius: 50%; box-shadow: 0 0 4px rgba(0,229,204,0.6);"></div>`,
+              html: `<div style="width: 6px; height: 6px; background: #4361EE; border-radius: 50%; box-shadow: 0 0 4px rgba(67,97,238,0.6);"></div>`,
               className: 'mini-marker',
               iconSize: [6, 6],
               iconAnchor: [3, 3],
@@ -227,9 +227,9 @@ function MiniMapOverview({ vehicles }: { vehicles: any[] }) {
 // Event markers component
 function EventMarkers({ alerts }: { alerts: AlertEvent[] }) {
   const iconMap = {
-    speed: '#FF4D6A',
-    geofence: '#FFB547',
-    idle: '#00E5CC',
+    speed: '#EF4444',
+    geofence: '#F59E0B',
+    idle: '#4361EE',
   }
 
   return (
@@ -255,9 +255,9 @@ function EventMarkers({ alerts }: { alerts: AlertEvent[] }) {
             })}
           >
             <Popup>
-              <div className="text-xs bg-[#12121A] text-[#F0F0F5]">
-                <p className="font-bold font-syne">{alert.type.toUpperCase()}</p>
-                <p className="text-[#6B6B80]">{alert.message}</p>
+              <div className="text-xs bg-white text-gray-900">
+                <p className="font-bold font-sans">{alert.type.toUpperCase()}</p>
+                <p className="text-gray-500">{alert.message}</p>
               </div>
             </Popup>
           </Marker>
@@ -276,7 +276,7 @@ function VehicleTrail({ trail }: { trail: VehicleTrail }) {
       {/* Main trail line */}
       <Polyline
         positions={coordinates}
-        color="#00E5CC"
+        color="#4361EE"
         weight={2}
         opacity={0.6}
         dashArray="5,5"
@@ -287,8 +287,8 @@ function VehicleTrail({ trail }: { trail: VehicleTrail }) {
           key={`trail-${idx}`}
           center={[point.lat, point.lng]}
           radius={3}
-          fillColor="#00E5CC"
-          color="#00E5CC"
+          fillColor="#4361EE"
+          color="#4361EE"
           weight={1}
           opacity={0.4 + (idx / trail.length) * 0.6}
           fillOpacity={0.4 + (idx / trail.length) * 0.6}
@@ -307,20 +307,20 @@ function EventMarkersComponent({ alerts }: { alerts: AlertEvent[] }) {
 
         // Create SVG icons for different event types
         let icon = ''
-        let color = '#FF4D6A'
+        let color = '#EF4444'
 
         if (alert.type === 'speed') {
           // Warning triangle for speed alerts
           icon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l10 18H2z"/></svg>`
-          color = '#FF4D6A'
+          color = '#EF4444'
         } else if (alert.type === 'geofence') {
           // Shield for geofence events
           icon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`
-          color = '#FFB547'
+          color = '#F59E0B'
         } else if (alert.type === 'idle') {
           // Clock for idle events
           icon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
-          color = '#00E5CC'
+          color = '#4361EE'
         }
 
         return (
@@ -342,10 +342,10 @@ function EventMarkersComponent({ alerts }: { alerts: AlertEvent[] }) {
             })}
           >
             <Popup>
-              <div className="text-xs bg-[#12121A] text-[#F0F0F5] p-2">
-                <p className="font-bold font-syne">{alert.type.toUpperCase()}</p>
-                <p className="text-[#6B6B80]">{alert.message}</p>
-                <p className="text-[#44445A] text-xs mt-1">{new Date(alert.timestamp).toLocaleTimeString('fr-FR')}</p>
+              <div className="text-xs bg-white text-gray-900 p-2">
+                <p className="font-bold font-sans">{alert.type.toUpperCase()}</p>
+                <p className="text-gray-500">{alert.message}</p>
+                <p className="text-[#9CA3AF] text-xs mt-1">{new Date(alert.timestamp).toLocaleTimeString('fr-FR')}</p>
               </div>
             </Popup>
           </Marker>
@@ -693,11 +693,11 @@ export default function MapPage() {
   }
 
   return (
-    <div ref={mapContainerRef} className={`flex h-[calc(100vh-80px)] gap-4 ${isActualFullscreen ? 'fixed inset-0 z-[10000] w-screen h-screen' : ''}`}>
+    <div ref={mapContainerRef} className={`flex h-full bg-[#F5F7FA] gap-4 ${isActualFullscreen ? 'fixed inset-0 z-[10000] w-screen h-screen' : ''}`}>
       {/* Map */}
-      <div className={`relative ${isFullscreen ? 'w-full' : 'flex-1'} rounded-lg border border-[#1F1F2E] overflow-hidden shadow-sm`}>
+      <div className={`relative ${isFullscreen ? 'w-full' : 'flex-1'} rounded-lg border border-gray-200 overflow-hidden shadow-sm`}>
         {/* Map Style Selector */}
-        <div className="absolute top-4 left-4 z-[1000] bg-[#12121A]/95 rounded-[12px] shadow-md p-2 flex gap-1.5 backdrop-blur border border-[#1F1F2E]">
+        <div className="absolute top-4 left-4 z-[1000] bg-white rounded-xl shadow-lg p-2 flex gap-1.5 backdrop-blur border border-gray-200">
           {(
             [
               { id: 'plan', label: 'Plan' },
@@ -712,8 +712,8 @@ export default function MapPage() {
               onClick={() => setMapStyle(style.id as MapStyle)}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
                 mapStyle === style.id
-                  ? 'bg-[#00E5CC] text-[#0A0A0F] shadow-sm'
-                  : 'bg-[#1A1A25] text-[#6B6B80] hover:bg-[#2A2A3D]'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
               }`}
             >
               {style.label}
@@ -762,25 +762,25 @@ export default function MapPage() {
                   }}
                 >
                   <Popup>
-                    <div className="min-w-48 p-1 bg-[#12121A] text-[#F0F0F5]">
+                    <div className="min-w-48 p-1 bg-white text-gray-900">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <p className="font-bold text-sm font-syne">{vehicle.name}</p>
-                          <p className="text-xs text-[#6B6B80]">{vehicle.plate}</p>
+                          <p className="font-bold text-sm font-sans">{vehicle.name}</p>
+                          <p className="text-xs text-gray-500">{vehicle.plate}</p>
                         </div>
                         {vehicle.gpsProviderFailover && (
                           <div title="Basculement fournisseur actif">
-                            <AlertCircle size={14} className="text-[#FFB547]" />
+                            <AlertCircle size={14} className="text-amber-500" />
                           </div>
                         )}
                       </div>
                       <div className="text-xs space-y-1">
                         <div className="flex justify-between items-center">
-                          <span className="text-[#6B6B80]">Vitesse:</span>
+                          <span className="text-gray-500">Vitesse:</span>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}</span>
                             {(vehicle.currentSpeed || 0) > 130 && (
-                              <Badge className="bg-[#FF4D6A] text-white text-xs gap-1">
+                              <Badge className="bg-red-500 text-white text-xs gap-1">
                                 <AlertCircle size={10} />
                                 EXCÈS
                               </Badge>
@@ -789,29 +789,29 @@ export default function MapPage() {
                         </div>
                         {(vehicle.currentSpeed || 0) <= 2 && idleInfo.durationStr && (
                           <div className="flex justify-between">
-                            <span className="text-[#6B6B80]">À l'arrêt depuis:</span>
-                            <span className="font-medium text-[#00E5CC]">{idleInfo.durationStr}</span>
+                            <span className="text-gray-500">À l'arrêt depuis:</span>
+                            <span className="font-medium text-blue-600">{idleInfo.durationStr}</span>
                           </div>
                         )}
                         <div className="flex justify-between">
-                          <span className="text-[#6B6B80]">Dernière com.:</span>
+                          <span className="text-gray-500">Dernière com.:</span>
                           <span className="font-medium">{formatTimeAgo(vehicle.lastCommunication)}</span>
                         </div>
                         {vehicle.gpsProvider && (
                           <div className="flex justify-between">
-                            <span className="text-[#6B6B80]">Fournisseur:</span>
+                            <span className="text-gray-500">Fournisseur:</span>
                             <span className="font-medium text-xs">{vehicle.gpsProvider}</span>
                           </div>
                         )}
                         {vehicle._clusterCount && vehicle._clusterCount > 1 && (
-                          <div className="mt-2 pt-2 border-t border-[#1F1F2E]">
-                            <p className="text-[#6B6B80] font-medium">{vehicle._clusterCount} véhicules dans cette zone</p>
+                          <div className="mt-2 pt-2 border-t border-gray-200">
+                            <p className="text-gray-500 font-medium">{vehicle._clusterCount} véhicules dans cette zone</p>
                           </div>
                         )}
                       </div>
                       <button
                         onClick={() => navigate(`/vehicles/${vehicle.id}`)}
-                        className="mt-2 w-full text-xs text-[#00E5CC] hover:text-[#00D4B8] font-medium"
+                        className="mt-2 w-full text-xs text-blue-600 hover:text-[#3B82F6] font-medium"
                       >
                         Voir détails →
                       </button>
@@ -824,8 +824,8 @@ export default function MapPage() {
                   <CircleMarker
                     center={[vehicle.currentLat, vehicle.currentLng]}
                     radius={6}
-                    fillColor="#FF4D6A"
-                    color="#FF4D6A"
+                    fillColor="#EF4444"
+                    color="#EF4444"
                     weight={2}
                     opacity={0.6}
                     fillOpacity={0.3}
@@ -854,9 +854,9 @@ export default function MapPage() {
               })}
             >
               <Popup>
-                <div className="text-sm bg-[#12121A] text-[#F0F0F5]">
-                  <p className="font-bold font-syne">{marker.name}</p>
-                  <p className="text-xs text-[#6B6B80] font-mono">{marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}</p>
+                <div className="text-sm bg-white text-gray-900">
+                  <p className="font-bold font-sans">{marker.name}</p>
+                  <p className="text-xs text-gray-500 font-mono">{marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}</p>
                 </div>
               </Popup>
             </Marker>
@@ -865,10 +865,10 @@ export default function MapPage() {
 
         {/* Zoom level display */}
         <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 items-end">
-          <div className="bg-[#12121A]/95 rounded-[12px] shadow-md px-3 py-1.5 text-xs font-medium text-[#F0F0F5] border border-[#1F1F2E] backdrop-blur">
+          <div className="bg-white rounded-xl shadow-lg px-3 py-1.5 text-xs font-medium text-gray-900 border border-gray-200 backdrop-blur">
             Zoom: {currentZoom}
             {currentZoom < 10 && (
-              <span className="ml-1 text-[#6B6B80] text-xs">(groupage actif)</span>
+              <span className="ml-1 text-gray-500 text-xs">(groupage actif)</span>
             )}
           </div>
         </div>
@@ -882,7 +882,7 @@ export default function MapPage() {
               else if (tileLayer === 'satellite') setTileLayer('terrain')
               else setTileLayer('streets')
             }}
-            className="gap-2 bg-[#12121A]/95 shadow-md border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] backdrop-blur"
+            className="gap-2 bg-white shadow-lg border border-gray-200 text-gray-900 hover:bg-gray-50 backdrop-blur rounded-xl transition-colors"
           >
             {tileLayer === 'streets' ? <Satellite size={16} /> : tileLayer === 'satellite' ? <MapIcon size={16} /> : <Layers size={16} />}
             {tileLayer === 'streets' ? 'Satellite' : tileLayer === 'satellite' ? 'Terrain' : 'Plan'}
@@ -890,7 +890,7 @@ export default function MapPage() {
           <Button
             size="sm"
             onClick={() => setShowTraffic(!showTraffic)}
-            className={`gap-2 shadow-md backdrop-blur border ${showTraffic ? 'bg-[#00E5CC] text-[#0A0A0F] border-[#00E5CC]' : 'bg-[#12121A]/95 border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25]'}`}
+            className={`gap-2 shadow-lg backdrop-blur border rounded-xl ${showTraffic ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
           >
             <Wind size={16} />
             Trafic
@@ -898,7 +898,7 @@ export default function MapPage() {
           <Button
             size="sm"
             onClick={handleActualFullscreen}
-            className="gap-2 bg-[#12121A]/95 shadow-md border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] backdrop-blur"
+            className="gap-2 bg-white shadow-lg border border-gray-200 text-gray-900 hover:bg-gray-50 backdrop-blur rounded-xl transition-colors"
             title="Appuyez sur F pour un raccourci"
           >
             <Maximize2 size={16} />
@@ -907,7 +907,7 @@ export default function MapPage() {
           <Button
             size="sm"
             onClick={() => setShowManualGps(!showManualGps)}
-            className="gap-2 bg-[#12121A]/95 shadow-md border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] backdrop-blur"
+            className="gap-2 bg-white shadow-lg border border-gray-200 text-gray-900 hover:bg-gray-50 backdrop-blur rounded-xl transition-colors"
           >
             <MapPin size={16} />
             Saisie manuelle
@@ -917,39 +917,39 @@ export default function MapPage() {
         {/* Stats overlay with timezone */}
         <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-2">
           {/* Provider failover indicator */}
-          <div className="rounded-[12px] bg-[#12121A]/95 px-3 py-1.5 shadow-md text-xs font-medium flex items-center gap-1.5 border border-[#1F1F2E] text-[#F0F0F5] backdrop-blur">
-            <span className={`h-2 w-2 rounded-full inline-block ${providerStatus.flespi.status === 'connected' ? 'bg-[#00E5CC]' : 'bg-[#FF4D6A]'}`}></span>
+          <div className="rounded-xl bg-white px-3 py-1.5 shadow-lg text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-900 backdrop-blur">
+            <span className={`h-2 w-2 rounded-full inline-block ${providerStatus.flespi.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
             Fournisseur principal: Flespi
-            {providerStatus.flespi.failoverActive && <AlertCircle size={12} className="text-[#FFB547]" />}
+            {providerStatus.flespi.failoverActive && <AlertCircle size={12} className="text-amber-500" />}
           </div>
           {/* Timezone display */}
-          <div className="rounded-[12px] bg-[#12121A]/95 px-3 py-1.5 shadow-md text-xs font-medium flex items-center gap-1.5 border border-[#1F1F2E] text-[#F0F0F5] backdrop-blur">
-            <Clock size={12} className="text-[#00E5CC]" />
+          <div className="rounded-xl bg-white px-3 py-1.5 shadow-lg text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-900 backdrop-blur">
+            <Clock size={12} className="text-blue-600" />
             {getCurrentTimezone().offset} ({getCurrentTimezone().name})
           </div>
         </div>
 
         {/* Fleet stats overlay - Vehicle count by status */}
-        <div className="absolute bottom-4 left-4 z-[1000] bg-[#12121A]/95 rounded-[12px] shadow-md p-3 text-xs font-medium border border-[#1F1F2E] text-[#F0F0F5] backdrop-blur">
-          <p className="font-syne font-semibold mb-1.5">Statut des véhicules</p>
-          <div className="flex gap-4 text-[#6B6B80]">
+        <div className="absolute bottom-4 left-4 z-[1000] bg-white rounded-xl shadow-lg p-3 text-xs font-medium border border-gray-200 text-gray-900 backdrop-blur">
+          <p className="font-sans font-semibold mb-1.5">Statut des véhicules</p>
+          <div className="flex gap-4 text-gray-500">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#00E5CC] inline-block"></span>
-              <span>En mouvement: <span className="font-bold text-[#F0F0F5]">{movingCount}</span></span>
+              <span className="h-2 w-2 rounded-full bg-blue-600 inline-block"></span>
+              <span>En mouvement: <span className="font-bold text-gray-900">{movingCount}</span></span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#44445A] inline-block"></span>
-              <span>À l'arrêt: <span className="font-bold text-[#F0F0F5]">{stoppedCount}</span></span>
+              <span className="h-2 w-2 rounded-full bg-[#9CA3AF] inline-block"></span>
+              <span>À l'arrêt: <span className="font-bold text-gray-900">{stoppedCount}</span></span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#FF4D6A] inline-block"></span>
-              <span>Hors ligne: <span className="font-bold text-[#F0F0F5]">{offlineCount}</span></span>
+              <span className="h-2 w-2 rounded-full bg-red-500 inline-block"></span>
+              <span>Hors ligne: <span className="font-bold text-gray-900">{offlineCount}</span></span>
             </div>
           </div>
-          <div className="mt-1.5 pt-1.5 border-t border-[#1F1F2E] flex gap-4 text-[#6B6B80]">
-            <span>Vitesse moy.: <span className="font-bold text-[#F0F0F5]">{getFormattedSpeed(avgFleetSpeed, useImperialUnits).value} {getFormattedSpeed(avgFleetSpeed, useImperialUnits).unit}</span></span>
+          <div className="mt-1.5 pt-1.5 border-t border-gray-200 flex gap-4 text-gray-500">
+            <span>Vitesse moy.: <span className="font-bold text-gray-900">{getFormattedSpeed(avgFleetSpeed, useImperialUnits).value} {getFormattedSpeed(avgFleetSpeed, useImperialUnits).unit}</span></span>
             <span>{vehiclesWithGps.length}/{vehicles.length} GPS actif</span>
-            <div className={`flex items-center gap-1.5 ${isConnected ? 'text-[#00E5CC]' : 'text-[#6B6B80]'}`}>
+            <div className={`flex items-center gap-1.5 ${isConnected ? 'text-blue-600' : 'text-gray-500'}`}>
               {isConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
               {isConnected ? 'Live' : 'Polling'}
             </div>
@@ -957,35 +957,35 @@ export default function MapPage() {
         </div>
 
         {/* Speed Legend - Marker color meanings */}
-        <div className="absolute bottom-4 right-4 z-[1000] bg-[#12121A]/95 rounded-[12px] shadow-md p-3 text-xs border border-[#1F1F2E] text-[#F0F0F5] backdrop-blur">
-          <p className="font-syne font-semibold mb-2">Légende des couleurs</p>
+        <div className="absolute bottom-4 right-4 z-[1000] bg-white rounded-xl shadow-lg p-3 text-xs border border-gray-200 text-gray-900 backdrop-blur">
+          <p className="font-sans font-semibold mb-2">Légende des couleurs</p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#00E5CC] inline-block"></span>
-              <span className="text-[#6B6B80]">En mouvement</span>
+              <span className="h-2.5 w-2.5 rounded-full bg-blue-600 inline-block"></span>
+              <span className="text-gray-500">En mouvement</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#44445A] inline-block"></span>
-              <span className="text-[#6B6B80]">À l'arrêt</span>
+              <span className="h-2.5 w-2.5 rounded-full bg-[#9CA3AF] inline-block"></span>
+              <span className="text-gray-500">À l'arrêt</span>
             </div>
-            <div className="border-t border-[#1F1F2E] pt-1.5 mt-1.5">
-              <p className="text-[#6B6B80] font-medium mb-1">Types de véhicules</p>
+            <div className="border-t border-gray-200 pt-1.5 mt-1.5">
+              <p className="text-gray-500 font-medium mb-1">Types de véhicules</p>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-[#3b82f6] inline-block"></span>
-                  <span className="text-[#6B6B80]">Voiture</span>
+                  <span className="text-gray-500">Voiture</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-[#f97316] inline-block"></span>
-                  <span className="text-[#6B6B80]">Camion</span>
+                  <span className="text-gray-500">Camion</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-[#8b5cf6] inline-block"></span>
-                  <span className="text-[#6B6B80]">Utilitaire</span>
+                  <span className="text-gray-500">Utilitaire</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-[#ef4444] inline-block"></span>
-                  <span className="text-[#6B6B80]">Moto</span>
+                  <span className="text-gray-500">Moto</span>
                 </div>
               </div>
             </div>
@@ -995,7 +995,7 @@ export default function MapPage() {
         {/* Mini-map overview in bottom-right corner */}
         {showMiniMap && (
           <div className="absolute bottom-4 right-80 z-[1000]">
-            <Card className="shadow-lg bg-[#12121A] border-[#1F1F2E]">
+            <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
               <div className="relative w-56 h-40 rounded overflow-hidden">
                 <MapContainer
                   center={[43.7, 3.87]}
@@ -1015,8 +1015,8 @@ export default function MapPage() {
                       key={`minimap-${v.id}`}
                       center={[v.currentLat, v.currentLng]}
                       radius={3}
-                      fillColor="#00E5CC"
-                      color="#00E5CC"
+                      fillColor="#4361EE"
+                      color="#4361EE"
                       weight={1}
                       opacity={0.8}
                       fillOpacity={0.7}
@@ -1024,12 +1024,12 @@ export default function MapPage() {
                   ))}
                 </MapContainer>
                 {/* Mini-map label */}
-                <div className="absolute top-2 left-2 z-[1001] bg-[#12121A]/90 rounded px-2 py-1 text-xs font-medium text-[#F0F0F5] border border-[#1F1F2E]">
+                <div className="absolute top-2 left-2 z-[1001] bg-white rounded-lg px-2 py-1 text-xs font-medium text-gray-900 border border-gray-200 shadow-sm">
                   {vehiclesWithGps.length} véhicules
                 </div>
                 <button
                   onClick={() => setShowMiniMap(false)}
-                  className="absolute top-2 right-2 z-[1001] text-[#6B6B80] hover:text-[#F0F0F5] bg-[#12121A]/90 rounded w-6 h-6 flex items-center justify-center"
+                  className="absolute top-2 right-2 z-[1001] text-gray-500 hover:text-gray-900 bg-white rounded w-6 h-6 flex items-center justify-center shadow-sm"
                 >
                   ×
                 </button>
@@ -1041,13 +1041,13 @@ export default function MapPage() {
         {/* Manual GPS entry form */}
         {showManualGps && (
           <div className="absolute top-20 right-4 z-[1000]">
-            <Card className="w-72 shadow-lg bg-[#12121A] border-[#1F1F2E]">
+            <Card className="w-72 shadow-lg bg-white border border-gray-200 rounded-xl">
               <CardHeader className="pb-2 pt-4">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-syne text-[#F0F0F5]">Saisie manuelle GPS</CardTitle>
+                  <CardTitle className="text-sm font-sans text-gray-900">Saisie manuelle GPS</CardTitle>
                   <button
                     onClick={() => setShowManualGps(false)}
-                    className="text-[#6B6B80] hover:text-[#F0F0F5]"
+                    className="text-gray-500 hover:text-gray-900"
                   >
                     ×
                   </button>
@@ -1055,40 +1055,40 @@ export default function MapPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="text-xs text-[#6B6B80] block mb-1">Véhicule</label>
+                  <label className="text-xs text-gray-500 block mb-1">Véhicule</label>
                   <select
                     value={manualGpsForm.vehicleId}
                     onChange={(e) => setManualGpsForm({ ...manualGpsForm, vehicleId: e.target.value })}
-                    className="w-full h-8 px-2 text-xs border border-[#1F1F2E] rounded-md focus:ring-2 focus:ring-[#00E5CC] focus:border-transparent bg-[#0A0A0F] text-[#F0F0F5]"
+                    className="w-full h-8 px-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
                   >
                     <option value="">Sélectionner un véhicule</option>
                     {vehicles.map((v: any) => (
-                      <option key={v.id} value={v.id} className="bg-[#12121A] text-[#F0F0F5]">
+                      <option key={v.id} value={v.id} className="bg-white text-gray-900">
                         {v.name} ({v.plate})
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-[#6B6B80] block mb-1">Latitude</label>
+                  <label className="text-xs text-gray-500 block mb-1">Latitude</label>
                   <Input
                     type="number"
                     step="0.00001"
                     placeholder="43.7"
                     value={manualGpsForm.lat}
                     onChange={(e) => setManualGpsForm({ ...manualGpsForm, lat: e.target.value })}
-                    className="h-8 text-xs bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] focus:ring-[#00E5CC]"
+                    className="h-8 text-xs bg-white border border-gray-200 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-[#6B6B80] block mb-1">Longitude</label>
+                  <label className="text-xs text-gray-500 block mb-1">Longitude</label>
                   <Input
                     type="number"
                     step="0.00001"
                     placeholder="3.87"
                     value={manualGpsForm.lng}
                     onChange={(e) => setManualGpsForm({ ...manualGpsForm, lng: e.target.value })}
-                    className="h-8 text-xs bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] focus:ring-[#00E5CC]"
+                    className="h-8 text-xs bg-white border border-gray-200 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg"
                   />
                 </div>
                 <Button
@@ -1122,7 +1122,7 @@ export default function MapPage() {
                       }
                     }
                   }}
-                  className="w-full text-xs h-8 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D4B8] disabled:opacity-50"
+                  className="w-full text-xs h-8 bg-blue-600 text-white hover:bg-[#3B82F6] disabled:opacity-50"
                 >
                   {isSubmittingGps ? 'Envoi...' : 'Envoyer'}
                 </Button>
@@ -1135,7 +1135,7 @@ export default function MapPage() {
         <div className="absolute bottom-4 right-4 z-[1000]">
           <Button
             size="sm"
-            className="bg-[#12121A]/95 border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] shadow backdrop-blur"
+            className="bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 shadow-lg backdrop-blur rounded-xl"
             onClick={() => setShowHelpPopover(!showHelpPopover)}
           >
             <HelpCircle size={16} />
@@ -1144,21 +1144,21 @@ export default function MapPage() {
 
         {/* Vehicle Detail Panel */}
         {selectedVehicle && !isFullscreen && (
-          <div className="absolute top-0 right-0 h-full w-80 bg-[#12121A] shadow-lg border-l border-[#1F1F2E] z-[999] flex flex-col overflow-hidden rounded-r-lg">
+          <div className="absolute top-0 right-0 h-full w-80 bg-white shadow-lg border-l border-gray-200 z-[999] flex flex-col overflow-hidden rounded-l-xl">
             {/* Header */}
-            <div className="bg-[#12121A] p-4 border-b border-[#1F1F2E]">
+            <div className="bg-white p-4 border-b border-gray-200">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex-1">
-                  <h2 className="text-lg font-syne font-bold text-[#F0F0F5]">{selectedVehicle.plate}</h2>
+                  <h2 className="text-lg font-sans font-bold text-gray-900">{selectedVehicle.plate}</h2>
                   <Badge
-                    className={`text-xs mt-1 ${selectedVehicle.currentSpeed > 2 ? 'bg-[#00E5CC] text-[#0A0A0F]' : 'bg-[#44445A] text-[#F0F0F5]'}`}
+                    className={`text-xs mt-1 ${selectedVehicle.currentSpeed > 2 ? 'bg-blue-600 text-white' : 'bg-[#9CA3AF] text-gray-900'}`}
                   >
                     {selectedVehicle.currentSpeed > 2 ? 'EN MOUVEMENT' : 'À L\'ARRÊT'}
                   </Badge>
                 </div>
                 <button
                   onClick={() => selectVehicle(null)}
-                  className="text-[#6B6B80] hover:text-[#F0F0F5] p-1"
+                  className="text-gray-500 hover:text-gray-900 p-1"
                 >
                   <X size={20} />
                 </button>
@@ -1166,13 +1166,13 @@ export default function MapPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-[#1F1F2E] bg-[#0A0A0F]">
+            <div className="flex border-b border-gray-200 bg-white">
               <button
                 onClick={() => setActiveDetailTab('temps-reel')}
                 className={`flex-1 px-4 py-2 text-xs font-medium transition-all ${
                   activeDetailTab === 'temps-reel'
-                    ? 'text-[#00E5CC] border-b-2 border-[#00E5CC] bg-[#12121A]'
-                    : 'text-[#6B6B80] hover:text-[#F0F0F5]'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                    : 'text-gray-500 hover:text-gray-900'
                 }`}
               >
                 TEMPS RÉEL
@@ -1181,8 +1181,8 @@ export default function MapPage() {
                 onClick={() => setActiveDetailTab('historique')}
                 className={`flex-1 px-4 py-2 text-xs font-medium transition-all ${
                   activeDetailTab === 'historique'
-                    ? 'text-[#00E5CC] border-b-2 border-[#00E5CC] bg-[#12121A]'
-                    : 'text-[#6B6B80] hover:text-[#F0F0F5]'
+                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
+                    : 'text-gray-500 hover:text-gray-900'
                 }`}
               >
                 HISTORIQUE
@@ -1192,124 +1192,124 @@ export default function MapPage() {
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
               {activeDetailTab === 'temps-reel' ? (
-                <div className="divide-y divide-[#1F1F2E]">
+                <div className="divide-y divide-gray-200">
                   {/* IDENTITÉ section */}
                   <div className="p-4">
-                    <h3 className="text-xs font-syne font-bold text-[#F0F0F5] uppercase tracking-wide mb-3">Identité</h3>
+                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Identité</h3>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Plaque</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.plate}</span>
+                        <span className="text-gray-500">Plaque</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.plate}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">VIN</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.vin || 'N/A'}</span>
+                        <span className="text-gray-500">VIN</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.vin || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Statut API</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.apiStatus || 'Actif'}</span>
+                        <span className="text-gray-500">Statut API</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.apiStatus || 'Actif'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Flotte ID</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.fleetId || selectedVehicle.id}</span>
+                        <span className="text-gray-500">Flotte ID</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.fleetId || selectedVehicle.id}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* APPAREIL GPS section */}
                   <div className="p-4">
-                    <h3 className="text-xs font-syne font-bold text-[#F0F0F5] uppercase tracking-wide mb-3">Appareil GPS</h3>
+                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Appareil GPS</h3>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Type</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.gpsDeviceType || 'Standard'}</span>
+                        <span className="text-gray-500">Type</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.gpsDeviceType || 'Standard'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">ID Appareil</span>
-                        <span className="font-medium text-[#F0F0F5] truncate">{selectedVehicle.gpsDeviceId || 'N/A'}</span>
+                        <span className="text-gray-500">ID Appareil</span>
+                        <span className="font-medium text-gray-900 truncate">{selectedVehicle.gpsDeviceId || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* TÉLÉMÉTRIE section */}
                   <div className="p-4">
-                    <h3 className="text-xs font-syne font-bold text-[#F0F0F5] uppercase tracking-wide mb-3">Télémétrie</h3>
+                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Télémétrie</h3>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Vitesse</span>
-                        <span className="font-medium text-[#F0F0F5]">
+                        <span className="text-gray-500">Vitesse</span>
+                        <span className="font-medium text-gray-900">
                           {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).unit}
                         </span>
                       </div>
                       {(selectedVehicle.currentSpeed || 0) <= 2 && calculateIdleDuration(selectedVehicle.currentSpeed || 0, selectedVehicle.lastCommunication).durationStr && (
-                        <div className="flex justify-between text-[#00E5CC] font-medium">
-                          <span className="text-[#6B6B80]">À l'arrêt depuis</span>
+                        <div className="flex justify-between text-blue-600 font-medium">
+                          <span className="text-gray-500">À l'arrêt depuis</span>
                           <span>{calculateIdleDuration(selectedVehicle.currentSpeed || 0, selectedVehicle.lastCommunication).durationStr}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Odomètre</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.odometer || 'N/A'} km</span>
+                        <span className="text-gray-500">Odomètre</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.odometer || 'N/A'} km</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Carburant</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.fuelLevel || 'N/A'}%</span>
+                        <span className="text-gray-500">Carburant</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.fuelLevel || 'N/A'}%</span>
                       </div>
                     </div>
                   </div>
 
                   {/* POSITION section */}
                   <div className="p-4">
-                    <h3 className="text-xs font-syne font-bold text-[#F0F0F5] uppercase tracking-wide mb-3">Position</h3>
+                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Position</h3>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Latitude</span>
-                        <span className="font-mono text-[#F0F0F5]">{selectedVehicle.currentLat?.toFixed(6)}</span>
+                        <span className="text-gray-500">Latitude</span>
+                        <span className="font-mono text-gray-900">{selectedVehicle.currentLat?.toFixed(6)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Longitude</span>
-                        <span className="font-mono text-[#F0F0F5]">{selectedVehicle.currentLng?.toFixed(6)}</span>
+                        <span className="text-gray-500">Longitude</span>
+                        <span className="font-mono text-gray-900">{selectedVehicle.currentLng?.toFixed(6)}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* ACTIVITÉ section */}
                   <div className="p-4">
-                    <h3 className="text-xs font-syne font-bold text-[#F0F0F5] uppercase tracking-wide mb-3">Activité</h3>
+                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Activité</h3>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Dernière com.</span>
-                        <span className="font-medium text-[#F0F0F5]">{formatTimeAgo(selectedVehicle.lastCommunication)}</span>
+                        <span className="text-gray-500">Dernière com.</span>
+                        <span className="font-medium text-gray-900">{formatTimeAgo(selectedVehicle.lastCommunication)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Début trajet</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.tripStart || 'N/A'}</span>
+                        <span className="text-gray-500">Début trajet</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.tripStart || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#6B6B80]">Fin trajet</span>
-                        <span className="font-medium text-[#F0F0F5]">{selectedVehicle.tripEnd || 'N/A'}</span>
+                        <span className="text-gray-500">Fin trajet</span>
+                        <span className="font-medium text-gray-900">{selectedVehicle.tripEnd || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 text-xs text-[#6B6B80]">
+                <div className="p-4 text-xs text-gray-500">
                   <p>Historique non disponible</p>
                 </div>
               )}
             </div>
 
             {/* Footer with action buttons */}
-            <div className="border-t border-[#1F1F2E] p-4 flex gap-2 bg-[#0A0A0F]">
+            <div className="border-t border-gray-200 p-4 flex gap-2 bg-white">
               <button
                 onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#00E5CC] text-[#0A0A0F] rounded text-xs font-medium hover:bg-[#00D4B8] transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded text-xs font-medium hover:bg-[#3B82F6] transition-colors"
               >
                 <Edit2 size={14} />
                 Éditer
               </button>
               <button
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[#FF4D6A]/10 text-[#FF4D6A] rounded text-xs font-medium hover:bg-[#FF4D6A]/20 transition-colors border border-[#FF4D6A]/30"
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-500/10 text-red-500 rounded text-xs font-medium hover:bg-red-500/20 transition-colors border border-red-500/30"
               >
                 <Trash2 size={14} />
                 Supprimer
@@ -1322,10 +1322,10 @@ export default function MapPage() {
       {/* Sidebar */}
       {!isFullscreen && (<div className="w-80 flex flex-col gap-4 overflow-hidden">
         {/* Search with recent searches dropdown */}
-        <Card className="bg-[#12121A] border-[#1F1F2E]">
+        <Card className="bg-white rounded-xl border border-gray-200 shadow-lg">
           <CardContent className="pt-4 pb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 text-[#6B6B80]" size={16} />
+              <Search className="absolute left-3 top-3 text-gray-500" size={16} />
               <Input
                 ref={searchInputRef}
                 type="search"
@@ -1334,13 +1334,13 @@ export default function MapPage() {
                 onChange={(e) => handleSearchChange(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
                 onFocus={() => setShowRecentSearches(searchTerm.length === 0 && recentSearches.length > 0)}
-                className="pl-9 h-10 bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] focus:ring-[#00E5CC]"
+                className="pl-9 h-10 bg-white border border-gray-200 text-gray-900 placeholder-[#9CA3AF] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg"
               />
 
               {/* Recent searches dropdown */}
               {showRecentSearches && recentSearches.length > 0 && (
-                <div className="absolute top-12 left-0 right-0 bg-[#12121A] border border-[#1F1F2E] rounded-md shadow-lg z-[100] overflow-hidden">
-                  <div className="px-3 py-2 text-xs font-semibold text-[#6B6B80] border-b border-[#1F1F2E]">
+                <div className="absolute top-12 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] overflow-hidden">
+                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200">
                     Recherches récentes
                   </div>
                   <div className="max-h-40 overflow-y-auto">
@@ -1348,9 +1348,9 @@ export default function MapPage() {
                       <button
                         key={idx}
                         onClick={() => handleRecentSearchSelect(search)}
-                        className="w-full text-left px-3 py-2 text-xs text-[#F0F0F5] hover:bg-[#1A1A25] transition-colors flex items-center gap-2"
+                        className="w-full text-left px-3 py-2 text-xs text-gray-900 hover:bg-gray-100 transition-colors flex items-center gap-2"
                       >
-                        <Clock size={12} className="text-[#6B6B80]" />
+                        <Clock size={12} className="text-gray-500" />
                         {search}
                       </button>
                     ))}
@@ -1362,12 +1362,12 @@ export default function MapPage() {
         </Card>
 
         {/* Vehicle list with filters */}
-        <Card className="flex-1 overflow-hidden flex flex-col bg-[#12121A] border-[#1F1F2E]">
+        <Card className="flex-1 overflow-hidden flex flex-col bg-white rounded-xl border border-gray-200 shadow-lg">
           {/* Filter Controls */}
           <CardHeader className="pb-3 pt-4">
             {/* SOURCE filter */}
             <div className="mb-3">
-              <p className="text-xs font-semibold text-[#F0F0F5] mb-1.5">SOURCE</p>
+              <p className="text-xs font-semibold text-gray-900 mb-1.5">SOURCE</p>
               <div className="flex gap-1.5">
                 {(['TOUS', 'ECHOES', 'UBIWAN', 'KEEPTRACE'] as const).map((source) => (
                   <button
@@ -1375,8 +1375,8 @@ export default function MapPage() {
                     onClick={() => setSourceFilter(source)}
                     className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
                       sourceFilter === source
-                        ? 'bg-[#00E5CC] text-[#0A0A0F]'
-                        : 'bg-[#1A1A25] text-[#6B6B80] hover:bg-[#2A2A3D]'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                     }`}
                   >
                     {source}
@@ -1387,7 +1387,7 @@ export default function MapPage() {
 
             {/* STATUT filter */}
             <div className="mb-3">
-              <p className="text-xs font-semibold text-[#F0F0F5] mb-1.5">STATUT</p>
+              <p className="text-xs font-semibold text-gray-900 mb-1.5">STATUT</p>
               <div className="flex gap-1.5">
                 {(['TOUS', 'LOCALISÉS', 'NON LOC.'] as const).map((statut) => (
                   <button
@@ -1395,8 +1395,8 @@ export default function MapPage() {
                     onClick={() => setStatutFilter(statut)}
                     className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
                       statutFilter === statut
-                        ? 'bg-[#00E5CC] text-[#0A0A0F]'
-                        : 'bg-[#1A1A25] text-[#6B6B80] hover:bg-[#2A2A3D]'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                     }`}
                   >
                     {statut}
@@ -1407,14 +1407,14 @@ export default function MapPage() {
 
             {/* GROUPE filter */}
             <div className="mb-2">
-              <p className="text-xs font-semibold text-[#F0F0F5] mb-1.5">GROUPE</p>
+              <p className="text-xs font-semibold text-gray-900 mb-1.5">GROUPE</p>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => setGroupeFilter('Tous')}
                   className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
                     groupeFilter === 'Tous'
-                      ? 'bg-[#00E5CC] text-[#0A0A0F]'
-                      : 'bg-[#1A1A25] text-[#6B6B80] hover:bg-[#2A2A3D]'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
                   Tous
@@ -1425,8 +1425,8 @@ export default function MapPage() {
                     onClick={() => setGroupeFilter(group)}
                     className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
                       groupeFilter === group
-                        ? 'bg-[#00E5CC] text-[#0A0A0F]'
-                        : 'bg-[#1A1A25] text-[#6B6B80] hover:bg-[#2A2A3D]'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                     }`}
                   >
                     <span className="text-sm">■</span>
@@ -1438,7 +1438,7 @@ export default function MapPage() {
           </CardHeader>
 
           {/* Vehicle list header */}
-          <div className="px-4 py-2 border-t border-[#1F1F2E] flex items-center justify-between text-xs font-semibold text-[#F0F0F5]">
+          <div className="px-4 py-2 border-t border-gray-200 flex items-center justify-between text-xs font-semibold text-gray-900">
             <span>VÉHICULE — {filteredVehicles.length} RÉSULTATS</span>
             <span>VITESSE</span>
           </div>
@@ -1453,22 +1453,22 @@ export default function MapPage() {
                   <button
                     key={vehicle.id}
                     onClick={() => selectVehicle(vehicle.id)}
-                    className={`w-full rounded-lg border p-2.5 text-left transition-all ${
+                    className={`w-full rounded-lg border-l-4 border-b border-r border-t p-2.5 text-left transition-all bg-white ${
                       selectedVehicleId === vehicle.id
-                        ? 'border-[#00E5CC] bg-[#00E5CC]/10 shadow-sm'
-                        : 'border-[#1F1F2E] hover:border-[#2A2A3D] hover:bg-[#1A1A25]'
+                        ? 'border-l-blue-600 border-gray-200 bg-blue-50 shadow-sm'
+                        : 'border-l-transparent border-gray-200 hover:bg-blue-50'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm text-[#F0F0F5] truncate">{vehicle.plate}</p>
-                        <p className="text-xs text-[#6B6B80] truncate">{vehicle.name}</p>
+                        <p className="font-bold text-sm text-gray-900 truncate">{vehicle.plate}</p>
+                        <p className="text-xs text-gray-500 truncate">{vehicle.name}</p>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="text-xs font-medium text-[#F0F0F5]">
+                        <p className="text-xs font-medium text-gray-900">
                           {hasGps ? `${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value}` : '—'}
                         </p>
-                        <p className="text-xs text-[#6B6B80]">{vehicle.gpsProvider || '—'}</p>
+                        <p className="text-xs text-gray-500">{vehicle.gpsProvider || '—'}</p>
                       </div>
                     </div>
                   </button>
@@ -1479,13 +1479,13 @@ export default function MapPage() {
         </Card>
 
         {/* GPS Provider Status Panel */}
-        <Card className="bg-[#12121A] border-[#1F1F2E]">
+        <Card className="bg-white rounded-xl border border-gray-200 shadow-lg">
           <CardHeader className="pb-2 pt-4">
             <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowProviderPanel(!showProviderPanel)}>
-              <CardTitle className="text-sm font-syne font-semibold text-[#F0F0F5]">Fournisseurs GPS</CardTitle>
+              <CardTitle className="text-sm font-sans font-semibold text-gray-900">Fournisseurs GPS</CardTitle>
               <ChevronDown
                 size={16}
-                className={`transition-transform text-[#6B6B80] ${showProviderPanel ? 'rotate-0' : '-rotate-90'}`}
+                className={`transition-transform text-gray-500 ${showProviderPanel ? 'rotate-0' : '-rotate-90'}`}
               />
             </div>
           </CardHeader>
@@ -1497,24 +1497,24 @@ export default function MapPage() {
                 { key: 'keeptrace', label: 'KeepTrace' },
                 { key: 'ubiwan', label: 'Ubiwan' },
               ].map((provider) => (
-                <div key={provider.key} className="flex items-center justify-between p-2 bg-[#1A1A25] rounded border border-[#1F1F2E]">
-                  <span className="font-medium text-[#F0F0F5]">{provider.label}</span>
+                <div key={provider.key} className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200">
+                  <span className="font-medium text-gray-900">{provider.label}</span>
                   <div className="flex items-center gap-1.5">
                     <div className="flex items-center gap-1">
                       {providerStatus[provider.key as keyof typeof providerStatus].status === 'connected' ? (
                         <>
-                          <CheckCircle2 size={12} className="text-[#00E5CC]" />
-                          <span className="text-[#6B6B80]">Connecté</span>
+                          <CheckCircle2 size={12} className="text-green-500" />
+                          <span className="text-gray-500">Connecté</span>
                         </>
                       ) : (
                         <>
-                          <AlertCircle size={12} className="text-[#FF4D6A]" />
-                          <span className="text-[#6B6B80]">Erreur</span>
+                          <AlertCircle size={12} className="text-red-500" />
+                          <span className="text-gray-500">Erreur</span>
                         </>
                       )}
                     </div>
                     {providerStatus[provider.key as keyof typeof providerStatus].failoverActive && (
-                      <Badge className="text-xs bg-[#FFB547]/20 text-[#FFB547] border-[#FFB547]/30">
+                      <Badge className="text-xs bg-amber-500/20 text-amber-500 border-amber-500/30">
                         Secours
                       </Badge>
                     )}
@@ -1527,12 +1527,12 @@ export default function MapPage() {
 
         {/* Selected vehicle details */}
         {selectedVehicle && (
-          <Card className="bg-[#12121A] border-[#1F1F2E]">
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-lg">
             <CardHeader className="pb-2 pt-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-syne font-semibold text-[#F0F0F5]">{selectedVehicle.name}</CardTitle>
+                <CardTitle className="text-sm font-sans font-semibold text-gray-900">{selectedVehicle.name}</CardTitle>
                 <Badge
-                  className={`text-xs ${selectedVehicle.currentSpeed > 2 ? 'bg-[#00E5CC] text-[#0A0A0F]' : 'bg-[#44445A] text-[#F0F0F5]'}`}
+                  className={`text-xs ${selectedVehicle.currentSpeed > 2 ? 'bg-blue-600 text-white' : 'bg-[#9CA3AF] text-gray-900'}`}
                 >
                   {selectedVehicle.currentSpeed > 2 ? 'En route' : 'Arrêté'}
                 </Badge>
@@ -1540,24 +1540,24 @@ export default function MapPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm pb-4">
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-[#1A1A25] rounded p-2 border border-[#1F1F2E]">
-                  <p className="text-[#6B6B80]">Vitesse</p>
-                  <p className="font-bold text-lg text-[#F0F0F5]">{getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).value}<span className="text-xs font-normal"> {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).unit}</span></p>
+                <div className="bg-blue-50 rounded-lg p-2 border border-gray-200">
+                  <p className="text-gray-500">Vitesse</p>
+                  <p className="font-bold text-lg text-gray-900">{getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).value}<span className="text-xs font-normal"> {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).unit}</span></p>
                 </div>
-                <div className="bg-[#1A1A25] rounded p-2 border border-[#1F1F2E]">
-                  <p className="text-[#6B6B80]">Cap</p>
-                  <p className="font-bold text-lg text-[#F0F0F5]">{(selectedVehicle.currentHeading || 0).toFixed(0)}<span className="text-xs font-normal">°</span></p>
+                <div className="bg-blue-50 rounded-lg p-2 border border-gray-200">
+                  <p className="text-gray-500">Cap</p>
+                  <p className="font-bold text-lg text-gray-900">{(selectedVehicle.currentHeading || 0).toFixed(0)}<span className="text-xs font-normal">°</span></p>
                 </div>
               </div>
-              <div className="text-xs text-[#6B6B80]">
-                <p>Position: <span className="font-mono text-[#F0F0F5]">{selectedVehicle.currentLat?.toFixed(5)}, {selectedVehicle.currentLng?.toFixed(5)}</span></p>
+              <div className="text-xs text-gray-500">
+                <p>Position: <span className="font-mono text-gray-900">{selectedVehicle.currentLat?.toFixed(5)}, {selectedVehicle.currentLng?.toFixed(5)}</span></p>
                 <p>Dernière com.: {formatTimeAgo(selectedVehicle.lastCommunication)}</p>
                 {(selectedVehicle as any).gpsProvider && (
-                  <p>Fournisseur: <span className="font-medium text-[#F0F0F5]">{(selectedVehicle as any).gpsProvider}</span></p>
+                  <p>Fournisseur: <span className="font-medium text-gray-900">{(selectedVehicle as any).gpsProvider}</span></p>
                 )}
               </div>
               <Button
-                className="w-full gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D4B8]"
+                className="w-full gap-2 bg-blue-600 text-white hover:bg-[#3B82F6]"
                 size="sm"
                 onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
               >

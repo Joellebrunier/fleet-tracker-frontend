@@ -360,9 +360,9 @@ export default function DriversPage() {
   }
 
   const getBehaviorScoreColor = (score: number): string => {
-    if (score > 80) return 'text-[#00E5CC]'
-    if (score > 60) return 'text-[#FFB547]'
-    return 'text-[#FF4D6A]'
+    if (score > 80) return 'text-blue-600'
+    if (score > 60) return 'text-amber-500'
+    return 'text-red-500'
   }
 
   const getBehaviorScoreBgColor = (score: number): string => {
@@ -372,18 +372,18 @@ export default function DriversPage() {
   }
 
   return (
-    <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
+    <div className="space-y-6 min-h-screen bg-[#F5F7FA] p-4 md:p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Conducteurs</h1>
-          <p className="mt-1 text-sm text-[#6B6B80]">
+          <h1 className="text-3xl font-bold text-gray-900 font-sans">Conducteurs</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Gérez les conducteurs de votre flotte et leurs performances
           </p>
         </div>
         <Button
           onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+          className="flex items-center gap-2 bg-blue-600 text-white font-bold hover:bg-[#3B82F6]"
         >
           <Plus className="h-4 w-4" />
           Ajouter un conducteur
@@ -393,10 +393,10 @@ export default function DriversPage() {
       {/* Search and Filter */}
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-[#6B6B80]" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
           <Input
             placeholder="Rechercher par nom, email ou téléphone..."
-            className="pl-10 bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+            className="pl-10 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-[#9CA3AF] focus:border-blue-600"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -411,8 +411,8 @@ export default function DriversPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`capitalize ${
                   statusFilter === status
-                    ? 'bg-[#00E5CC] text-[#0A0A0F] font-bold'
-                    : 'bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]'
+                    ? 'bg-blue-600 text-white font-bold'
+                    : 'bg-gray-100 border border-gray-200 text-gray-900 hover:bg-gray-200'
                 }`}
               >
                 {status === 'all' ? 'Tous' : getStatusLabel(status as DriverStatus)}
@@ -424,34 +424,34 @@ export default function DriversPage() {
 
       {/* Summary Stats */}
       <div className="grid gap-4 sm:grid-cols-4">
-        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+        <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <CardContent className="pt-5 pb-4 text-center">
-            <p className="text-2xl font-bold text-[#F0F0F5] font-syne">{drivers.length}</p>
-            <p className="text-xs text-[#6B6B80]">Total conducteurs</p>
+            <p className="text-2xl font-bold text-gray-900 font-sans">{drivers.length}</p>
+            <p className="text-xs text-gray-500">Total conducteurs</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+        <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <CardContent className="pt-5 pb-4 text-center">
-            <p className="text-2xl font-bold text-[#00E5CC] font-syne">
+            <p className="text-2xl font-bold text-blue-600 font-sans">
               {drivers.filter(d => getDriverStatus(d) === 'active').length}
             </p>
-            <p className="text-xs text-[#6B6B80]">Actifs</p>
+            <p className="text-xs text-gray-500">Actifs</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+        <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <CardContent className="pt-5 pb-4 text-center">
-            <p className="text-2xl font-bold text-[#FFB547] font-syne">
+            <p className="text-2xl font-bold text-amber-500 font-sans">
               {drivers.filter(d => new Date(d.licenseExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
             </p>
-            <p className="text-xs text-[#6B6B80]">Permis expirant bientôt</p>
+            <p className="text-xs text-gray-500">Permis expirant bientôt</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+        <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <CardContent className="pt-5 pb-4 text-center">
-            <p className="text-2xl font-bold text-[#00E5CC] font-syne">
+            <p className="text-2xl font-bold text-blue-600 font-sans">
               {drivers.filter(d => d.assignedVehicleId || (d.assignedVehicleIds && d.assignedVehicleIds.length > 0)).length}
             </p>
-            <p className="text-xs text-[#6B6B80]">Véhicule assigné</p>
+            <p className="text-xs text-gray-500">Véhicule assigné</p>
           </CardContent>
         </Card>
       </div>
@@ -460,28 +460,28 @@ export default function DriversPage() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+            <Card key={i} className="bg-white border border-gray-200 rounded-xl">
               <CardHeader>
-                <Skeleton className="h-6 w-2/3 bg-[#1A1A25]" />
+                <Skeleton className="h-6 w-2/3 bg-gray-100" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-4 w-full bg-[#1A1A25]" />
-                <Skeleton className="mt-2 h-4 w-3/4 bg-[#1A1A25]" />
+                <Skeleton className="h-4 w-full bg-gray-100" />
+                <Skeleton className="mt-2 h-4 w-3/4 bg-gray-100" />
               </CardContent>
             </Card>
           ))}
         </div>
       ) : error ? (
-        <Card className="border-[#FF4D6A] bg-rgba(255, 77, 106, 0.1)">
+        <Card className="border-red-500 bg-rgba(255, 77, 106, 0.1)">
           <CardContent className="pt-6">
-            <p className="text-[#FF4D6A]">Erreur de chargement des conducteurs</p>
+            <p className="text-red-500">Erreur de chargement des conducteurs</p>
           </CardContent>
         </Card>
       ) : filteredDrivers.length === 0 ? (
-        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
+        <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <UserCircle className="mb-4 h-12 w-12 text-[#44445A]" />
-            <p className="text-[#6B6B80]">
+            <UserCircle className="mb-4 h-12 w-12 text-[#9CA3AF]" />
+            <p className="text-gray-500">
               {searchQuery || statusFilter !== 'all'
                 ? 'Aucun conducteur ne correspond à votre recherche'
                 : 'Aucun conducteur. Créez-en un pour commencer.'}
@@ -507,14 +507,14 @@ export default function DriversPage() {
             return (
               <Card
                 key={driver.id}
-                className="flex flex-col overflow-hidden transition-shadow hover:shadow-md bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D]"
+                className="flex flex-col overflow-hidden transition-shadow hover:shadow-md bg-white border border-gray-200 rounded-xl shadow-sm hover:border-gray-200"
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
-                      <UserCircle className="h-10 w-10 text-[#44445A] flex-shrink-0" />
+                      <UserCircle className="h-10 w-10 text-[#9CA3AF] flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="truncate font-syne text-[#F0F0F5]">
+                        <CardTitle className="truncate font-sans text-gray-900">
                           {driver.firstName} {driver.lastName}
                         </CardTitle>
                         <Badge
@@ -531,23 +531,23 @@ export default function DriversPage() {
                 <CardContent className="flex-1 space-y-4">
                   {/* Contact Info */}
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-[#6B6B80]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Mail className="h-4 w-4 flex-shrink-0" />
                       <span className="truncate">{driver.email}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-[#6B6B80]">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Phone className="h-4 w-4 flex-shrink-0" />
                       <span>{driver.phone}</span>
                     </div>
                   </div>
 
                   {/* License Info */}
-                  <div className="border-t border-[#1F1F2E] pt-3">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#6B6B80]">
+                  <div className="border-t border-gray-200 pt-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-500">
                       <Shield className="h-4 w-4" />
                       Permis
                     </div>
-                    <div className="space-y-1 text-sm text-[#6B6B80]">
+                    <div className="space-y-1 text-sm text-gray-500">
                       <div>
                         <span className="font-medium">Numéro :</span>{' '}
                         {driver.licenseNumber}
@@ -557,19 +557,19 @@ export default function DriversPage() {
                         <span
                           className={
                             licenseExpired
-                              ? 'text-[#FF4D6A] font-semibold'
-                              : 'text-[#6B6B80]'
+                              ? 'text-red-500 font-semibold'
+                              : 'text-gray-500'
                           }
                         >
                           {new Date(driver.licenseExpiry).toLocaleDateString()}
                         </span>
                         {licenseExpired && (
-                          <Badge variant="destructive" className="text-xs bg-[#FF4D6A] text-white">
+                          <Badge variant="destructive" className="text-xs bg-red-500 text-white">
                             Expiré
                           </Badge>
                         )}
                         {licenseExpiringSoon && (
-                          <Badge variant="secondary" className="text-xs bg-[rgba(255,181,71,0.12)] text-[#FFB547] hover:bg-[rgba(255,181,71,0.12)]">
+                          <Badge variant="secondary" className="text-xs bg-[rgba(255,181,71,0.12)] text-amber-500 hover:bg-[rgba(255,181,71,0.12)]">
                             Expire bientôt
                           </Badge>
                         )}
@@ -579,8 +579,8 @@ export default function DriversPage() {
 
                   {/* Assigned Vehicles */}
                   {assignedVehicles.length > 0 && (
-                    <div className="border-t border-[#1F1F2E] pt-3">
-                      <div className="mb-2 flex items-center gap-2 text-sm text-[#6B6B80]">
+                    <div className="border-t border-gray-200 pt-3">
+                      <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
                         <Car className="h-4 w-4 flex-shrink-0" />
                         <span>Véhicules assignés</span>
                       </div>
@@ -588,7 +588,7 @@ export default function DriversPage() {
                         {assignedVehicles.map(vehicleId => {
                           const vehicle = vehicles.find(v => v.id === vehicleId)
                           return vehicle ? (
-                            <Badge key={vehicleId} variant="secondary" className="bg-[rgba(0,229,204,0.12)] text-[#00E5CC] text-xs">
+                            <Badge key={vehicleId} variant="secondary" className="bg-[rgba(0,229,204,0.12)] text-blue-600 text-xs">
                               {vehicle.name}
                             </Badge>
                           ) : null
@@ -598,9 +598,9 @@ export default function DriversPage() {
                   )}
 
                   {/* Behavior Score Card */}
-                  <div className={`border-t border-[#1F1F2E] pt-3 px-3 py-2 rounded-lg ${getBehaviorScoreBgColor(behavior.overall)}`}>
+                  <div className={`border-t border-gray-200 pt-3 px-3 py-2 rounded-lg ${getBehaviorScoreBgColor(behavior.overall)}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-[#6B6B80]">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
                         <AlertTriangle className="h-4 w-4" />
                         Score de comportement
                       </div>
@@ -609,24 +609,24 @@ export default function DriversPage() {
                       </span>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div className="text-[#6B6B80]">
+                      <div className="text-gray-500">
                         <div className="font-medium">Freinage</div>
-                        <div className="text-[#F0F0F5] font-mono">{behavior.harshBraking}</div>
+                        <div className="text-gray-900 font-mono">{behavior.harshBraking}</div>
                       </div>
-                      <div className="text-[#6B6B80]">
+                      <div className="text-gray-500">
                         <div className="font-medium">Vitesse</div>
-                        <div className="text-[#F0F0F5] font-mono">{behavior.speedingEvents}</div>
+                        <div className="text-gray-900 font-mono">{behavior.speedingEvents}</div>
                       </div>
-                      <div className="text-[#6B6B80]">
+                      <div className="text-gray-500">
                         <div className="font-medium">Ralenti</div>
-                        <div className="text-[#F0F0F5] font-mono">{behavior.idleTime}%</div>
+                        <div className="text-gray-900 font-mono">{behavior.idleTime}%</div>
                       </div>
                     </div>
                   </div>
 
                   {/* Performance Trend (7-day sparkline) */}
-                  <div className="border-t border-[#1F1F2E] pt-3">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#6B6B80]">
+                  <div className="border-t border-gray-200 pt-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-500">
                       <TrendingUp className="h-4 w-4" />
                       Tendance 7 jours
                     </div>
@@ -634,7 +634,7 @@ export default function DriversPage() {
                       {behavior.sevenDayTrend.map((value, idx) => (
                         <div
                           key={idx}
-                          className="flex-1 bg-[#1A1A25] rounded-t hover:bg-[#00E5CC] transition-colors"
+                          className="flex-1 bg-gray-100 rounded-t hover:bg-blue-600 transition-colors"
                           style={{
                             height: `${(value / maxTrend) * 100}%`,
                           }}
@@ -645,51 +645,51 @@ export default function DriversPage() {
                   </div>
 
                   {/* Performance Scores */}
-                  <div className="border-t border-[#1F1F2E] pt-3">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#6B6B80]">
+                  <div className="border-t border-gray-200 pt-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-500">
                       <Star className="h-4 w-4" />
                       Performance
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-[#6B6B80]">Sécurité</span>
-                        <span className="font-semibold text-[#00E5CC] font-mono">
+                        <span className="text-xs text-gray-500">Sécurité</span>
+                        <span className="font-semibold text-blue-600 font-mono">
                           {performance.safety}%
                         </span>
                       </div>
-                      <div className="h-1.5 bg-[#1A1A25] rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#00E5CC]"
+                          className="h-full bg-blue-600"
                           style={{ width: `${performance.safety}%` }}
                         />
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-[#6B6B80]">
+                        <span className="text-xs text-gray-500">
                           Efficacité
                         </span>
-                        <span className="font-semibold text-[#00E5CC] font-mono">
+                        <span className="font-semibold text-blue-600 font-mono">
                           {performance.efficiency}%
                         </span>
                       </div>
-                      <div className="h-1.5 bg-[#1A1A25] rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#00E5CC]"
+                          className="h-full bg-blue-600"
                           style={{ width: `${performance.efficiency}%` }}
                         />
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-[#6B6B80]">
+                        <span className="text-xs text-gray-500">
                           Ponctualité
                         </span>
-                        <span className="font-semibold text-[#00E5CC] font-mono">
+                        <span className="font-semibold text-blue-600 font-mono">
                           {performance.punctuality}%
                         </span>
                       </div>
-                      <div className="h-1.5 bg-[#1A1A25] rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#00E5CC]"
+                          className="h-full bg-blue-600"
                           style={{ width: `${performance.punctuality}%` }}
                         />
                       </div>
@@ -698,11 +698,11 @@ export default function DriversPage() {
                 </CardContent>
 
                 {/* Actions */}
-                <div className="border-t border-[#1F1F2E] px-6 py-3 flex gap-2">
+                <div className="border-t border-gray-200 px-6 py-3 flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+                    className="flex-1 bg-white border border-gray-200 text-gray-900 hover:bg-gray-100"
                     onClick={() => {
                       setSchedulingDriver(driver)
                       setSchedule({})
@@ -714,7 +714,7 @@ export default function DriversPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+                    className="flex-1 bg-white border border-gray-200 text-gray-900 hover:bg-gray-100"
                     onClick={() => handleOpenModal(driver)}
                   >
                     <Edit2 className="h-4 w-4 mr-1" />
@@ -723,7 +723,7 @@ export default function DriversPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 bg-[#1A1A25] border border-[#1F1F2E] text-[#FF4D6A] hover:bg-[#2A2A3D]"
+                    className="flex-1 bg-gray-100 border border-gray-200 text-red-500 hover:bg-gray-200"
                     onClick={() => handleDelete(driver.id)}
                     disabled={deleteMutation.isPending}
                   >
@@ -739,12 +739,12 @@ export default function DriversPage() {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md bg-[#12121A] border-[#1F1F2E] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-md bg-white border border-gray-200 rounded-xl shadow-sm max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">
+            <DialogTitle className="text-gray-900 font-sans">
               {editingDriver ? 'Modifier le conducteur' : 'Nouveau conducteur'}
             </DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">
+            <DialogDescription className="text-gray-500">
               {editingDriver
                 ? 'Mettre à jour les informations du conducteur'
                 : 'Ajouter un nouveau conducteur à votre flotte'}
@@ -754,7 +754,7 @@ export default function DriversPage() {
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">
+                <label className="text-sm font-medium text-gray-900">
                   Prénom
                 </label>
                 <Input
@@ -763,11 +763,11 @@ export default function DriversPage() {
                     handleFormChange('firstName', e.target.value)
                   }
                   placeholder="Jean"
-                  className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                  className="bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-[#9CA3AF] focus:border-blue-600"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-[#F0F0F5]">
+                <label className="text-sm font-medium text-gray-900">
                   Nom
                 </label>
                 <Input
@@ -776,13 +776,13 @@ export default function DriversPage() {
                     handleFormChange('lastName', e.target.value)
                   }
                   placeholder="Dupont"
-                  className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                  className="bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-[#9CA3AF] focus:border-blue-600"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 Email
               </label>
               <Input
@@ -790,12 +790,12 @@ export default function DriversPage() {
                 value={formData.email}
                 onChange={(e) => handleFormChange('email', e.target.value)}
                 placeholder="john@example.com"
-                className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                className="bg-white border-gray-200 text-gray-900 rounded-lg focus:border-blue-600 placeholder-[#9CA3AF]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 Téléphone
               </label>
               <Input
@@ -803,12 +803,12 @@ export default function DriversPage() {
                 value={formData.phone}
                 onChange={(e) => handleFormChange('phone', e.target.value)}
                 placeholder="+33 (1) 23 45 67 89"
-                className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                className="bg-white border-gray-200 text-gray-900 rounded-lg focus:border-blue-600 placeholder-[#9CA3AF]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 N° de permis
               </label>
               <Input
@@ -817,12 +817,12 @@ export default function DriversPage() {
                   handleFormChange('licenseNumber', e.target.value)
                 }
                 placeholder="DL123456789"
-                className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
+                className="bg-white border-gray-200 text-gray-900 rounded-lg focus:border-blue-600 placeholder-[#9CA3AF]"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 Date d'expiration
               </label>
               <Input
@@ -831,17 +831,17 @@ export default function DriversPage() {
                 onChange={(e) =>
                   handleFormChange('licenseExpiry', e.target.value)
                 }
-                className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC]"
+                className="bg-white border-gray-200 text-gray-900 rounded-lg focus:border-blue-600"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 Véhicules assignés
               </label>
-              <div className="space-y-2 bg-[#0A0A0F] border border-[#1F1F2E] rounded-[8px] p-3 max-h-48 overflow-y-auto">
+              <div className="space-y-2 bg-white border border-gray-200 rounded-lg p-3 max-h-48 overflow-y-auto">
                 {vehicles.length === 0 ? (
-                  <p className="text-sm text-[#6B6B80]">Aucun véhicule disponible</p>
+                  <p className="text-sm text-gray-500">Aucun véhicule disponible</p>
                 ) : (
                   vehicles.map((vehicle) => (
                     <label key={vehicle.id} className="flex items-center gap-2 cursor-pointer">
@@ -849,9 +849,9 @@ export default function DriversPage() {
                         type="checkbox"
                         checked={(formData.assignedVehicleIds || []).includes(vehicle.id)}
                         onChange={(e) => handleVehicleCheckboxChange(vehicle.id, e.target.checked)}
-                        className="w-4 h-4 rounded border-[#1F1F2E] bg-[#12121A] cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-200 bg-white cursor-pointer"
                       />
-                      <span className="text-sm text-[#F0F0F5]">
+                      <span className="text-sm text-gray-900">
                         {vehicle.name} ({vehicle.licensePlate})
                       </span>
                     </label>
@@ -861,7 +861,7 @@ export default function DriversPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#F0F0F5]">
+              <label className="text-sm font-medium text-gray-900">
                 Notes
               </label>
               <textarea
@@ -870,7 +870,7 @@ export default function DriversPage() {
                   handleFormChange('notes', e.target.value)
                 }
                 placeholder="Notes ou commentaires sur le conducteur..."
-                className="w-full px-3 py-2 border border-[#1F1F2E] rounded-[8px] text-sm bg-[#0A0A0F] text-[#F0F0F5] focus:outline-none focus:ring-2 focus:ring-[#00E5CC] placeholder-[#44445A]"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 placeholder-[#9CA3AF]"
                 rows={3}
               />
             </div>
@@ -881,14 +881,14 @@ export default function DriversPage() {
               variant="outline"
               onClick={handleCloseModal}
               disabled={upsertMutation.isPending}
-              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+              className="bg-white border border-gray-200 text-gray-900 hover:bg-gray-100"
             >
               Annuler
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={upsertMutation.isPending}
-              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+              className="bg-blue-600 text-white font-bold hover:bg-[#3B82F6]"
             >
               {upsertMutation.isPending
                 ? 'Enregistrement...'
@@ -902,12 +902,12 @@ export default function DriversPage() {
 
       {/* Scheduling Modal */}
       <Dialog open={!!schedulingDriver} onOpenChange={() => setSchedulingDriver(null)}>
-        <DialogContent className="max-w-2xl bg-[#12121A] border-[#1F1F2E]">
+        <DialogContent className="max-w-2xl bg-white border border-gray-200 rounded-xl shadow-sm">
           <DialogHeader>
-            <DialogTitle className="text-[#F0F0F5] font-syne">
+            <DialogTitle className="text-gray-900 font-sans">
               Planning de {schedulingDriver?.firstName} {schedulingDriver?.lastName}
             </DialogTitle>
-            <DialogDescription className="text-[#6B6B80]">
+            <DialogDescription className="text-gray-500">
               Configurez le planning hebdomadaire du conducteur
             </DialogDescription>
           </DialogHeader>
@@ -916,14 +916,14 @@ export default function DriversPage() {
             <div className="grid grid-cols-7 gap-3">
               {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => (
                 <div key={day} className="text-center">
-                  <div className="font-semibold text-xs text-[#6B6B80] mb-2">{day}</div>
+                  <div className="font-semibold text-xs text-gray-500 mb-2">{day}</div>
                   <div className="space-y-1">
                     <button
                       onClick={() => handleScheduleSlotClick(day, 'morning')}
                       className={`w-full px-2 py-2 text-xs font-medium rounded border transition-colors ${
                         schedule[`${day}-morning`]
-                          ? 'bg-[#00E5CC] border-[#00E5CC] text-[#0A0A0F]'
-                          : 'bg-[#1A1A25] border-[#1F1F2E] text-[#6B6B80] hover:bg-[#2A2A3D] hover:border-[#2A2A3D]'
+                          ? 'bg-blue-600 border-blue-600 text-[#FFFFFF]'
+                          : 'bg-gray-100 border-gray-200 text-gray-500 hover:bg-gray-200 hover:border-[#E5E7EB]'
                       }`}
                     >
                       Matin
@@ -932,8 +932,8 @@ export default function DriversPage() {
                       onClick={() => handleScheduleSlotClick(day, 'afternoon')}
                       className={`w-full px-2 py-2 text-xs font-medium rounded border transition-colors ${
                         schedule[`${day}-afternoon`]
-                          ? 'bg-[#00E5CC] border-[#00E5CC] text-[#0A0A0F]'
-                          : 'bg-[#1A1A25] border-[#1F1F2E] text-[#6B6B80] hover:bg-[#2A2A3D] hover:border-[#2A2A3D]'
+                          ? 'bg-blue-600 border-blue-600 text-[#FFFFFF]'
+                          : 'bg-gray-100 border-gray-200 text-gray-500 hover:bg-gray-200 hover:border-[#E5E7EB]'
                       }`}
                     >
                       Après
@@ -942,8 +942,8 @@ export default function DriversPage() {
                       onClick={() => handleScheduleSlotClick(day, 'night')}
                       className={`w-full px-2 py-2 text-xs font-medium rounded border transition-colors ${
                         schedule[`${day}-night`]
-                          ? 'bg-[#00E5CC] border-[#00E5CC] text-[#0A0A0F]'
-                          : 'bg-[#1A1A25] border-[#1F1F2E] text-[#6B6B80] hover:bg-[#2A2A3D] hover:border-[#2A2A3D]'
+                          ? 'bg-blue-600 border-blue-600 text-[#FFFFFF]'
+                          : 'bg-gray-100 border-gray-200 text-gray-500 hover:bg-gray-200 hover:border-[#E5E7EB]'
                       }`}
                     >
                       Nuit
@@ -958,14 +958,14 @@ export default function DriversPage() {
             <Button
               variant="outline"
               onClick={() => setSchedulingDriver(null)}
-              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
+              className="bg-white border border-gray-200 text-gray-900 hover:bg-gray-100"
             >
               Annuler
             </Button>
             <Button
               onClick={handleSaveSchedule}
               disabled={scheduleMutation.isPending}
-              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
+              className="bg-blue-600 text-white font-bold hover:bg-[#3B82F6]"
             >
               {scheduleMutation.isPending ? 'Enregistrement...' : 'Sauvegarder'}
             </Button>

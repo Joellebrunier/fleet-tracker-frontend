@@ -610,25 +610,25 @@ export default function AlertsPage() {
   const getSeverityBadgeClass = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'bg-[#FF4D6A] bg-opacity-20 text-[#FF4D6A] border-[#FF4D6A] border-opacity-30'
+        return 'bg-red-500 bg-opacity-20 text-red-500 border-red-500 border-opacity-30'
       case 'high':
-        return 'bg-[#FFB547] bg-opacity-20 text-[#FFB547] border-[#FFB547] border-opacity-30'
+        return 'bg-amber-500 bg-opacity-20 text-amber-500 border-amber-500 border-opacity-30'
       case 'medium':
-        return 'bg-[#00E5CC] bg-opacity-20 text-[#00E5CC] border-[#00E5CC] border-opacity-30'
+        return 'bg-blue-600 bg-opacity-20 text-blue-600 border-blue-600 border-opacity-30'
       case 'low':
-        return 'bg-[#6B6B80] bg-opacity-20 text-[#6B6B80] border-[#6B6B80] border-opacity-30'
+        return 'bg-[#9CA3AF] bg-opacity-20 text-gray-500 border-[#9CA3AF] border-opacity-30'
       default:
-        return 'bg-[#1F1F2E] text-[#F0F0F5] border-[#2A2A3D]'
+        return 'bg-gray-50 text-gray-900 border-[#E5E7EB]'
     }
   }
 
   const getPriorityDot = (type: string) => {
     if (['OVERSPEED', 'ACCIDENT'].includes(type)) {
-      return <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#FF4D6A' }} />
+      return <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#EF4444' }} />
     } else if (['GEOFENCE_ENTRY', 'GEOFENCE_EXIT', 'LOW_BATTERY'].includes(type)) {
-      return <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#FFB547' }} />
+      return <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#F59E0B' }} />
     } else {
-      return <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#00E5CC' }} />
+      return <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ backgroundColor: '#4361EE' }} />
     }
   }
 
@@ -681,21 +681,21 @@ export default function AlertsPage() {
   const generateConditionId = () => `cond-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
   return (
-    <div className="space-y-6" style={{ backgroundColor: '#0A0A0F' }}>
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold font-syne" style={{ color: '#F0F0F5' }}>Alertes</h1>
-          <p className="mt-1" style={{ color: '#6B6B80' }}>Surveiller et gérer les alertes et les règles de la flotte</p>
+          <h1 className="text-3xl font-bold font-sans" style={{ color: '#1F2937' }}>Alertes</h1>
+          <p className="mt-1" style={{ color: '#6B7280' }}>Surveiller et gérer les alertes et les règles de la flotte</p>
         </div>
         <div className="flex gap-2">
           {selectedAlerts.length > 0 && (
-            <Button variant="outline" className="gap-2" onClick={handleBulkAcknowledge} style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}>
+            <Button variant="outline" className="gap-2" onClick={handleBulkAcknowledge} style={{ borderColor: '#E5E7EB', color: '#1F2937' }}>
               <Check size={16} />
               Reconnaître ({selectedAlerts.length})
             </Button>
           )}
-          <Button className="gap-2" onClick={openRuleCreator} style={{ backgroundColor: '#00E5CC', color: '#0A0A0F' }}>
+          <Button className="gap-2" onClick={openRuleCreator} style={{ backgroundColor: '#4361EE', color: '#FFFFFF' }}>
             <Plus size={16} />
             Créer une règle
           </Button>
@@ -704,70 +704,70 @@ export default function AlertsPage() {
 
       {/* Stats */}
       {stats ? (
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-            <CardContent className="pt-4 pb-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs" style={{ color: '#6B6B80' }}>Total</p>
-                  <p className="text-xl font-bold font-syne" style={{ color: '#F0F0F5' }}>{stats.total}</p>
+                  <p className="text-xs" style={{ color: '#6B7280' }}>Total</p>
+                  <p className="text-xl font-bold font-sans" style={{ color: '#1F2937' }}>{stats.total}</p>
                 </div>
-                <Bell size={18} style={{ color: '#6B6B80' }} />
+                <Bell size={18} style={{ color: '#6B7280' }} />
               </div>
             </CardContent>
           </Card>
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-            <CardContent className="pt-4 pb-3">
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs" style={{ color: '#6B6B80' }}>Non reconnus</p>
-                  <p className="text-xl font-bold font-syne" style={{ color: '#FFB547' }}>{stats.unacknowledged}</p>
+                  <p className="text-xs" style={{ color: '#6B7280' }}>Non reconnus</p>
+                  <p className="text-xl font-bold font-sans" style={{ color: '#F59E0B' }}>{stats.unacknowledged}</p>
                 </div>
-                <AlertCircle size={18} style={{ color: '#FFB547' }} />
+                <AlertCircle size={18} style={{ color: '#F59E0B' }} />
               </div>
             </CardContent>
           </Card>
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-            <CardContent className="pt-4 pb-3">
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium" style={{ color: '#FF4D6A' }}>Critical</p>
-                  <p className="text-xl font-bold font-syne" style={{ color: '#FF4D6A' }}>{stats.critical}</p>
+                  <p className="text-xs font-medium" style={{ color: '#EF4444' }}>Critical</p>
+                  <p className="text-xl font-bold font-sans" style={{ color: '#EF4444' }}>{stats.critical}</p>
                 </div>
-                <Shield size={18} style={{ color: '#FF4D6A' }} />
+                <Shield size={18} style={{ color: '#EF4444' }} />
               </div>
             </CardContent>
           </Card>
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-            <CardContent className="pt-4 pb-3">
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium" style={{ color: '#FFB547' }}>High</p>
-                  <p className="text-xl font-bold font-syne" style={{ color: '#FFB547' }}>{stats.high}</p>
+                  <p className="text-xs font-medium" style={{ color: '#F59E0B' }}>High</p>
+                  <p className="text-xl font-bold font-sans" style={{ color: '#F59E0B' }}>{stats.high}</p>
                 </div>
-                <Zap size={18} style={{ color: '#FFB547' }} />
+                <Zap size={18} style={{ color: '#F59E0B' }} />
               </div>
             </CardContent>
           </Card>
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-            <CardContent className="pt-4 pb-3">
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium" style={{ color: '#00E5CC' }}>Medium</p>
-                  <p className="text-xl font-bold font-syne" style={{ color: '#00E5CC' }}>{stats.medium}</p>
+                  <p className="text-xs font-medium" style={{ color: '#4361EE' }}>Medium</p>
+                  <p className="text-xl font-bold font-sans" style={{ color: '#4361EE' }}>{stats.medium}</p>
                 </div>
-                <Activity size={18} style={{ color: '#00E5CC' }} />
+                <Activity size={18} style={{ color: '#4361EE' }} />
               </div>
             </CardContent>
           </Card>
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-            <CardContent className="pt-4 pb-3">
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <CardContent className="p-0">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium" style={{ color: '#6B6B80' }}>Low / Info</p>
-                  <p className="text-xl font-bold font-syne" style={{ color: '#6B6B80' }}>{stats.low + stats.info}</p>
+                  <p className="text-xs font-medium" style={{ color: '#6B7280' }}>Low / Info</p>
+                  <p className="text-xl font-bold font-sans" style={{ color: '#6B7280' }}>{stats.low + stats.info}</p>
                 </div>
-                <Bell size={18} style={{ color: '#6B6B80' }} />
+                <Bell size={18} style={{ color: '#6B7280' }} />
               </div>
             </CardContent>
           </Card>
@@ -777,48 +777,36 @@ export default function AlertsPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg p-1" style={{ backgroundColor: '#12121A' }}>
+      <div className="flex gap-1 rounded-lg p-1 bg-white">
         <button
           onClick={() => setTab('alerts')}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors`}
-          style={{
-            backgroundColor: tab === 'alerts' ? '#1A1A25' : 'transparent',
-            color: tab === 'alerts' ? '#F0F0F5' : '#6B6B80',
-            borderBottom: tab === 'alerts' ? '2px solid #00E5CC' : 'none',
-          }}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            tab === 'alerts' ? 'border-b-2 border-blue-600 text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'
+          }`}
         >
           Alertes ({stats?.total || 0})
         </button>
         <button
           onClick={() => setTab('trends')}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors`}
-          style={{
-            backgroundColor: tab === 'trends' ? '#1A1A25' : 'transparent',
-            color: tab === 'trends' ? '#F0F0F5' : '#6B6B80',
-            borderBottom: tab === 'trends' ? '2px solid #00E5CC' : 'none',
-          }}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            tab === 'trends' ? 'border-b-2 border-blue-600 text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'
+          }`}
         >
           Tendances
         </button>
         <button
           onClick={() => setTab('archives')}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors`}
-          style={{
-            backgroundColor: tab === 'archives' ? '#1A1A25' : 'transparent',
-            color: tab === 'archives' ? '#F0F0F5' : '#6B6B80',
-            borderBottom: tab === 'archives' ? '2px solid #00E5CC' : 'none',
-          }}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            tab === 'archives' ? 'border-b-2 border-blue-600 text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'
+          }`}
         >
           Archives ({archivedAlerts.size})
         </button>
         <button
           onClick={() => setTab('rules')}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors`}
-          style={{
-            backgroundColor: tab === 'rules' ? '#1A1A25' : 'transparent',
-            color: tab === 'rules' ? '#F0F0F5' : '#6B6B80',
-            borderBottom: tab === 'rules' ? '2px solid #00E5CC' : 'none',
-          }}
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            tab === 'rules' ? 'border-b-2 border-blue-600 text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'
+          }`}
         >
           Règles ({(rules as any)?.length || 0})
         </button>
@@ -833,7 +821,7 @@ export default function AlertsPage() {
               <Button
                 className="gap-2"
                 onClick={handleExportAlerts}
-                style={{ backgroundColor: 'transparent', color: '#00E5CC', borderColor: '#00E5CC', border: '1px solid' }}
+                style={{ backgroundColor: 'transparent', color: '#4361EE', borderColor: '#4361EE', border: '1px solid' }}
               >
                 <Download size={16} />
                 Exporter CSV
@@ -845,16 +833,16 @@ export default function AlertsPage() {
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={16} style={{ color: '#44445A' }} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={16} style={{ color: '#9CA3AF' }} />
                 <Input
                   placeholder="Rechercher les alertes..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
                   style={{
-                    backgroundColor: '#12121A',
-                    borderColor: '#1F1F2E',
-                    color: '#F0F0F5',
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#E5E7EB',
+                    color: '#1F2937',
                   }}
                 />
               </div>
@@ -866,13 +854,11 @@ export default function AlertsPage() {
                       setStatus(s === 'all' ? undefined : s)
                       setPage(1)
                     }}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors`}
-                    style={{
-                      backgroundColor: (s === 'all' && !status) || status === s ? '#1A1A25' : '#12121A',
-                      color: (s === 'all' && !status) || status === s ? '#00E5CC' : '#6B6B80',
-                      borderColor: '#1F1F2E',
-                      border: '1px solid',
-                    }}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                      (s === 'all' && !status) || status === s
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
                   >
                     {s === 'all' ? 'Tout' : s === 'unacknowledged' ? 'Actif' : s === 'acknowledged' ? 'Reconnu' : 'Résolu'}
                   </button>
@@ -883,7 +869,7 @@ export default function AlertsPage() {
             {/* Date Range Filter */}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
               <div className="flex-1">
-                <label className="block text-xs font-medium mb-1" style={{ color: '#F0F0F5' }}>De</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: '#1F2937' }}>De</label>
                 <Input
                   type="date"
                   value={dateFrom}
@@ -893,14 +879,14 @@ export default function AlertsPage() {
                   }}
                   className="w-full"
                   style={{
-                    backgroundColor: '#12121A',
-                    borderColor: '#1F1F2E',
-                    color: '#F0F0F5',
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#E5E7EB',
+                    color: '#1F2937',
                   }}
                 />
               </div>
               <div className="flex-1">
-                <label className="block text-xs font-medium mb-1" style={{ color: '#F0F0F5' }}>À</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: '#1F2937' }}>À</label>
                 <Input
                   type="date"
                   value={dateTo}
@@ -910,9 +896,9 @@ export default function AlertsPage() {
                   }}
                   className="w-full"
                   style={{
-                    backgroundColor: '#12121A',
-                    borderColor: '#1F1F2E',
-                    color: '#F0F0F5',
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#E5E7EB',
+                    color: '#1F2937',
                   }}
                 />
               </div>
@@ -925,7 +911,7 @@ export default function AlertsPage() {
                     setDateTo('')
                     setPage(1)
                   }}
-                  style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                  style={{ borderColor: '#E5E7EB', color: '#1F2937' }}
                 >
                   Réinitialiser
                 </Button>
@@ -941,13 +927,11 @@ export default function AlertsPage() {
                     setQuickFilterSeverity('all')
                     setPage(1)
                   }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors`}
-                  style={{
-                    backgroundColor: quickFilterTime === 'all' && quickFilterSeverity === 'all' ? '#00E5CC' : '#12121A',
-                    color: quickFilterTime === 'all' && quickFilterSeverity === 'all' ? '#0A0A0F' : '#6B6B80',
-                    borderColor: '#1F1F2E',
-                    border: '1px solid',
-                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    quickFilterTime === 'all' && quickFilterSeverity === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
                   Réinitialiser filtres
                 </button>
@@ -956,13 +940,11 @@ export default function AlertsPage() {
                     setQuickFilterTime('today')
                     setPage(1)
                   }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors`}
-                  style={{
-                    backgroundColor: quickFilterTime === 'today' ? '#00E5CC' : '#12121A',
-                    color: quickFilterTime === 'today' ? '#0A0A0F' : '#6B6B80',
-                    borderColor: '#1F1F2E',
-                    border: '1px solid',
-                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    quickFilterTime === 'today'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
                   Aujourd'hui
                 </button>
@@ -971,13 +953,11 @@ export default function AlertsPage() {
                     setQuickFilterTime('week')
                     setPage(1)
                   }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors`}
-                  style={{
-                    backgroundColor: quickFilterTime === 'week' ? '#00E5CC' : '#12121A',
-                    color: quickFilterTime === 'week' ? '#0A0A0F' : '#6B6B80',
-                    borderColor: '#1F1F2E',
-                    border: '1px solid',
-                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    quickFilterTime === 'week'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
                   Cette semaine
                 </button>
@@ -986,13 +966,11 @@ export default function AlertsPage() {
                     setQuickFilterSeverity(quickFilterSeverity === AlertSeverity.CRITICAL ? 'all' : AlertSeverity.CRITICAL)
                     setPage(1)
                   }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors`}
-                  style={{
-                    backgroundColor: quickFilterSeverity === AlertSeverity.CRITICAL ? '#FF4D6A' : '#12121A',
-                    color: quickFilterSeverity === AlertSeverity.CRITICAL ? '#F0F0F5' : '#6B6B80',
-                    borderColor: '#1F1F2E',
-                    border: '1px solid',
-                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    quickFilterSeverity === AlertSeverity.CRITICAL
+                      ? 'bg-red-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
                   Critique uniquement
                 </button>
@@ -1001,13 +979,11 @@ export default function AlertsPage() {
                     setStatus('unacknowledged')
                     setPage(1)
                   }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors`}
-                  style={{
-                    backgroundColor: status === 'unacknowledged' ? '#FFB547' : '#12121A',
-                    color: status === 'unacknowledged' ? '#0A0A0F' : '#6B6B80',
-                    borderColor: '#1F1F2E',
-                    border: '1px solid',
-                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    status === 'unacknowledged'
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
                   Non acquittées
                 </button>
@@ -1015,14 +991,14 @@ export default function AlertsPage() {
 
               {/* Grouping Dropdown */}
               <div className="flex items-center gap-2">
-                <label className="text-xs font-medium" style={{ color: '#F0F0F5' }}>Grouper par:</label>
+                <label className="text-xs font-medium" style={{ color: '#1F2937' }}>Grouper par:</label>
                 <select
                   value={groupBy}
                   onChange={(e) => setGroupBy(e.target.value as 'none' | 'type' | 'vehicle' | 'severity')}
                   style={{
-                    backgroundColor: '#12121A',
-                    borderColor: '#1F1F2E',
-                    color: '#F0F0F5',
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#E5E7EB',
+                    color: '#1F2937',
                     border: '1px solid',
                   }}
                   className="rounded-lg px-3 py-1.5 text-xs font-medium transition-colors"
@@ -1044,31 +1020,27 @@ export default function AlertsPage() {
               ))}
             </div>
           ) : filteredAlerts.length === 0 ? (
-            <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }} className="text-center">
-              <CardContent className="py-12">
-                <Bell className="mx-auto mb-4" size={48} style={{ color: '#44445A' }} />
-                <h3 className="text-lg font-medium font-syne" style={{ color: '#F0F0F5' }}>Aucune alerte trouvée</h3>
-                <p className="mt-1 text-sm" style={{ color: '#6B6B80' }}>
-                  {search ? 'Essayez un terme de recherche différent' : 'Tout clair ! Aucune alerte active.'}
-                </p>
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6 text-center">
+              <Bell className="mx-auto mb-4" size={48} style={{ color: '#9CA3AF' }} />
+              <h3 className="text-lg font-medium font-sans" style={{ color: '#1F2937' }}>Aucune alerte trouvée</h3>
+              <p className="mt-1 text-sm" style={{ color: '#6B7280' }}>
+                {search ? 'Essayez un terme de recherche différent' : 'Tout clair ! Aucune alerte active.'}
+              </p>
+            </div>
           ) : (
             <div className="space-y-4">
               {Object.entries(groupedAlerts).map(([groupTitle, groupAlerts]) => (
                 <div key={groupTitle}>
                   {groupBy !== 'none' && (
-                    <h4 className="text-sm font-semibold mb-2 px-1" style={{ color: '#F0F0F5' }}>{groupTitle} ({groupAlerts.length})</h4>
+                    <h4 className="text-sm font-semibold mb-2 px-1" style={{ color: '#1F2937' }}>{groupTitle} ({groupAlerts.length})</h4>
                   )}
                   <div className="space-y-2">
                     {groupAlerts.map((alert) => (
-                      <Card
+                      <div
                         key={alert.id}
-                        className={`transition-all cursor-pointer ${snoozedAlerts[alert.id] ? 'opacity-60' : ''}`}
+                        className={`bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer ${snoozedAlerts[alert.id] ? 'opacity-60' : ''}`}
                         style={{
-                          backgroundColor: snoozedAlerts[alert.id] ? '#0F0F14' : '#12121A',
-                          borderColor: selectedAlerts.includes(alert.id) ? '#00E5CC' : selectedAlertId === alert.id ? '#00E5CC' : '#1F1F2E',
-                          borderWidth: '1px',
+                          borderColor: selectedAlerts.includes(alert.id) ? '#4361EE' : selectedAlertId === alert.id ? '#4361EE' : '#E5E7EB',
                         }}
                         onClick={() => {
                           setSelectedAlertId(selectedAlertId === alert.id ? null : alert.id)
@@ -1077,14 +1049,13 @@ export default function AlertsPage() {
                           setShowSnoozeMenu(null)
                         }}
                       >
-                        <CardContent className="py-4">
-                          <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3">
                             <input
                               type="checkbox"
                               checked={selectedAlerts.includes(alert.id)}
                               onChange={() => handleSelectAlert(alert.id)}
                               style={{
-                                accentColor: '#00E5CC',
+                                accentColor: '#4361EE',
                                 marginTop: '4px',
                               }}
                               onClick={(e) => e.stopPropagation()}
@@ -1098,10 +1069,10 @@ export default function AlertsPage() {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="flex-1">
-                                  <h3 className="font-medium font-syne" style={{ color: '#F0F0F5' }}>{alert.title}</h3>
-                                  <p className="mt-0.5 text-sm line-clamp-1" style={{ color: '#6B6B80' }}>{alert.message}</p>
+                                  <h3 className="font-medium font-sans" style={{ color: '#1F2937' }}>{alert.title}</h3>
+                                  <p className="mt-0.5 text-sm line-clamp-1" style={{ color: '#6B7280' }}>{alert.message}</p>
                               {snoozedAlerts[alert.id] && (
-                                <p className="mt-1 text-xs" style={{ color: '#00E5CC' }}>
+                                <p className="mt-1 text-xs" style={{ color: '#4361EE' }}>
                                   Reporté jusqu'à {new Date(snoozedAlerts[alert.id]).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                 </p>
                               )}
@@ -1115,12 +1086,12 @@ export default function AlertsPage() {
                                     {alert.severity}
                                   </span>
                                   {(alert as any).status === 'resolved' ? (
-                                    <Badge style={{ backgroundColor: '#00E5CC', color: '#0A0A0F' }} className="text-xs">
+                                    <Badge style={{ backgroundColor: '#4361EE', color: '#FFFFFF' }} className="text-xs">
                                       <Check size={12} className="mr-1" />
                                       Résolu
                                     </Badge>
                                   ) : alert.isAcknowledged ? (
-                                    <Badge variant="secondary" className="text-xs" style={{ backgroundColor: '#1A1A25', color: '#F0F0F5', borderColor: '#1F1F2E' }}>
+                                    <Badge variant="secondary" className="text-xs" style={{ backgroundColor: '#F3F4F6', color: '#1F2937', borderColor: '#E5E7EB' }}>
                                       <Check size={12} className="mr-1" />
                                       Reconnu
                                     </Badge>
@@ -1129,7 +1100,7 @@ export default function AlertsPage() {
                                       size="sm"
                                       variant="ghost"
                                       className="h-7 gap-1 text-xs"
-                                      style={{ color: '#00E5CC' }}
+                                      style={{ color: '#4361EE' }}
                                       onClick={() => bulkAcknowledge([alert.id])}
                                     >
                                       <Check size={12} />
@@ -1138,14 +1109,14 @@ export default function AlertsPage() {
                                   )}
                                 </div>
                               </div>
-                              <p className="mt-1 text-xs" style={{ color: '#44445A' }}>{formatTimeAgo(alert.createdAt)}</p>
+                              <p className="mt-1 text-xs" style={{ color: '#9CA3AF' }}>{formatTimeAgo(alert.createdAt)}</p>
 
                               {selectedAlertId === alert.id && (
-                                <div className="mt-3 space-y-3 border-t pt-3" style={{ borderColor: '#1F1F2E' }}>
+                                <div className="mt-3 space-y-3 border-t pt-3" style={{ borderColor: '#E5E7EB' }}>
                                   {alertAssignments[alert.id] && (
                                     <div className="text-xs">
-                                      <span style={{ color: '#6B6B80' }}>Assigné à: </span>
-                                      <Badge variant="outline" className="ml-1" style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}>
+                                      <span style={{ color: '#6B7280' }}>Assigné à: </span>
+                                      <Badge variant="outline" className="ml-1" style={{ borderColor: '#E5E7EB', color: '#1F2937' }}>
                                         {alertAssignments[alert.id]}
                                       </Badge>
                                     </div>
@@ -1156,7 +1127,7 @@ export default function AlertsPage() {
                                         size="sm"
                                         variant="outline"
                                         className="gap-1 text-xs"
-                                        style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                                        style={{ borderColor: '#E5E7EB', color: '#1F2937' }}
                                         onClick={(e) => {
                                           e.stopPropagation()
                                           setShowSnoozeMenu(showSnoozeMenu === alert.id ? null : alert.id)
@@ -1167,7 +1138,7 @@ export default function AlertsPage() {
                                       </Button>
                                       {showSnoozeMenu === alert.id && (
                                         <div
-                                          className="absolute top-full mt-1 left-0 z-10 rounded-lg border bg-[#1A1A25] border-[#1F1F2E]"
+                                          className="absolute top-full mt-1 left-0 z-10 rounded-lg border bg-gray-100 border-gray-200"
                                           style={{ minWidth: '120px' }}
                                           onClick={(e) => e.stopPropagation()}
                                         >
@@ -1181,7 +1152,7 @@ export default function AlertsPage() {
                                             <button
                                               key={option.minutes}
                                               onClick={() => handleSnoozeAlert(alert.id, option.minutes)}
-                                              className="w-full text-left px-3 py-2 text-xs hover:bg-[#1F1F2E] text-[#F0F0F5]"
+                                              className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 text-gray-900"
                                             >
                                               {option.label}
                                             </button>
@@ -1193,7 +1164,7 @@ export default function AlertsPage() {
                                       size="sm"
                                       variant="outline"
                                       className="gap-1 text-xs"
-                                      style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                                      style={{ borderColor: '#E5E7EB', color: '#1F2937' }}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         handleArchiveAlert(alert.id)
@@ -1206,7 +1177,7 @@ export default function AlertsPage() {
                                       size="sm"
                                       variant="outline"
                                       className="gap-1 text-xs"
-                                      style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                                      style={{ borderColor: '#E5E7EB', color: '#1F2937' }}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         setShowAssignDropdown(!showAssignDropdown)
@@ -1218,7 +1189,7 @@ export default function AlertsPage() {
                                       size="sm"
                                       variant="outline"
                                       className="gap-1 text-xs"
-                                      style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                                      style={{ borderColor: '#E5E7EB', color: '#1F2937' }}
                                       onClick={(e) => {
                                         e.stopPropagation()
                                         setShowNoteForm(!showNoteForm)
@@ -1232,7 +1203,7 @@ export default function AlertsPage() {
                                         size="sm"
                                         variant="outline"
                                         className="gap-1 text-xs"
-                                        style={{ borderColor: '#00E5CC', color: '#00E5CC' }}
+                                        style={{ borderColor: '#4361EE', color: '#4361EE' }}
                                         onClick={(e) => {
                                           e.stopPropagation()
                                           handleMarkAlertResolved(alert.id)
@@ -1252,7 +1223,7 @@ export default function AlertsPage() {
                                           key={opt}
                                           variant="secondary"
                                           className="cursor-pointer opacity-70 hover:opacity-100"
-                                          style={{ backgroundColor: '#1A1A25', color: '#F0F0F5', borderColor: '#1F1F2E' }}
+                                          style={{ backgroundColor: '#F3F4F6', color: '#1F2937', borderColor: '#E5E7EB' }}
                                           onClick={(e) => {
                                             e.stopPropagation()
                                             handleSaveAlertAssignment(alert.id, opt)
@@ -1271,19 +1242,16 @@ export default function AlertsPage() {
                                         value={noteInput}
                                         onChange={(e) => setNoteInput(e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="w-full text-xs p-2 rounded resize-none"
+                                        className="w-full text-xs p-2 rounded resize-none bg-gray-100 border border-gray-200"
                                         style={{
-                                          backgroundColor: '#1A1A25',
-                                          borderColor: '#1F1F2E',
-                                          color: '#F0F0F5',
-                                          border: '1px solid',
+                                          color: '#1F2937',
                                         }}
                                         rows={2}
                                       />
                                       <Button
                                         size="sm"
                                         className="gap-1 text-xs w-full"
-                                        style={{ backgroundColor: '#00E5CC', color: '#0A0A0F' }}
+                                        style={{ backgroundColor: '#4361EE', color: '#FFFFFF' }}
                                         disabled={savingNotes[alert.id]}
                                         onClick={(e) => {
                                           e.stopPropagation()
@@ -1297,17 +1265,16 @@ export default function AlertsPage() {
                                   )}
 
                                   {alertNotes[alert.id] && (
-                                    <div className="text-xs p-2 rounded" style={{ backgroundColor: '#1A1A25', borderColor: '#1F1F2E', border: '1px solid' }}>
-                                      <p className="font-medium" style={{ color: '#F0F0F5' }}>Note:</p>
-                                      <p className="mt-1" style={{ color: '#6B6B80' }}>{alertNotes[alert.id]}</p>
+                                    <div className="text-xs p-2 rounded bg-gray-100 border border-gray-200">
+                                      <p className="font-medium" style={{ color: '#1F2937' }}>Note:</p>
+                                      <p className="mt-1" style={{ color: '#6B7280' }}>{alertNotes[alert.id]}</p>
                                     </div>
                                   )}
                                 </div>
                               )}
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
                     ))}
                   </div>
                 </div>
@@ -1318,7 +1285,7 @@ export default function AlertsPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
-              <p className="text-sm" style={{ color: '#6B6B80' }}>
+              <p className="text-sm" style={{ color: '#6B7280' }}>
                 Page {page} sur {totalPages}
               </p>
               <div className="flex gap-2">
@@ -1327,7 +1294,7 @@ export default function AlertsPage() {
                   size="sm"
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                  style={{ borderColor: '#E5E7EB', color: '#1F2937' }}
                 >
                   Précédent
                 </Button>
@@ -1336,7 +1303,7 @@ export default function AlertsPage() {
                   size="sm"
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                  style={{ borderColor: '#E5E7EB', color: '#1F2937' }}
                 >
                   Suivant
                 </Button>
@@ -1350,28 +1317,20 @@ export default function AlertsPage() {
       {tab === 'archives' && (
         <>
           {filteredAlerts.length === 0 ? (
-            <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }} className="text-center">
-              <CardContent className="py-12">
-                <Archive className="mx-auto mb-4" size={48} style={{ color: '#44445A' }} />
-                <h3 className="text-lg font-medium font-syne" style={{ color: '#F0F0F5' }}>Aucune alerte archivée</h3>
-                <p className="mt-1 text-sm" style={{ color: '#6B6B80' }}>
-                  Les alertes que vous archivez apparaîtront ici.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6 text-center">
+              <Archive className="mx-auto mb-4" size={48} style={{ color: '#9CA3AF' }} />
+              <h3 className="text-lg font-medium font-sans" style={{ color: '#1F2937' }}>Aucune alerte archivée</h3>
+              <p className="mt-1 text-sm" style={{ color: '#6B7280' }}>
+                Les alertes que vous archivez apparaîtront ici.
+              </p>
+            </div>
           ) : (
             <div className="space-y-2">
               {filteredAlerts.map((alert) => (
-                <Card
+                <div
                   key={alert.id}
-                  className="transition-all"
-                  style={{
-                    backgroundColor: '#12121A',
-                    borderColor: '#1F1F2E',
-                    borderWidth: '1px',
-                  }}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
-                  <CardContent className="py-4">
                     <div className="flex items-start gap-3">
                       <div
                         className={`rounded-lg p-2 ${getSeverityBadgeClass(alert.severity)}`}
@@ -1382,8 +1341,8 @@ export default function AlertsPage() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
-                            <h3 className="font-medium font-syne" style={{ color: '#F0F0F5' }}>{alert.title}</h3>
-                            <p className="mt-0.5 text-sm line-clamp-1" style={{ color: '#6B6B80' }}>{alert.message}</p>
+                            <h3 className="font-medium font-sans" style={{ color: '#1F2937' }}>{alert.title}</h3>
+                            <p className="mt-0.5 text-sm line-clamp-1" style={{ color: '#6B7280' }}>{alert.message}</p>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <span
@@ -1393,14 +1352,14 @@ export default function AlertsPage() {
                             >
                               {alert.severity}
                             </span>
-                            <Badge style={{ backgroundColor: '#6B6B80', color: '#F0F0F5' }} className="text-xs">
+                            <Badge style={{ backgroundColor: '#6B7280', color: '#1F2937' }} className="text-xs">
                               Archivé
                             </Badge>
                             <Button
                               size="sm"
                               variant="outline"
                               className="gap-1 text-xs"
-                              style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}
+                              style={{ borderColor: '#E5E7EB', color: '#1F2937' }}
                               onClick={() => handleUnarchiveAlert(alert.id)}
                             >
                               <X size={12} />
@@ -1408,11 +1367,10 @@ export default function AlertsPage() {
                             </Button>
                           </div>
                         </div>
-                        <p className="mt-1 text-xs" style={{ color: '#44445A' }}>{formatTimeAgo(alert.createdAt)}</p>
+                        <p className="mt-1 text-xs" style={{ color: '#9CA3AF' }}>{formatTimeAgo(alert.createdAt)}</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                </div>
               ))}
             </div>
           )}
@@ -1423,81 +1381,71 @@ export default function AlertsPage() {
       {tab === 'trends' && (
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
-            <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-              <CardContent className="pt-6">
-                <div>
-                  <p className="text-sm" style={{ color: '#6B6B80' }}>Alertes cette semaine</p>
-                  <p className="mt-2 text-2xl font-bold font-syne" style={{ color: '#F0F0F5' }}>87</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-              <CardContent className="pt-6">
-                <div>
-                  <p className="text-sm" style={{ color: '#6B6B80' }}>Alertes ce mois</p>
-                  <p className="mt-2 text-2xl font-bold font-syne" style={{ color: '#F0F0F5' }}>342</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-              <CardContent className="pt-6">
-                <div>
-                  <p className="text-sm" style={{ color: '#6B6B80' }}>Type le plus fréquent</p>
-                  <p className="mt-2 text-lg font-bold font-syne" style={{ color: '#FFB547' }}>Overspeed</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+              <div>
+                <p className="text-sm" style={{ color: '#6B7280' }}>Alertes cette semaine</p>
+                <p className="mt-2 text-2xl font-bold font-sans" style={{ color: '#1F2937' }}>87</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+              <div>
+                <p className="text-sm" style={{ color: '#6B7280' }}>Alertes ce mois</p>
+                <p className="mt-2 text-2xl font-bold font-sans" style={{ color: '#1F2937' }}>342</p>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+              <div>
+                <p className="text-sm" style={{ color: '#6B7280' }}>Type le plus fréquent</p>
+                <p className="mt-2 text-lg font-bold font-sans" style={{ color: '#F59E0B' }}>Overspeed</p>
+              </div>
+            </div>
           </div>
 
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 font-syne" style={{ color: '#F0F0F5' }}>
-                <TrendingUp size={20} />
-                Fréquence des alertes - 7 derniers jours
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <h3 className="flex items-center gap-2 font-sans text-lg font-semibold mb-4" style={{ color: '#1F2937' }}>
+              <TrendingUp size={20} />
+              Fréquence des alertes - 7 derniers jours
+            </h3>
+            <div>
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={trendData}>
                   <defs>
                     <linearGradient id="colorAlerts" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00E5CC" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#00E5CC" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#4361EE" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#4361EE" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1F1F2E" />
-                  <XAxis dataKey="name" stroke="#6B6B80" />
-                  <YAxis stroke="#6B6B80" />
-                  <Tooltip contentStyle={{ backgroundColor: '#1A1A25', borderColor: '#1F1F2E' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="name" stroke="#9CA3AF" />
+                  <YAxis stroke="#9CA3AF" />
+                  <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#D1D5DB', border: '1px solid' }} />
                   <Area
                     type="monotone"
                     dataKey="alerts"
-                    stroke="#00E5CC"
+                    stroke="#4361EE"
                     fillOpacity={1}
                     fill="url(#colorAlerts)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Heatmap - Alert concentration by time of day */}
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 font-syne" style={{ color: '#F0F0F5' }}>
-                <Clock size={20} />
-                Concentration des alertes par heure
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <h3 className="flex items-center gap-2 font-sans text-lg font-semibold mb-4" style={{ color: '#1F2937' }}>
+              <Clock size={20} />
+              Concentration des alertes par heure
+            </h3>
+            <div>
               <div className="flex gap-1 items-end justify-between h-40">
                 {heatmapData.map((data, idx) => {
                   const getHeatColor = (intensity: number) => {
-                    if (intensity === 0) return '#1F1F2E'
-                    if (intensity < 25) return '#6B6B80'
-                    if (intensity < 50) return '#00E5CC'
-                    if (intensity < 75) return '#FFB547'
-                    return '#FF4D6A'
+                    if (intensity === 0) return '#E5E7EB'
+                    if (intensity < 25) return '#6B7280'
+                    if (intensity < 50) return '#4361EE'
+                    if (intensity < 75) return '#F59E0B'
+                    return '#EF4444'
                   }
                   return (
                     <div
@@ -1513,13 +1461,13 @@ export default function AlertsPage() {
                   )
                 })}
               </div>
-              <div className="flex justify-between mt-3 text-xs" style={{ color: '#6B6B80' }}>
+              <div className="flex justify-between mt-3 text-xs" style={{ color: '#6B7280' }}>
                 <span>00:00</span>
                 <span>12:00</span>
                 <span>23:00</span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1528,24 +1476,22 @@ export default function AlertsPage() {
         <div className="space-y-4">
           {/* Alert Templates */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold" style={{ color: '#F0F0F5' }}>Modèles d'alerte</h3>
+            <h3 className="text-sm font-semibold" style={{ color: '#1F2937' }}>Modèles d'alerte</h3>
             <div className="grid gap-2 sm:grid-cols-2">
               {alertTemplates.map((template) => (
-                <Card
+                <div
                   key={template.id}
-                  style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}
-                  className="cursor-pointer hover:border-[#00E5CC] transition-colors"
+                  className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6 cursor-pointer hover:border-blue-600 transition-colors"
                 >
-                  <CardContent className="py-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-sm font-medium" style={{ color: '#F0F0F5' }}>{template.name}</h4>
-                        <p className="text-xs mt-1 line-clamp-2" style={{ color: '#6B6B80' }}>{template.description}</p>
+                        <h4 className="text-sm font-medium" style={{ color: '#1F2937' }}>{template.name}</h4>
+                        <p className="text-xs mt-1 line-clamp-2" style={{ color: '#6B7280' }}>{template.description}</p>
                       </div>
                       <Button
                         size="sm"
                         className="gap-1 text-xs shrink-0 ml-2"
-                        style={{ backgroundColor: '#00E5CC', color: '#0A0A0F' }}
+                        style={{ backgroundColor: '#4361EE', color: '#FFFFFF' }}
                         onClick={() => {
                           setRuleForm((prev) => ({
                             ...prev,
@@ -1562,21 +1508,18 @@ export default function AlertsPage() {
                         Utiliser
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
+                </div>
               ))}
             </div>
           </div>
 
           {/* Silent Hours Configuration Card */}
-          <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid', backgroundImage: 'linear-gradient(135deg, rgba(0, 229, 204, 0.1) 0%, rgba(0, 229, 204, 0.05) 100%)' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base font-syne" style={{ color: '#00E5CC' }}>
-                <Clock size={18} />
-                Heures silencieuses
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6" style={{ backgroundImage: 'linear-gradient(135deg, rgba(0, 229, 204, 0.1) 0%, rgba(0, 229, 204, 0.05) 100%)' }}>
+            <h3 className="flex items-center gap-2 text-base font-sans font-semibold mb-4" style={{ color: '#4361EE' }}>
+              <Clock size={18} />
+              Heures silencieuses
+            </h3>
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -1586,17 +1529,17 @@ export default function AlertsPage() {
                     setGlobalSilentHoursEnabled(e.target.checked)
                     handleSaveGlobalSilentHours()
                   }}
-                  style={{ accentColor: '#00E5CC' }}
+                  style={{ accentColor: '#4361EE' }}
                 />
-                <label htmlFor="silentEnabled" className="text-sm font-medium" style={{ color: '#F0F0F5' }}>
+                <label htmlFor="silentEnabled" className="text-sm font-medium" style={{ color: '#1F2937' }}>
                   Activer les heures silencieuses globales
                 </label>
               </div>
-              <p className="text-xs" style={{ color: '#6B6B80' }}>
+              <p className="text-xs" style={{ color: '#6B7280' }}>
                 Les alertes non-critiques seront mises en attente pendant cette période
               </p>
               <div className="flex gap-2 items-center">
-                <span className="text-sm" style={{ color: '#6B6B80' }}>De</span>
+                <span className="text-sm" style={{ color: '#6B7280' }}>De</span>
                 <input
                   type="time"
                   value={globalSilentHoursFrom}
@@ -1605,14 +1548,14 @@ export default function AlertsPage() {
                   }}
                   onBlur={handleSaveGlobalSilentHours}
                   style={{
-                    backgroundColor: '#1A1A25',
-                    borderColor: '#1F1F2E',
-                    color: '#F0F0F5',
+                    backgroundColor: '#F3F4F6',
+                    borderColor: '#E5E7EB',
+                    color: '#1F2937',
                     border: '1px solid',
                   }}
                   className="rounded-md px-2 py-1 text-sm"
                 />
-                <span className="text-sm" style={{ color: '#6B6B80' }}>à</span>
+                <span className="text-sm" style={{ color: '#6B7280' }}>à</span>
                 <input
                   type="time"
                   value={globalSilentHoursTo}
@@ -1621,16 +1564,16 @@ export default function AlertsPage() {
                   }}
                   onBlur={handleSaveGlobalSilentHours}
                   style={{
-                    backgroundColor: '#1A1A25',
-                    borderColor: '#1F1F2E',
-                    color: '#F0F0F5',
+                    backgroundColor: '#F3F4F6',
+                    borderColor: '#E5E7EB',
+                    color: '#1F2937',
                     border: '1px solid',
                   }}
                   className="rounded-md px-2 py-1 text-sm"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {rulesLoading ? (
             <div className="space-y-3">
@@ -1639,40 +1582,37 @@ export default function AlertsPage() {
               ))}
             </div>
           ) : !rules || (rules as any[]).length === 0 ? (
-            <Card style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }} className="text-center">
-              <CardContent className="py-12">
-                <Settings className="mx-auto mb-4" size={48} style={{ color: '#44445A' }} />
-                <h3 className="text-lg font-medium font-syne" style={{ color: '#F0F0F5' }}>Aucune règle d'alerte configurée</h3>
-                <p className="mt-1 text-sm" style={{ color: '#6B6B80' }}>
-                  Créez des règles pour générer automatiquement des alertes en fonction des conditions des véhicules.
-                </p>
-                <Button className="mt-4 gap-2" onClick={openRuleCreator} style={{ backgroundColor: '#00E5CC', color: '#0A0A0F' }}>
-                  <Plus size={16} />
-                  Créer votre première règle
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6 text-center">
+              <Settings className="mx-auto mb-4" size={48} style={{ color: '#9CA3AF' }} />
+              <h3 className="text-lg font-medium font-sans" style={{ color: '#1F2937' }}>Aucune règle d'alerte configurée</h3>
+              <p className="mt-1 text-sm" style={{ color: '#6B7280' }}>
+                Créez des règles pour générer automatiquement des alertes en fonction des conditions des véhicules.
+              </p>
+              <Button className="mt-4 gap-2" onClick={openRuleCreator} style={{ backgroundColor: '#4361EE', color: '#FFFFFF' }}>
+                <Plus size={16} />
+                Créer votre première règle
+              </Button>
+            </div>
           ) : (
             <div className="space-y-3">
               {(rules as AlertRule[]).map((rule) => {
                 const typeConf = alertTypeConfig[rule.type]
                 return (
-                  <Card key={rule.id} style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
-                    <CardContent className="py-4">
+                  <div key={rule.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
                       <div className="flex items-center gap-4">
                         <div
                           className={`rounded-lg p-2.5`}
                           style={{
                             backgroundColor: rule.enabled ? 'rgba(0, 229, 204, 0.2)' : 'rgba(68, 68, 90, 0.2)',
-                            color: rule.enabled ? '#00E5CC' : '#44445A',
+                            color: rule.enabled ? '#4361EE' : '#9CA3AF',
                           }}
                         >
                           {typeConf?.icon || <Bell size={18} />}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-medium font-syne" style={{ color: '#F0F0F5' }}>{rule.name}</h3>
-                            <Badge variant={!disabledRules.has(rule.id) && rule.enabled ? 'default' : 'secondary'} style={{ backgroundColor: !disabledRules.has(rule.id) && rule.enabled ? '#00E5CC' : '#1A1A25', color: !disabledRules.has(rule.id) && rule.enabled ? '#0A0A0F' : '#F0F0F5' }}>
+                            <h3 className="font-medium font-sans" style={{ color: '#1F2937' }}>{rule.name}</h3>
+                            <Badge variant={!disabledRules.has(rule.id) && rule.enabled ? 'default' : 'secondary'} style={{ backgroundColor: !disabledRules.has(rule.id) && rule.enabled ? '#4361EE' : '#F3F4F6', color: !disabledRules.has(rule.id) && rule.enabled ? '#FFFFFF' : '#1F2937' }}>
                               {!disabledRules.has(rule.id) && rule.enabled ? 'Actif' : 'Désactivé'}
                             </Badge>
                             <span
@@ -1683,16 +1623,16 @@ export default function AlertsPage() {
                               {rule.severity}
                             </span>
                           </div>
-                          <p className="mt-0.5 text-sm" style={{ color: '#6B6B80' }}>
+                          <p className="mt-0.5 text-sm" style={{ color: '#6B7280' }}>
                             {rule.description || typeConf?.description || rule.type}
                           </p>
                           {(rule as any).escalationEnabled && (
-                            <p className="mt-1 text-xs" style={{ color: '#FFB547' }}>
+                            <p className="mt-1 text-xs" style={{ color: '#F59E0B' }}>
                               <span className="font-medium">Escalade:</span> {(rule as any).escalationDelay} → {(rule as any).escalationTarget}
                             </p>
                           )}
                           {(rule as any).parentRuleId && (
-                            <p className="mt-1 text-xs" style={{ color: '#00E5CC' }}>
+                            <p className="mt-1 text-xs" style={{ color: '#4361EE' }}>
                               <span className="font-medium">Dépend de:</span> Règle parente
                             </p>
                           )}
@@ -1713,15 +1653,15 @@ export default function AlertsPage() {
                             className={`h-8 w-12 rounded-full transition-colors`}
                             style={{
                               backgroundColor: disabledRules.has(rule.id)
-                                ? '#44445A'
-                                : '#00E5CC',
+                                ? '#9CA3AF'
+                                : '#4361EE',
                             }}
                           />
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0"
-                            style={{ color: '#6B6B80' }}
+                            style={{ color: '#6B7280' }}
                             onClick={() => handleEditRule(rule)}
                           >
                             <Settings size={14} />
@@ -1730,15 +1670,14 @@ export default function AlertsPage() {
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0"
-                            style={{ color: '#FF4D6A' }}
+                            style={{ color: '#EF4444' }}
                             onClick={() => handleDeleteRule(rule.id)}
                           >
                             <Trash2 size={14} />
                           </Button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
                 )
               })}
             </div>
@@ -1751,10 +1690,10 @@ export default function AlertsPage() {
         setShowRuleModal(false)
         setEditingRuleId(null)
       }}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" style={{ backgroundColor: '#12121A', borderColor: '#1F1F2E', border: '1px solid' }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-white rounded-xl shadow-2xl border border-gray-200">
           <DialogHeader>
-            <DialogTitle style={{ color: '#F0F0F5', fontFamily: 'Syne' }}>{editingRuleId ? 'Modifier la règle d\'alerte' : 'Créer une règle d\'alerte'}</DialogTitle>
-            <DialogDescription style={{ color: '#6B6B80' }}>
+            <DialogTitle style={{ color: '#1F2937', fontFamily: 'Inter, sans-serif' }}>{editingRuleId ? 'Modifier la règle d\'alerte' : 'Créer une règle d\'alerte'}</DialogTitle>
+            <DialogDescription style={{ color: '#6B7280' }}>
               {ruleStep === 0
                 ? 'Étape 1 : Choisir un type d\'alerte'
                 : ruleStep === 1
@@ -1772,9 +1711,9 @@ export default function AlertsPage() {
                 <div
                   className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-medium`}
                   style={{
-                    backgroundColor: step < ruleStep ? '#00E5CC' : step === ruleStep ? '#1A1A25' : '#44445A',
-                    color: step < ruleStep ? '#0A0A0F' : '#F0F0F5',
-                    border: step === ruleStep ? '2px solid #00E5CC' : 'none',
+                    backgroundColor: step < ruleStep ? '#4361EE' : step === ruleStep ? '#F3F4F6' : '#9CA3AF',
+                    color: step < ruleStep ? '#FFFFFF' : '#1F2937',
+                    border: step === ruleStep ? '2px solid #4361EE' : 'none',
                   }}
                 >
                   {step < ruleStep ? <Check size={14} /> : step + 1}
@@ -1782,7 +1721,7 @@ export default function AlertsPage() {
                 {step < 3 && (
                   <div
                     className={`flex-1 h-0.5`}
-                    style={{ backgroundColor: step < ruleStep ? '#00E5CC' : '#1F1F2E' }}
+                    style={{ backgroundColor: step < ruleStep ? '#4361EE' : '#E5E7EB' }}
                   />
                 )}
               </div>
@@ -1805,14 +1744,14 @@ export default function AlertsPage() {
                   }}
                   className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors`}
                   style={{
-                    borderColor: ruleForm.type === type ? '#00E5CC' : '#1F1F2E',
-                    backgroundColor: ruleForm.type === type ? 'rgba(0, 229, 204, 0.1)' : '#1A1A25',
+                    borderColor: ruleForm.type === type ? '#4361EE' : '#E5E7EB',
+                    backgroundColor: ruleForm.type === type ? 'rgba(0, 229, 204, 0.1)' : '#F3F4F6',
                   }}
                 >
-                  <div className="rounded-lg p-2" style={{ backgroundColor: '#44445A', color: '#6B6B80' }}>{config.icon}</div>
+                  <div className="rounded-lg p-2" style={{ backgroundColor: '#9CA3AF', color: '#6B7280' }}>{config.icon}</div>
                   <div>
-                    <p className="font-medium text-sm" style={{ color: '#F0F0F5' }}>{config.label}</p>
-                    <p className="text-xs mt-0.5" style={{ color: '#6B6B80' }}>{config.description}</p>
+                    <p className="font-medium text-sm" style={{ color: '#1F2937' }}>{config.label}</p>
+                    <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>{config.description}</p>
                   </div>
                 </button>
               ))}
@@ -1823,35 +1762,35 @@ export default function AlertsPage() {
           {ruleStep === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium" style={{ color: '#F0F0F5' }}>Nom de la règle *</label>
+                <label className="mb-1 block text-sm font-medium" style={{ color: '#1F2937' }}>Nom de la règle *</label>
                 <Input
                   value={ruleForm.name}
                   onChange={(e) => setRuleForm((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Ex. Alerte de vitesse sur autoroute"
                   style={{
-                    backgroundColor: '#1A1A25',
-                    borderColor: '#1F1F2E',
-                    color: '#F0F0F5',
+                    backgroundColor: '#F3F4F6',
+                    borderColor: '#E5E7EB',
+                    color: '#1F2937',
                   }}
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium" style={{ color: '#F0F0F5' }}>Description</label>
+                <label className="mb-1 block text-sm font-medium" style={{ color: '#1F2937' }}>Description</label>
                 <Input
                   value={ruleForm.description}
                   onChange={(e) => setRuleForm((prev) => ({ ...prev, description: e.target.value }))}
                   placeholder="Description facultative..."
                   style={{
-                    backgroundColor: '#1A1A25',
-                    borderColor: '#1F1F2E',
-                    color: '#F0F0F5',
+                    backgroundColor: '#F3F4F6',
+                    borderColor: '#E5E7EB',
+                    color: '#1F2937',
                   }}
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium" style={{ color: '#F0F0F5' }}>Gravité</label>
+                <label className="mb-1 block text-sm font-medium" style={{ color: '#1F2937' }}>Gravité</label>
                 <div className="flex flex-wrap gap-2">
                   {severityOptions.map((opt) => (
                     <button
@@ -1859,9 +1798,9 @@ export default function AlertsPage() {
                       onClick={() => setRuleForm((prev) => ({ ...prev, severity: opt.value }))}
                       className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors`}
                       style={{
-                        borderColor: ruleForm.severity === opt.value ? '#00E5CC' : '#1F1F2E',
+                        borderColor: ruleForm.severity === opt.value ? '#4361EE' : '#E5E7EB',
                         backgroundColor: ruleForm.severity === opt.value ? 'rgba(0, 229, 204, 0.15)' : 'transparent',
-                        color: ruleForm.severity === opt.value ? '#F0F0F5' : '#6B6B80',
+                        color: ruleForm.severity === opt.value ? '#1F2937' : '#6B7280',
                       }}
                     >
                       {opt.label}
@@ -1871,7 +1810,7 @@ export default function AlertsPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium" style={{ color: '#F0F0F5' }}>
+                <label className="mb-1 block text-sm font-medium" style={{ color: '#1F2937' }}>
                   Valeur de seuil
                 </label>
                 <div className="flex gap-2">
@@ -1892,9 +1831,9 @@ export default function AlertsPage() {
                     }
                     className="flex-1"
                     style={{
-                      backgroundColor: '#1A1A25',
-                      borderColor: '#1F1F2E',
-                      color: '#F0F0F5',
+                      backgroundColor: '#F3F4F6',
+                      borderColor: '#E5E7EB',
+                      color: '#1F2937',
                     }}
                   />
                   <Input
@@ -1906,26 +1845,26 @@ export default function AlertsPage() {
                     placeholder="Durée (secondes)"
                     className="flex-1"
                     style={{
-                      backgroundColor: '#1A1A25',
-                      borderColor: '#1F1F2E',
-                      color: '#F0F0F5',
+                      backgroundColor: '#F3F4F6',
+                      borderColor: '#E5E7EB',
+                      color: '#1F2937',
                     }}
                   />
                 </div>
-                <p className="mt-1 text-xs" style={{ color: '#6B6B80' }}>
+                <p className="mt-1 text-xs" style={{ color: '#6B7280' }}>
                   Durée : combien de temps la condition doit être respectée avant le déclenchement
                 </p>
               </div>
 
               {/* Multi-Conditions */}
-              <div className="rounded-lg border p-4" style={{ borderColor: '#1F1F2E' }}>
+              <div className="rounded-lg border p-4" style={{ borderColor: '#E5E7EB' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-sm" style={{ color: '#F0F0F5' }}>Conditions supplémentaires</h4>
+                  <h4 className="font-medium text-sm" style={{ color: '#1F2937' }}>Conditions supplémentaires</h4>
                   <Button
                     size="sm"
                     variant="outline"
                     className="gap-1 text-xs"
-                    style={{ borderColor: '#00E5CC', color: '#00E5CC' }}
+                    style={{ borderColor: '#4361EE', color: '#4361EE' }}
                     onClick={() => {
                       setRuleForm((prev) => ({
                         ...prev,
@@ -1950,7 +1889,7 @@ export default function AlertsPage() {
                 {ruleForm.conditions.length > 0 && (
                   <div className="space-y-3">
                     {ruleForm.conditions.map((cond, idx) => (
-                      <div key={cond.id} className="space-y-2 pb-3 border-b" style={{ borderColor: '#1F1F2E' }}>
+                      <div key={cond.id} className="space-y-2 pb-3 border-b" style={{ borderColor: '#E5E7EB' }}>
                         {idx > 0 && (
                           <select
                             value={cond.logicOperator || 'ET'}
@@ -1960,9 +1899,9 @@ export default function AlertsPage() {
                               setRuleForm((prev) => ({ ...prev, conditions: newConds }))
                             }}
                             style={{
-                              backgroundColor: '#1A1A25',
-                              borderColor: '#1F1F2E',
-                              color: '#F0F0F5',
+                              backgroundColor: '#F3F4F6',
+                              borderColor: '#E5E7EB',
+                              color: '#1F2937',
                               border: '1px solid',
                             }}
                             className="rounded-md px-2 py-1 text-xs font-medium w-16"
@@ -1980,9 +1919,9 @@ export default function AlertsPage() {
                               setRuleForm((prev) => ({ ...prev, conditions: newConds }))
                             }}
                             style={{
-                              backgroundColor: '#1A1A25',
-                              borderColor: '#1F1F2E',
-                              color: '#F0F0F5',
+                              backgroundColor: '#F3F4F6',
+                              borderColor: '#E5E7EB',
+                              color: '#1F2937',
                               border: '1px solid',
                             }}
                             className="rounded-md px-2 py-1 text-xs flex-1"
@@ -2002,9 +1941,9 @@ export default function AlertsPage() {
                               setRuleForm((prev) => ({ ...prev, conditions: newConds }))
                             }}
                             style={{
-                              backgroundColor: '#1A1A25',
-                              borderColor: '#1F1F2E',
-                              color: '#F0F0F5',
+                              backgroundColor: '#F3F4F6',
+                              borderColor: '#E5E7EB',
+                              color: '#1F2937',
                               border: '1px solid',
                             }}
                             className="rounded-md px-2 py-1 text-xs"
@@ -2025,9 +1964,9 @@ export default function AlertsPage() {
                             }}
                             placeholder="Valeur"
                             style={{
-                              backgroundColor: '#1A1A25',
-                              borderColor: '#1F1F2E',
-                              color: '#F0F0F5',
+                              backgroundColor: '#F3F4F6',
+                              borderColor: '#E5E7EB',
+                              color: '#1F2937',
                             }}
                             className="flex-1"
                           />
@@ -2043,9 +1982,9 @@ export default function AlertsPage() {
                               }}
                               placeholder="Valeur 2"
                               style={{
-                                backgroundColor: '#1A1A25',
-                                borderColor: '#1F1F2E',
-                                color: '#F0F0F5',
+                                backgroundColor: '#F3F4F6',
+                                borderColor: '#E5E7EB',
+                                color: '#1F2937',
                               }}
                               className="flex-1"
                             />
@@ -2055,7 +1994,7 @@ export default function AlertsPage() {
                             size="sm"
                             variant="ghost"
                             className="h-8 w-8 p-0"
-                            style={{ color: '#FF4D6A' }}
+                            style={{ color: '#EF4444' }}
                             onClick={() => {
                               setRuleForm((prev) => ({
                                 ...prev,
@@ -2072,12 +2011,12 @@ export default function AlertsPage() {
                 )}
               </div>
 
-              <label className="flex items-center gap-2 text-sm" style={{ color: '#F0F0F5' }}>
+              <label className="flex items-center gap-2 text-sm" style={{ color: '#1F2937' }}>
                 <input
                   type="checkbox"
                   checked={ruleForm.enabled}
                   onChange={(e) => setRuleForm((prev) => ({ ...prev, enabled: e.target.checked }))}
-                  style={{ accentColor: '#00E5CC' }}
+                  style={{ accentColor: '#4361EE' }}
                 />
                 Activer la règle immédiatement
               </label>
@@ -2087,7 +2026,7 @@ export default function AlertsPage() {
           {/* Step 2: Actions */}
           {ruleStep === 2 && (
             <div className="space-y-4">
-              <p className="text-sm" style={{ color: '#6B6B80' }}>
+              <p className="text-sm" style={{ color: '#6B7280' }}>
                 Choisissez comment être averti lorsque cette règle se déclenche :
               </p>
 
@@ -2098,7 +2037,7 @@ export default function AlertsPage() {
                     key={actionType}
                     className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors`}
                     style={{
-                      borderColor: isSelected ? '#00E5CC' : '#1F1F2E',
+                      borderColor: isSelected ? '#4361EE' : '#E5E7EB',
                       backgroundColor: isSelected ? 'rgba(0, 229, 204, 0.1)' : 'transparent',
                     }}
                   >
@@ -2116,10 +2055,10 @@ export default function AlertsPage() {
                               ],
                         }))
                       }}
-                      style={{ accentColor: '#00E5CC' }}
+                      style={{ accentColor: '#4361EE' }}
                     />
                     <div>
-                      <p className="font-medium text-sm capitalize" style={{ color: '#F0F0F5' }}>
+                      <p className="font-medium text-sm capitalize" style={{ color: '#1F2937' }}>
                         {actionType === 'push'
                           ? 'Notification Push'
                           : actionType === 'email'
@@ -2128,7 +2067,7 @@ export default function AlertsPage() {
                               ? 'Notification SMS'
                               : 'Webhook'}
                       </p>
-                      <p className="text-xs" style={{ color: '#6B6B80' }}>
+                      <p className="text-xs" style={{ color: '#6B7280' }}>
                         {actionType === 'push'
                           ? 'Notification in-app pour tous les membres de l\'équipe'
                           : actionType === 'email'
@@ -2148,10 +2087,10 @@ export default function AlertsPage() {
           {ruleStep === 3 && (
             <div className="space-y-5">
               {/* Notification Channels */}
-              <div className="rounded-lg border p-4" style={{ borderColor: '#1F1F2E' }}>
-                <h4 className="font-medium text-sm mb-3" style={{ color: '#F0F0F5' }}>Canaux de notification</h4>
+              <div className="rounded-lg border p-4" style={{ borderColor: '#E5E7EB' }}>
+                <h4 className="font-medium text-sm mb-3" style={{ color: '#1F2937' }}>Canaux de notification</h4>
                 <div className="space-y-3">
-                  <label className="flex items-center gap-3 text-sm" style={{ color: '#F0F0F5' }}>
+                  <label className="flex items-center gap-3 text-sm" style={{ color: '#1F2937' }}>
                     <input
                       type="checkbox"
                       checked={ruleForm.notificationChannels.email}
@@ -2161,12 +2100,12 @@ export default function AlertsPage() {
                           notificationChannels: { ...prev.notificationChannels, email: e.target.checked },
                         }))
                       }
-                      style={{ accentColor: '#00E5CC' }}
+                      style={{ accentColor: '#4361EE' }}
                     />
                     <span>Email</span>
-                    <span className="ml-auto text-xs" style={{ color: '#00E5CC' }}>✅</span>
+                    <span className="ml-auto text-xs" style={{ color: '#4361EE' }}>✅</span>
                   </label>
-                  <label className="flex items-center gap-3 text-sm" style={{ color: '#F0F0F5' }}>
+                  <label className="flex items-center gap-3 text-sm" style={{ color: '#1F2937' }}>
                     <input
                       type="checkbox"
                       checked={ruleForm.notificationChannels.pushMobile}
@@ -2176,17 +2115,17 @@ export default function AlertsPage() {
                           notificationChannels: { ...prev.notificationChannels, pushMobile: e.target.checked },
                         }))
                       }
-                      style={{ accentColor: '#00E5CC' }}
+                      style={{ accentColor: '#4361EE' }}
                     />
                     <span>Push mobile</span>
-                    <span className="ml-auto text-xs" style={{ color: '#FFB547' }}>⚠️ Non configuré</span>
+                    <span className="ml-auto text-xs" style={{ color: '#F59E0B' }}>⚠️ Non configuré</span>
                   </label>
-                  <label className="flex items-center gap-3 text-sm opacity-50" style={{ color: '#F0F0F5' }}>
-                    <input type="checkbox" disabled style={{ accentColor: '#00E5CC' }} />
+                  <label className="flex items-center gap-3 text-sm opacity-50" style={{ color: '#1F2937' }}>
+                    <input type="checkbox" disabled style={{ accentColor: '#4361EE' }} />
                     <span>WhatsApp</span>
-                    <span className="ml-auto text-xs" style={{ color: '#FF4D6A' }}>❌ Non disponible</span>
+                    <span className="ml-auto text-xs" style={{ color: '#EF4444' }}>❌ Non disponible</span>
                   </label>
-                  <label className="flex items-center gap-3 text-sm" style={{ color: '#F0F0F5' }}>
+                  <label className="flex items-center gap-3 text-sm" style={{ color: '#1F2937' }}>
                     <input
                       type="checkbox"
                       checked={ruleForm.notificationChannels.sms}
@@ -2196,31 +2135,31 @@ export default function AlertsPage() {
                           notificationChannels: { ...prev.notificationChannels, sms: e.target.checked },
                         }))
                       }
-                      style={{ accentColor: '#00E5CC' }}
+                      style={{ accentColor: '#4361EE' }}
                     />
                     <span>SMS</span>
-                    <span className="ml-auto text-xs" style={{ color: '#00E5CC' }}>✅</span>
+                    <span className="ml-auto text-xs" style={{ color: '#4361EE' }}>✅</span>
                   </label>
                 </div>
               </div>
 
               {/* Escalation */}
-              <div className="rounded-lg border p-4" style={{ borderColor: '#1F1F2E' }}>
-                <h4 className="font-medium text-sm mb-3" style={{ color: '#F0F0F5' }}>Escalade</h4>
+              <div className="rounded-lg border p-4" style={{ borderColor: '#E5E7EB' }}>
+                <h4 className="font-medium text-sm mb-3" style={{ color: '#1F2937' }}>Escalade</h4>
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-sm" style={{ color: '#F0F0F5' }}>
+                  <label className="flex items-center gap-2 text-sm" style={{ color: '#1F2937' }}>
                     <input
                       type="checkbox"
                       checked={ruleForm.escalationEnabled}
                       onChange={(e) => setRuleForm((prev) => ({ ...prev, escalationEnabled: e.target.checked }))}
-                      style={{ accentColor: '#00E5CC' }}
+                      style={{ accentColor: '#4361EE' }}
                     />
                     <span>Activer l'escalade automatique</span>
                   </label>
                   {ruleForm.escalationEnabled && (
                     <div className="ml-6 space-y-3">
                       <div>
-                        <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Si non acquittée après (minutes)</label>
+                        <label className="mb-1 block text-xs font-medium" style={{ color: '#1F2937' }}>Si non acquittée après (minutes)</label>
                         <select
                           value={ruleForm.escalationDelay}
                           onChange={(e) =>
@@ -2231,9 +2170,9 @@ export default function AlertsPage() {
                           }
                           style={{
                             width: '100%',
-                            backgroundColor: '#1A1A25',
-                            borderColor: '#1F1F2E',
-                            color: '#F0F0F5',
+                            backgroundColor: '#F3F4F6',
+                            borderColor: '#E5E7EB',
+                            color: '#1F2937',
                             border: '1px solid',
                           }}
                           className="rounded-md px-2 py-1 text-sm"
@@ -2245,7 +2184,7 @@ export default function AlertsPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Envoyer à</label>
+                        <label className="mb-1 block text-xs font-medium" style={{ color: '#1F2937' }}>Envoyer à</label>
                         <Input
                           type="email"
                           value={ruleForm.escalationEmail || ''}
@@ -2257,15 +2196,15 @@ export default function AlertsPage() {
                           }
                           placeholder="email@example.com"
                           style={{
-                            backgroundColor: '#1A1A25',
-                            borderColor: '#1F1F2E',
-                            color: '#F0F0F5',
+                            backgroundColor: '#F3F4F6',
+                            borderColor: '#E5E7EB',
+                            color: '#1F2937',
                           }}
                           className="w-full"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Ou escalader vers</label>
+                        <label className="mb-1 block text-xs font-medium" style={{ color: '#1F2937' }}>Ou escalader vers</label>
                         <select
                           value={ruleForm.escalationTarget}
                           onChange={(e) =>
@@ -2276,9 +2215,9 @@ export default function AlertsPage() {
                           }
                           style={{
                             width: '100%',
-                            backgroundColor: '#1A1A25',
-                            borderColor: '#1F1F2E',
-                            color: '#F0F0F5',
+                            backgroundColor: '#F3F4F6',
+                            borderColor: '#E5E7EB',
+                            color: '#1F2937',
                             border: '1px solid',
                           }}
                           className="rounded-md px-2 py-1 text-sm"
@@ -2294,15 +2233,15 @@ export default function AlertsPage() {
               </div>
 
               {/* Silent Hours */}
-              <div className="rounded-lg border p-4" style={{ borderColor: '#1F1F2E' }}>
-                <h4 className="font-medium text-sm mb-3" style={{ color: '#F0F0F5' }}>Heures silencieuses</h4>
+              <div className="rounded-lg border p-4" style={{ borderColor: '#E5E7EB' }}>
+                <h4 className="font-medium text-sm mb-3" style={{ color: '#1F2937' }}>Heures silencieuses</h4>
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-sm" style={{ color: '#F0F0F5' }}>
+                  <label className="flex items-center gap-2 text-sm" style={{ color: '#1F2937' }}>
                     <input
                       type="checkbox"
                       checked={ruleForm.silentHoursEnabled}
                       onChange={(e) => setRuleForm((prev) => ({ ...prev, silentHoursEnabled: e.target.checked }))}
-                      style={{ accentColor: '#00E5CC' }}
+                      style={{ accentColor: '#4361EE' }}
                     />
                     <span>Activer les heures silencieuses</span>
                   </label>
@@ -2310,31 +2249,31 @@ export default function AlertsPage() {
                     <div className="ml-6 space-y-3">
                       <div className="flex gap-2 items-end">
                         <div>
-                          <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>De</label>
+                          <label className="mb-1 block text-xs font-medium" style={{ color: '#1F2937' }}>De</label>
                           <input
                             type="time"
                             value={ruleForm.silentHoursFrom}
                             onChange={(e) => setRuleForm((prev) => ({ ...prev, silentHoursFrom: e.target.value }))}
                             style={{
-                              backgroundColor: '#1A1A25',
-                              borderColor: '#1F1F2E',
-                              color: '#F0F0F5',
+                              backgroundColor: '#F3F4F6',
+                              borderColor: '#E5E7EB',
+                              color: '#1F2937',
                               border: '1px solid',
                             }}
                             className="rounded-md px-2 py-1 text-sm"
                           />
                         </div>
-                        <span style={{ color: '#44445A' }}>à</span>
+                        <span style={{ color: '#9CA3AF' }}>à</span>
                         <div>
-                          <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>À</label>
+                          <label className="mb-1 block text-xs font-medium" style={{ color: '#1F2937' }}>À</label>
                           <input
                             type="time"
                             value={ruleForm.silentHoursTo}
                             onChange={(e) => setRuleForm((prev) => ({ ...prev, silentHoursTo: e.target.value }))}
                             style={{
-                              backgroundColor: '#1A1A25',
-                              borderColor: '#1F1F2E',
-                              color: '#F0F0F5',
+                              backgroundColor: '#F3F4F6',
+                              borderColor: '#E5E7EB',
+                              color: '#1F2937',
                               border: '1px solid',
                             }}
                             className="rounded-md px-2 py-1 text-sm"
@@ -2342,7 +2281,7 @@ export default function AlertsPage() {
                         </div>
                       </div>
                       <div>
-                        <label className="mb-2 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Jours applicables</label>
+                        <label className="mb-2 block text-xs font-medium" style={{ color: '#1F2937' }}>Jours applicables</label>
                         <div className="flex gap-2">
                           {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
                             <button
@@ -2354,9 +2293,9 @@ export default function AlertsPage() {
                               }}
                               className={`h-8 w-8 rounded-md border text-xs font-medium transition-colors`}
                               style={{
-                                borderColor: ruleForm.silentHoursDays[idx] ? '#00E5CC' : '#1F1F2E',
-                                backgroundColor: ruleForm.silentHoursDays[idx] ? '#00E5CC' : 'transparent',
-                                color: ruleForm.silentHoursDays[idx] ? '#0A0A0F' : '#6B6B80',
+                                borderColor: ruleForm.silentHoursDays[idx] ? '#4361EE' : '#E5E7EB',
+                                backgroundColor: ruleForm.silentHoursDays[idx] ? '#4361EE' : 'transparent',
+                                color: ruleForm.silentHoursDays[idx] ? '#FFFFFF' : '#6B7280',
                               }}
                             >
                               {day}
@@ -2370,10 +2309,10 @@ export default function AlertsPage() {
               </div>
 
               {/* Dependencies */}
-              <div className="rounded-lg border p-4" style={{ borderColor: '#1F1F2E' }}>
-                <h4 className="font-medium text-sm mb-3" style={{ color: '#F0F0F5' }}>Dépendances</h4>
+              <div className="rounded-lg border p-4" style={{ borderColor: '#E5E7EB' }}>
+                <h4 className="font-medium text-sm mb-3" style={{ color: '#1F2937' }}>Dépendances</h4>
                 <div>
-                  <label className="mb-1 block text-xs font-medium" style={{ color: '#F0F0F5' }}>Alerte parente (optionnel)</label>
+                  <label className="mb-1 block text-xs font-medium" style={{ color: '#1F2937' }}>Alerte parente (optionnel)</label>
                   <select
                     value={ruleForm.parentRuleId || ''}
                     onChange={(e) =>
@@ -2384,9 +2323,9 @@ export default function AlertsPage() {
                     }
                     style={{
                       width: '100%',
-                      backgroundColor: '#1A1A25',
-                      borderColor: '#1F1F2E',
-                      color: '#F0F0F5',
+                      backgroundColor: '#F3F4F6',
+                      borderColor: '#E5E7EB',
+                      color: '#1F2937',
                       border: '1px solid',
                     }}
                     className="rounded-md px-2 py-1 text-sm"
@@ -2398,7 +2337,7 @@ export default function AlertsPage() {
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs" style={{ color: '#6B6B80' }}>
+                  <p className="mt-1 text-xs" style={{ color: '#6B7280' }}>
                     Cette alerte ne se déclenchera que si l'alerte parente est active
                   </p>
                 </div>
@@ -2407,14 +2346,14 @@ export default function AlertsPage() {
           )}
 
           {formError && (
-            <div className="rounded-lg border p-4" style={{ borderColor: '#FF4D6A', backgroundColor: 'rgba(255, 77, 106, 0.1)', color: '#FF4D6A' }}>
+            <div className="rounded-lg border p-4" style={{ borderColor: '#EF4444', backgroundColor: 'rgba(255, 77, 106, 0.1)', color: '#EF4444' }}>
               {formError}
             </div>
           )}
 
           <DialogFooter>
             {ruleStep > 0 && (
-              <Button variant="outline" onClick={() => setRuleStep((s) => s - 1)} style={{ borderColor: '#1F1F2E', color: '#F0F0F5' }}>
+              <Button variant="outline" onClick={() => setRuleStep((s) => s - 1)} style={{ borderColor: '#E5E7EB', color: '#1F2937' }}>
                 Retour
               </Button>
             )}
@@ -2428,13 +2367,13 @@ export default function AlertsPage() {
                   setFormError('')
                   setRuleStep((s) => s + 1)
                 }}
-                style={{ backgroundColor: '#00E5CC', color: '#0A0A0F' }}
+                style={{ backgroundColor: '#4361EE', color: '#FFFFFF' }}
               >
                 Suivant
                 <ChevronRight size={16} className="ml-1" />
               </Button>
             ) : (
-              <Button onClick={handleCreateRule} disabled={createRuleMutation.isPending} style={{ backgroundColor: '#00E5CC', color: '#0A0A0F' }}>
+              <Button onClick={handleCreateRule} disabled={createRuleMutation.isPending} style={{ backgroundColor: '#4361EE', color: '#FFFFFF' }}>
                 {createRuleMutation.isPending ? (editingRuleId ? 'Modification...' : 'Création...') : (editingRuleId ? 'Modifier la règle' : 'Créer une règle')}
               </Button>
             )}

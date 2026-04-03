@@ -412,11 +412,11 @@ export default function SdkExamplesPage() {
   }
 
   return (
-    <div className="space-y-6 bg-[#0A0A0F] min-h-screen p-6">
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Exemples SDK</h1>
-        <p className="mt-2 text-[#6B6B80]">
+        <h1 className="text-3xl font-bold text-gray-900 font-sans">Exemples SDK</h1>
+        <p className="mt-2 text-gray-500">
           Intégrez l'API Fleet Tracker avec votre langage préféré
         </p>
       </div>
@@ -424,7 +424,7 @@ export default function SdkExamplesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar */}
         <div className="space-y-4">
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Exemples</CardTitle>
             </CardHeader>
@@ -436,8 +436,8 @@ export default function SdkExamplesPage() {
                   className={cn(
                     'w-full text-left px-4 py-2 rounded-lg transition-colors',
                     selectedExample === example
-                      ? 'bg-[#00E5CC] text-[#0A0A0F] font-bold'
-                      : 'hover:bg-[#0A0A0F]'
+                      ? 'bg-blue-600 text-white font-bold'
+                      : 'hover:bg-white'
                   )}
                 >
                   {examples[example].title}
@@ -450,7 +450,7 @@ export default function SdkExamplesPage() {
         {/* Main Content */}
         <div className="lg:col-span-3 space-y-6">
           {/* Language Tabs */}
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardContent className="pt-6">
               <div className="flex gap-2 flex-wrap">
                 {languages.map((lang) => (
@@ -460,8 +460,8 @@ export default function SdkExamplesPage() {
                     className={cn(
                       'px-4 py-2 rounded-lg font-medium transition-colors',
                       selectedLanguage === lang.id
-                        ? 'bg-[#00E5CC] text-[#0A0A0F] font-bold'
-                        : 'bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#2A2A3D]'
+                        ? 'bg-blue-600 text-white font-bold'
+                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                     )}
                   >
                     {lang.label}
@@ -472,12 +472,12 @@ export default function SdkExamplesPage() {
           </Card>
 
           {/* Code Example */}
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle>{currentExample.title}</CardTitle>
-                  <p className="text-sm text-[#6B6B80] mt-2">
+                  <p className="text-sm text-gray-500 mt-2">
                     {currentExample.description}
                   </p>
                 </div>
@@ -504,7 +504,7 @@ export default function SdkExamplesPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
+              <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
                 <code className="whitespace-pre-wrap break-words">
                   {currentCode}
                 </code>
@@ -513,46 +513,46 @@ export default function SdkExamplesPage() {
           </Card>
 
           {/* Webhook Configuration */}
-          <Card>
+          <Card className="bg-white rounded-xl border border-gray-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base">Configuration des Webhooks</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-[#6B6B80]">
+              <p className="text-gray-500">
                 Recevez des notifications en temps réel pour les événements de votre
                 flotte.
               </p>
               <div>
-                <h3 className="font-semibold text-[#F0F0F5] mb-2">
+                <h3 className="font-semibold text-gray-900 mb-2">
                   Types d'événements
                 </h3>
-                <ul className="space-y-2 text-sm text-[#6B6B80]">
+                <ul className="space-y-2 text-sm text-gray-500">
                   <li>
-                    <code className="bg-[#0A0A0F] px-2 py-1 rounded">
+                    <code className="bg-white px-2 py-1 rounded">
                       geofence.entered
                     </code>
                     - Véhicule entré dans une zone
                   </li>
                   <li>
-                    <code className="bg-[#0A0A0F] px-2 py-1 rounded">
+                    <code className="bg-white px-2 py-1 rounded">
                       geofence.exited
                     </code>
                     - Véhicule sorti d'une zone
                   </li>
                   <li>
-                    <code className="bg-[#0A0A0F] px-2 py-1 rounded">
+                    <code className="bg-white px-2 py-1 rounded">
                       alert.triggered
                     </code>
                     - Alerte déclenchée
                   </li>
                   <li>
-                    <code className="bg-[#0A0A0F] px-2 py-1 rounded">
+                    <code className="bg-white px-2 py-1 rounded">
                       vehicle.offline
                     </code>
                     - Véhicule hors ligne
                   </li>
                   <li>
-                    <code className="bg-[#0A0A0F] px-2 py-1 rounded">
+                    <code className="bg-white px-2 py-1 rounded">
                       gps.update
                     </code>
                     - Mise à jour GPS reçue
@@ -560,10 +560,10 @@ export default function SdkExamplesPage() {
                 </ul>
               </div>
               <div>
-                <h3 className="font-semibold text-[#F0F0F5] mb-2">
+                <h3 className="font-semibold text-gray-900 mb-2">
                   Exemple de payload
                 </h3>
-                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`{
   "id": "webhook_123",
   "type": "geofence.entered",

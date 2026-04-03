@@ -68,26 +68,26 @@ import 'leaflet/dist/leaflet.css'
 
 // Fleet Tracker Design System Colors
 const TZ_COLORS = {
-  bgMain: '#0A0A0F',
-  bgCard: '#12121A',
-  bgHover: '#1A1A25',
-  bgActive: '#1E1E2A',
-  borderDefault: '#1F1F2E',
-  borderHover: '#2A2A3D',
-  textPrimary: '#F0F0F5',
-  textMuted: '#6B6B80',
-  textDim: '#44445A',
-  accentCyan: '#00E5CC',
-  accentDanger: '#FF4D6A',
-  accentWarning: '#FFB547',
+  bgMain: '#FFFFFF',
+  bgCard: '#FFFFFF',
+  bgHover: '#F3F4F6',
+  bgActive: '#F9FAFB',
+  borderDefault: '#E5E7EB',
+  borderHover: '#E5E7EB',
+  textPrimary: '#1F2937',
+  textMuted: '#6B7280',
+  textDim: '#9CA3AF',
+  accentCyan: '#4361EE',
+  accentDanger: '#EF4444',
+  accentWarning: '#F59E0B',
 }
 
 const PROVIDER_COLORS_DARK = {
-  Flespi: '#A855F7',
+  Flespi: '#8B5CF6',
   Echoes: '#3B82F6',
-  KeepTrace: '#00E5CC',
-  Ubiwan: '#FFB547',
-  Autre: '#6B6B80',
+  KeepTrace: '#4361EE',
+  Ubiwan: '#F59E0B',
+  Autre: '#6B7280',
 }
 
 type WidgetSize = 'compact' | 'normal' | 'expanded'
@@ -141,48 +141,48 @@ function KeyboardShortcutsModal() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="bg-[#12121A] border border-[#1F1F2E] max-w-md">
+      <DialogContent className="bg-white border border-gray-200 max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[#F0F0F5] font-syne">Raccourcis clavier</DialogTitle>
-          <DialogDescription className="text-[#6B6B80]">Appuyez sur ? pour afficher ce menu</DialogDescription>
+          <DialogTitle className="text-gray-900 font-sans">Raccourcis clavier</DialogTitle>
+          <DialogDescription className="text-gray-500">Appuyez sur ? pour afficher ce menu</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-3 max-h-96 overflow-y-auto">
-            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
-              <span className="text-sm text-[#F0F0F5]">Tableau de bord</span>
-              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">D</kbd>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 border border-gray-200">
+              <span className="text-sm text-gray-900">Tableau de bord</span>
+              <kbd className="px-2 py-1 text-xs bg-gray-50 text-gray-500 rounded border border-[#E5E7EB]">D</kbd>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
-              <span className="text-sm text-[#F0F0F5]">Carte</span>
-              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">M</kbd>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 border border-gray-200">
+              <span className="text-sm text-gray-900">Carte</span>
+              <kbd className="px-2 py-1 text-xs bg-gray-50 text-gray-500 rounded border border-[#E5E7EB]">M</kbd>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
-              <span className="text-sm text-[#F0F0F5]">Véhicules</span>
-              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">V</kbd>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 border border-gray-200">
+              <span className="text-sm text-gray-900">Véhicules</span>
+              <kbd className="px-2 py-1 text-xs bg-gray-50 text-gray-500 rounded border border-[#E5E7EB]">V</kbd>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
-              <span className="text-sm text-[#F0F0F5]">Alertes</span>
-              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">A</kbd>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 border border-gray-200">
+              <span className="text-sm text-gray-900">Alertes</span>
+              <kbd className="px-2 py-1 text-xs bg-gray-50 text-gray-500 rounded border border-[#E5E7EB]">A</kbd>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
-              <span className="text-sm text-[#F0F0F5]">Rapports</span>
-              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">R</kbd>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 border border-gray-200">
+              <span className="text-sm text-gray-900">Rapports</span>
+              <kbd className="px-2 py-1 text-xs bg-gray-50 text-gray-500 rounded border border-[#E5E7EB]">R</kbd>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
-              <span className="text-sm text-[#F0F0F5]">Géobarrières</span>
-              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">G</kbd>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 border border-gray-200">
+              <span className="text-sm text-gray-900">Géobarrières</span>
+              <kbd className="px-2 py-1 text-xs bg-gray-50 text-gray-500 rounded border border-[#E5E7EB]">G</kbd>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[#1A1A25] border border-[#1F1F2E]">
-              <span className="text-sm text-[#F0F0F5]">Paramètres</span>
-              <kbd className="px-2 py-1 text-xs bg-[#1F1F2E] text-[#6B6B80] rounded border border-[#2A2A3D]">S</kbd>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-gray-100 border border-gray-200">
+              <span className="text-sm text-gray-900">Paramètres</span>
+              <kbd className="px-2 py-1 text-xs bg-gray-50 text-gray-500 rounded border border-[#E5E7EB]">S</kbd>
             </div>
           </div>
-          <div className="flex gap-2 justify-end pt-2 border-t border-[#1F1F2E]">
+          <div className="flex gap-2 justify-end pt-2 border-t border-gray-200">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsOpen(false)}
-              className="border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+              className="border-gray-200 bg-gray-100 text-gray-900 hover:bg-[#F9FAFB]"
             >
               Fermer
             </Button>
@@ -483,11 +483,11 @@ export default function DashboardPage() {
   )
 
   const providerColors: Record<string, string> = {
-    Flespi: 'bg-[#A855F7]',
+    Flespi: 'bg-[#8B5CF6]',
     Echoes: 'bg-[#3B82F6]',
-    KeepTrace: 'bg-[#00E5CC]',
-    Ubiwan: 'bg-[#FFB547]',
-    Autre: 'bg-[#6B6B80]',
+    KeepTrace: 'bg-blue-600',
+    Ubiwan: 'bg-amber-500',
+    Autre: 'bg-[#9CA3AF]',
   }
 
   // Generate mock hourly fleet activity data
@@ -722,212 +722,213 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 bg-[#0A0A0F]">
-      {/* Keyboard Shortcuts Modal */}
-      <KeyboardShortcutsModal />
+    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6">
+      <div className="space-y-6">
+        {/* Keyboard Shortcuts Modal */}
+        <KeyboardShortcutsModal />
 
-      {/* Header with Widget Configuration */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold font-syne text-[#F0F0F5]">Tableau de bord</h1>
-          <p className="mt-1 text-sm text-[#6B6B80]">
-            Vue d'ensemble de votre flotte — {stats.total} véhicules, {stats.withGps} avec GPS actif
-          </p>
+        {/* Header with Widget Configuration */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold font-sans text-gray-900">Tableau de bord</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Vue d'ensemble de votre flotte — {stats.total} véhicules, {stats.withGps} avec GPS actif
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 border-gray-200 bg-white text-gray-900 hover:bg-gray-100"
+              title="Appuyez sur ? pour les raccourcis"
+            >
+              <HelpCircle size={16} />
+              <span>Aide</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowWidgetConfig(!showWidgetConfig)}
+              className="gap-2 border-gray-200 bg-white text-gray-900 hover:bg-gray-100"
+            >
+              <Settings size={16} />
+              <span>Personnaliser</span>
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]"
-            title="Appuyez sur ? pour les raccourcis"
-          >
-            <HelpCircle size={16} />
-            <span>Aide</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowWidgetConfig(!showWidgetConfig)}
-            className="gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]"
-          >
-            <Settings size={16} />
-            <span>Personnaliser</span>
-          </Button>
-        </div>
-      </div>
 
-      {/* Widget Configuration Panel */}
-      {showWidgetConfig && (
-        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-          <div className="pb-4 px-6 pt-6 border-b border-[#1F1F2E]">
+        {/* Widget Configuration Panel */}
+        {showWidgetConfig && (
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="pb-4 px-4 md:px-6 pt-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-sans text-base font-bold text-gray-900">Personnaliser les widgets</h3>
+                  <p className="text-sm mt-1 text-gray-500">
+                    Gérez la visibilité, la taille et l'ordre des widgets de votre tableau de bord
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={resetWidgetConfig}
+                  className="gap-2 text-amber-500 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20"
+                >
+                  <RotateCcw size={14} />
+                  <span>Réinitialiser</span>
+                </Button>
+              </div>
+            </div>
+            <div className="px-4 md:px-6 py-6">
+              <div className="space-y-3">
+                {widgetOrder.map((id) => (
+                  <div
+                    key={id}
+                    className="flex items-center gap-3 p-3 bg-gray-100 rounded-lg border border-gray-200 hover:border-[#E5E7EB] transition-colors"
+                  >
+                    {/* Visibility Toggle */}
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={widgetConfig[id].visible}
+                        onChange={() => toggleWidgetVisibility(id)}
+                        className="w-4 h-4 rounded cursor-pointer accent-[#4361EE]"
+                      />
+                    </label>
+
+                    {/* Widget Label */}
+                    <div className="flex-1">
+                      <span className={`text-sm font-medium ${
+                        widgetConfig[id].visible ? 'text-gray-900' : 'text-gray-500'
+                      }`}>
+                        {widgetLabels[id]}
+                      </span>
+                    </div>
+
+                    {/* Size Selector */}
+                    <div className="flex gap-1 bg-white rounded-lg p-1">
+                      {(['compact', 'normal', 'expanded'] as const).map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => setWidgetSize(id, size)}
+                          title={size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large'}
+                          className={`px-2 py-1 text-xs rounded transition-colors ${
+                            widgetConfig[id].size === size
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-500 hover:text-gray-900'
+                          }`}
+                        >
+                          {size === 'compact' ? 'C' : size === 'normal' ? 'N' : 'L'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Reorder Buttons */}
+                    <div className="flex gap-1 border-l border-gray-200 pl-3">
+                      <button
+                        onClick={() => moveWidgetUp(id)}
+                        disabled={widgetOrder.indexOf(id) === 0}
+                        className="p-1 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        title="Monter"
+                      >
+                        <ChevronUp size={16} />
+                      </button>
+                      <button
+                        onClick={() => moveWidgetDown(id)}
+                        disabled={widgetOrder.indexOf(id) === widgetOrder.length - 1}
+                        className="p-1 text-gray-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        title="Descendre"
+                      >
+                        <ChevronDown size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* KPI Cards - Always visible */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          {/* Total Vehicles */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Personnaliser les widgets</h3>
-                <p className="text-sm mt-1 text-[#6B6B80]">
-                  Gérez la visibilité, la taille et l'ordre des widgets de votre tableau de bord
-                </p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total véhicules</p>
+                <p className="text-3xl font-bold font-mono text-gray-900 mt-1">{stats.total}</p>
+                <p className="text-xs text-gray-500 mt-1">{stats.withGps} GPS actif</p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetWidgetConfig}
-                className="gap-2 text-[#FFB547] border-[#FFB547]/30 bg-[#FFB547]/10 hover:bg-[#FFB547]/20"
-              >
-                <RotateCcw size={14} />
-                <span>Réinitialiser</span>
-              </Button>
+              <div className="rounded-xl bg-[rgba(59,130,246,0.1)] p-3 border border-[rgba(59,130,246,0.2)]">
+                <Truck className="text-[#3B82F6]" size={24} />
+              </div>
             </div>
           </div>
-          <div className="px-6 py-6">
-            <div className="space-y-3">
-              {widgetOrder.map((id) => (
-                <div
-                  key={id}
-                  className="flex items-center gap-3 p-3 bg-[#1A1A25] rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] hover:border-[#2A2A3D] transition-colors"
-                >
-                  {/* Visibility Toggle */}
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={widgetConfig[id].visible}
-                      onChange={() => toggleWidgetVisibility(id)}
-                      className="w-4 h-4 rounded cursor-pointer accent-[#00E5CC]"
-                    />
-                  </label>
 
-                  {/* Widget Label */}
-                  <div className="flex-1">
-                    <span className={`text-sm font-medium ${
-                      widgetConfig[id].visible ? 'text-[#F0F0F5]' : 'text-[#6B6B80]'
-                    }`}>
-                      {widgetLabels[id]}
-                    </span>
-                  </div>
+          {/* Moving Vehicles */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">En mouvement</p>
+                <p className="text-3xl font-bold font-mono text-[#22C55E] mt-1">{stats.moving}</p>
+                <p className="text-xs text-gray-500 mt-1">{stats.stopped} à l'arrêt</p>
+              </div>
+              <div className="rounded-xl bg-[rgba(34,197,94,0.1)] p-3 border border-[rgba(34,197,94,0.2)]">
+                <Navigation className="text-[#22C55E]" size={24} />
+              </div>
+            </div>
+          </div>
 
-                  {/* Size Selector */}
-                  <div className="flex gap-1 bg-[#12121A] rounded-[var(--tz-radius-sm)] p-1">
-                    {(['compact', 'normal', 'expanded'] as const).map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setWidgetSize(id, size)}
-                        title={size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large'}
-                        className={`px-2 py-1 text-xs rounded transition-colors ${
-                          widgetConfig[id].size === size
-                            ? 'bg-[#00E5CC] text-[#0A0A0F]'
-                            : 'text-[#6B6B80] hover:text-[#F0F0F5]'
-                        }`}
-                      >
-                        {size === 'compact' ? 'C' : size === 'normal' ? 'N' : 'L'}
-                      </button>
-                    ))}
-                  </div>
+          {/* Recently Active */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Actifs récents</p>
+                <p className="text-3xl font-bold font-mono text-amber-500 mt-1">{stats.recentlyActive}</p>
+                <p className="text-xs text-gray-500 mt-1">dernières 10 min</p>
+              </div>
+              <div className="rounded-xl bg-[rgba(255,181,71,0.1)] p-3 border border-[rgba(255,181,71,0.2)]">
+                <Activity className="text-amber-500" size={24} />
+              </div>
+            </div>
+          </div>
 
-                  {/* Reorder Buttons */}
-                  <div className="flex gap-1 border-l border-[#1F1F2E] pl-3">
-                    <button
-                      onClick={() => moveWidgetUp(id)}
-                      disabled={widgetOrder.indexOf(id) === 0}
-                      className="p-1 text-[#6B6B80] hover:text-[#00E5CC] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                      title="Monter"
-                    >
-                      <ChevronUp size={16} />
-                    </button>
-                    <button
-                      onClick={() => moveWidgetDown(id)}
-                      disabled={widgetOrder.indexOf(id) === widgetOrder.length - 1}
-                      className="p-1 text-[#6B6B80] hover:text-[#00E5CC] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                      title="Descendre"
-                    >
-                      <ChevronDown size={16} />
-                    </button>
-                  </div>
+          {/* Offline */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hors ligne</p>
+                <p className="text-3xl font-bold font-mono text-red-500 mt-1">{stats.noGps}</p>
+                <p className="text-xs text-gray-500 mt-1">sans position GPS</p>
+              </div>
+              <div className="rounded-xl bg-[rgba(255,77,106,0.1)] p-3 border border-[rgba(255,77,106,0.2)]">
+                <WifiOff className="text-red-500" size={24} />
+              </div>
+            </div>
+          </div>
+
+          {/* Daily KM */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Km du jour</p>
+                <p className="text-3xl font-bold font-mono text-blue-600 mt-1">{(dailySummary.totalKm / 1000).toFixed(1)}K</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <span className={`text-xs font-medium ${dailySummary.comparisons.km >= 0 ? 'text-[#22C55E]' : 'text-red-500'}`}>
+                    {dailySummary.comparisons.km >= 0 ? '+' : ''}{dailySummary.comparisons.km.toFixed(1)}%
+                  </span>
+                  <span className="text-xs text-gray-500">vs hier</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* KPI Cards - Always visible */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 stagger-children">
-        {/* Total Vehicles */}
-        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">Total véhicules</p>
-              <p className="text-3xl font-bold font-mono text-[#F0F0F5] mt-1">{stats.total}</p>
-              <p className="text-xs text-[#6B6B80] mt-1">{stats.withGps} GPS actif</p>
-            </div>
-            <div className="rounded-[var(--tz-radius)] bg-[rgba(59,130,246,0.1)] p-3 border border-[rgba(59,130,246,0.2)]">
-              <Truck className="text-[#3B82F6]" size={24} />
-            </div>
-          </div>
-        </div>
-
-        {/* Moving Vehicles */}
-        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">En mouvement</p>
-              <p className="text-3xl font-bold font-mono text-[#22C55E] mt-1">{stats.moving}</p>
-              <p className="text-xs text-[#6B6B80] mt-1">{stats.stopped} à l'arrêt</p>
-            </div>
-            <div className="rounded-[var(--tz-radius)] bg-[rgba(34,197,94,0.1)] p-3 border border-[rgba(34,197,94,0.2)]">
-              <Navigation className="text-[#22C55E]" size={24} />
-            </div>
-          </div>
-        </div>
-
-        {/* Recently Active */}
-        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">Actifs récents</p>
-              <p className="text-3xl font-bold font-mono text-[#FFB547] mt-1">{stats.recentlyActive}</p>
-              <p className="text-xs text-[#6B6B80] mt-1">dernières 10 min</p>
-            </div>
-            <div className="rounded-[var(--tz-radius)] bg-[rgba(255,181,71,0.1)] p-3 border border-[rgba(255,181,71,0.2)]">
-              <Activity className="text-[#FFB547]" size={24} />
-            </div>
-          </div>
-        </div>
-
-        {/* Offline */}
-        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">Hors ligne</p>
-              <p className="text-3xl font-bold font-mono text-[#FF4D6A] mt-1">{stats.noGps}</p>
-              <p className="text-xs text-[#6B6B80] mt-1">sans position GPS</p>
-            </div>
-            <div className="rounded-[var(--tz-radius)] bg-[rgba(255,77,106,0.1)] p-3 border border-[rgba(255,77,106,0.2)]">
-              <WifiOff className="text-[#FF4D6A]" size={24} />
-            </div>
-          </div>
-        </div>
-
-        {/* Daily KM */}
-        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">Km du jour</p>
-              <p className="text-3xl font-bold font-mono text-[#00E5CC] mt-1">{(dailySummary.totalKm / 1000).toFixed(1)}K</p>
-              <div className="flex items-center gap-1 mt-1">
-                <span className={`text-xs font-medium ${dailySummary.comparisons.km >= 0 ? 'text-[#22C55E]' : 'text-[#FF4D6A]'}`}>
-                  {dailySummary.comparisons.km >= 0 ? '+' : ''}{dailySummary.comparisons.km.toFixed(1)}%
-                </span>
-                <span className="text-xs text-[#6B6B80]">vs hier</span>
+              </div>
+              <div className="rounded-xl bg-[rgba(59,130,246,0.1)] p-3 border border-[rgba(59,130,246,0.2)]">
+                <Route className="text-blue-600" size={24} />
               </div>
             </div>
-            <div className="rounded-[var(--tz-radius)] bg-[rgba(0,229,204,0.1)] p-3 border border-[rgba(0,229,204,0.2)]">
-              <Route className="text-[#00E5CC]" size={24} />
-            </div>
           </div>
         </div>
-      </div>
 
-      {/* Daily Summary Widget */}
-      {widgetConfig['daily-summary'].visible && (
+        {/* Daily Summary Widget */}
+        {widgetConfig['daily-summary'].visible && (
         <div
           className={`${
             widgetConfig['daily-summary'].size === 'expanded'
@@ -939,29 +940,29 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Résumé du jour</h3>
-                <p className="text-xs text-[#6B6B80] mt-1">Métriques clés d'aujourd'hui</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-4 md:px-6 py-4 border-b border-gray-200">
+                <h3 className="font-sans text-base font-bold text-gray-900">Résumé du jour</h3>
+                <p className="text-xs text-gray-500 mt-1">Métriques clés d'aujourd'hui</p>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-4 md:px-6 py-4">
                 <div className="space-y-4">
                   {/* Kilomètres */}
-                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)]">
                     <div className="flex items-center gap-3">
                       <Route className="text-[#3B82F6]" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-[#6B6B80]">Kilomètres parcourus</p>
-                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">{dailySummary.totalKm.toLocaleString()} km</p>
+                        <p className="text-xs font-medium text-gray-500">Kilomètres parcourus</p>
+                        <p className="text-lg font-bold font-mono text-gray-900 mt-0.5">{dailySummary.totalKm.toLocaleString()} km</p>
                       </div>
                     </div>
                     <div
                       className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
                         dailySummary.comparisons.km >= 0
                           ? 'bg-[rgba(34,197,94,0.2)] text-[#22C55E]'
-                          : 'bg-[rgba(255,77,106,0.2)] text-[#FF4D6A]'
+                          : 'bg-[rgba(255,77,106,0.2)] text-red-500'
                       }`}
                     >
                       {dailySummary.comparisons.km >= 0 ? (
@@ -974,19 +975,19 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Trajets */}
-                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(168,85,247,0.08)] border border-[rgba(168,85,247,0.15)]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[rgba(168,85,247,0.08)] border border-[rgba(168,85,247,0.15)]">
                     <div className="flex items-center gap-3">
-                      <Navigation className="text-[#A855F7]" size={20} />
+                      <Navigation className="text-[#8B5CF6]" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-[#6B6B80]">Nombre de trajets</p>
-                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">{dailySummary.trips}</p>
+                        <p className="text-xs font-medium text-gray-500">Nombre de trajets</p>
+                        <p className="text-lg font-bold font-mono text-gray-900 mt-0.5">{dailySummary.trips}</p>
                       </div>
                     </div>
                     <div
                       className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
                         dailySummary.comparisons.trips >= 0
                           ? 'bg-[rgba(34,197,94,0.2)] text-[#22C55E]'
-                          : 'bg-[rgba(255,77,106,0.2)] text-[#FF4D6A]'
+                          : 'bg-[rgba(255,77,106,0.2)] text-red-500'
                       }`}
                     >
                       {dailySummary.comparisons.trips >= 0 ? (
@@ -999,12 +1000,12 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Temps moyen */}
-                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(255,181,71,0.08)] border border-[rgba(255,181,71,0.15)]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[rgba(255,181,71,0.08)] border border-[rgba(255,181,71,0.15)]">
                     <div className="flex items-center gap-3">
-                      <Clock className="text-[#FFB547]" size={20} />
+                      <Clock className="text-amber-500" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-[#6B6B80]">Temps de conduite moyen</p>
-                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">
+                        <p className="text-xs font-medium text-gray-500">Temps de conduite moyen</p>
+                        <p className="text-lg font-bold font-mono text-gray-900 mt-0.5">
                           {Math.floor(dailySummary.avgDriveTime / 60)}h {dailySummary.avgDriveTime % 60}m
                         </p>
                       </div>
@@ -1012,19 +1013,19 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Alertes */}
-                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(255,77,106,0.08)] border border-[rgba(255,77,106,0.15)]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[rgba(255,77,106,0.08)] border border-[rgba(255,77,106,0.15)]">
                     <div className="flex items-center gap-3">
-                      <AlertCircle className="text-[#FF4D6A]" size={20} />
+                      <AlertCircle className="text-red-500" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-[#6B6B80]">Alertes du jour</p>
-                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">{dailySummary.todayAlerts}</p>
+                        <p className="text-xs font-medium text-gray-500">Alertes du jour</p>
+                        <p className="text-lg font-bold font-mono text-gray-900 mt-0.5">{dailySummary.todayAlerts}</p>
                       </div>
                     </div>
                     <div
                       className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
                         dailySummary.comparisons.alerts <= 0
                           ? 'bg-[rgba(34,197,94,0.2)] text-[#22C55E]'
-                          : 'bg-[rgba(255,77,106,0.2)] text-[#FF4D6A]'
+                          : 'bg-[rgba(255,77,106,0.2)] text-red-500'
                       }`}
                     >
                       {dailySummary.comparisons.alerts <= 0 ? (
@@ -1037,12 +1038,12 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Géoclôtures violées */}
-                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(0,229,204,0.08)] border border-[rgba(0,229,204,0.15)]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[rgba(0,229,204,0.08)] border border-[rgba(0,229,204,0.15)]">
                     <div className="flex items-center gap-3">
-                      <Shield className="text-[#00E5CC]" size={20} />
+                      <Shield className="text-blue-600" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-[#6B6B80]">Géoclôtures violées</p>
-                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">{dailySummary.geofenceViolations}</p>
+                        <p className="text-xs font-medium text-gray-500">Géoclôtures violées</p>
+                        <p className="text-lg font-bold font-mono text-gray-900 mt-0.5">{dailySummary.geofenceViolations}</p>
                       </div>
                     </div>
                   </div>
@@ -1053,8 +1054,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Activity Feed Widget */}
-      {widgetConfig['activity-feed'].visible && (
+        {/* Activity Feed Widget */}
+        {widgetConfig['activity-feed'].visible && (
         <div
           className={`${
             widgetConfig['activity-feed'].size === 'expanded'
@@ -1066,53 +1067,53 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-4 md:px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Fil d'activité récente</h3>
-                    <p className="text-xs text-[#6B6B80] mt-1">Événements de la dernière heure</p>
+                    <h3 className="font-sans text-base font-bold text-gray-900">Fil d'activité récente</h3>
+                    <p className="text-xs text-gray-500 mt-1">Événements de la dernière heure</p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-xs text-[#00E5CC] hover:bg-[#1A1A25]"
+                    className="text-xs text-blue-600 hover:bg-gray-100"
                     onClick={() => navigate('/activity')}
                   >
                     Tout voir
                   </Button>
                 </div>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-4 md:px-6 py-4">
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {activityFeedEvents.slice(0, 12).map((event) => {
                     const IconComponent = event.icon
                     const timeAgo = formatTimeAgo(event.timestamp)
                     const iconColorMap = {
                       online: 'text-[#22C55E] bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.15)]',
-                      offline: 'text-[#FF4D6A] bg-[rgba(255,77,106,0.1)] border border-[rgba(255,77,106,0.15)]',
-                      alert: 'text-[#FF4D6A] bg-[rgba(255,77,106,0.1)] border border-[rgba(255,77,106,0.15)]',
-                      geofence: 'text-[#A855F7] bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.15)]',
-                      speed: 'text-[#FFB547] bg-[rgba(255,181,71,0.1)] border border-[rgba(255,181,71,0.15)]',
+                      offline: 'text-red-500 bg-[rgba(255,77,106,0.1)] border border-[rgba(255,77,106,0.15)]',
+                      alert: 'text-red-500 bg-[rgba(255,77,106,0.1)] border border-[rgba(255,77,106,0.15)]',
+                      geofence: 'text-[#8B5CF6] bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.15)]',
+                      speed: 'text-amber-500 bg-[rgba(255,181,71,0.1)] border border-[rgba(255,181,71,0.15)]',
                     }
 
                     return (
                       <div
                         key={event.id}
-                        className="flex gap-3 p-2.5 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] hover:bg-[#1A1A25] transition-colors"
+                        className="flex gap-3 p-2.5 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
                       >
-                        <div className={`rounded-[var(--tz-radius-sm)] p-2 flex-shrink-0 ${iconColorMap[event.type]}`}>
+                        <div className={`rounded-lg p-2 flex-shrink-0 ${iconColorMap[event.type]}`}>
                           <IconComponent size={16} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#F0F0F5]">{event.title}</p>
-                          <p className="text-xs text-[#6B6B80] mt-0.5">{event.description}</p>
+                          <p className="text-sm font-medium text-gray-900">{event.title}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{event.description}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-medium text-[#44445A]">{event.vehicleName}</span>
-                            <span className="text-xs text-[#44445A]">·</span>
-                            <span className="text-xs text-[#44445A]">{timeAgo}</span>
+                            <span className="text-xs font-medium text-[#9CA3AF]">{event.vehicleName}</span>
+                            <span className="text-xs text-[#9CA3AF]">·</span>
+                            <span className="text-xs text-[#9CA3AF]">{timeAgo}</span>
                           </div>
                         </div>
                       </div>
@@ -1125,8 +1126,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Configurable Widgets Grid */}
-      <div className="grid gap-6 auto-rows-max md:grid-cols-2 lg:grid-cols-4">
+        {/* Configurable Widgets Grid */}
+        <div className="grid gap-6 auto-rows-max md:grid-cols-2 lg:grid-cols-4">
         {/* Hourly Activity Chart */}
         {widgetConfig['hourly-activity'].visible && (
           <div
@@ -1140,14 +1141,14 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Activité horaire (24h)</h3>
-                  <p className="text-xs text-[#6B6B80] mt-1">Véhicules en mouvement vs arrêtés</p>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-4 md:px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-sans text-base font-bold text-gray-900">Activité horaire (24h)</h3>
+                  <p className="text-xs text-gray-500 mt-1">Véhicules en mouvement vs arrêtés</p>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-4 md:px-6 py-4">
                   <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={hourlyData}>
                       <defs>
@@ -1156,19 +1157,19 @@ export default function DashboardPage() {
                           <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="colorStopped" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#FF4D6A" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="#FF4D6A" stopOpacity={0.1} />
+                          <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#EF4444" stopOpacity={0.1} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
-                      <XAxis dataKey="hour" stroke="#6B6B80" style={{ fontSize: '12px' }} />
-                      <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="hour" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#12121A',
-                          border: '1px solid #1F1F2E',
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid #E5E7EB',
                           borderRadius: '8px',
-                          color: '#F0F0F5',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                         }}
                         formatter={(value: any) => [value, '']}
                       />
@@ -1183,7 +1184,7 @@ export default function DashboardPage() {
                       <Area
                         type="monotone"
                         dataKey="stopped"
-                        stroke="#FF4D6A"
+                        stroke="#EF4444"
                         fillOpacity={1}
                         fill="url(#colorStopped)"
                         name="Arrêtés"
@@ -1209,14 +1210,14 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">État de la flotte</h3>
-                  <p className="text-xs text-[#6B6B80] mt-1">Distribution par statut véhicule</p>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-sans text-base font-bold text-gray-900">État de la flotte</h3>
+                  <p className="text-xs text-gray-500 mt-1">Distribution par statut véhicule</p>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-6 py-4">
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
@@ -1236,10 +1237,10 @@ export default function DashboardPage() {
                       <Tooltip
                         formatter={(value: any) => `${value} véhicules`}
                         contentStyle={{
-                          backgroundColor: '#12121A',
-                          border: '1px solid #1F1F2E',
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid #E5E7EB',
                           borderRadius: '8px',
-                          color: '#F0F0F5',
+                          color: '#1F2937',
                         }}
                       />
                     </PieChart>
@@ -1263,29 +1264,29 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Distribution des alertes</h3>
-                  <p className="text-xs text-[#6B6B80] mt-1">Nombre d'alertes par type (dernières 24h)</p>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-sans text-base font-bold text-gray-900">Distribution des alertes</h3>
+                  <p className="text-xs text-gray-500 mt-1">Nombre d'alertes par type (dernières 24h)</p>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-6 py-4">
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={alertDistributionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
-                      <XAxis dataKey="type" stroke="#6B6B80" style={{ fontSize: '12px' }} />
-                      <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="type" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#12121A',
-                          border: '1px solid #1F1F2E',
+                          backgroundColor: '#FFFFFF',
+                          border: '1px solid #E5E7EB',
                           borderRadius: '8px',
-                          color: '#F0F0F5',
+                          color: '#1F2937',
                         }}
                         formatter={(value: any) => [`${value} alertes`, 'Nombre']}
                       />
-                      <Bar dataKey="count" fill="#00E5CC" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="count" fill="#4361EE" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -1307,18 +1308,18 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Actions rapides</h3>
-                  <p className="text-xs text-[#6B6B80] mt-1">Accès direct aux fonctionnalités</p>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-sans text-base font-bold text-gray-900">Actions rapides</h3>
+                  <p className="text-xs text-gray-500 mt-1">Accès direct aux fonctionnalités</p>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-6 py-4">
                   <div className="grid grid-cols-1 gap-2.5">
                     <Button
                       variant="outline"
-                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-gray-200 bg-gray-100 text-gray-900 hover:bg-[#F9FAFB]"
                       onClick={() => navigate('/map')}
                     >
                       <MapPin size={16} />
@@ -1326,7 +1327,7 @@ export default function DashboardPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-gray-200 bg-gray-100 text-gray-900 hover:bg-[#F9FAFB]"
                       onClick={() => navigate('/reports')}
                     >
                       <FileText size={16} />
@@ -1334,7 +1335,7 @@ export default function DashboardPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-gray-200 bg-gray-100 text-gray-900 hover:bg-[#F9FAFB]"
                       onClick={() => navigate('/geofences')}
                     >
                       <Zap size={16} />
@@ -1342,7 +1343,7 @@ export default function DashboardPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-gray-200 bg-gray-100 text-gray-900 hover:bg-[#F9FAFB]"
                       onClick={() => navigate('/alerts/new')}
                     >
                       <Plus size={16} />
@@ -1371,65 +1372,65 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Fil d'activité récente</h3>
-                      <p className="text-xs text-[#6B6B80] mt-1">Alertes et changements de statut</p>
+                      <h3 className="font-sans text-base font-bold text-gray-900">Fil d'activité récente</h3>
+                      <p className="text-xs text-gray-500 mt-1">Alertes et changements de statut</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs text-[#00E5CC] hover:bg-[#1A1A25]"
+                      className="text-xs text-blue-600 hover:bg-gray-100"
                       onClick={() => navigate('/alerts')}
                     >
                       Voir tous
                     </Button>
                   </div>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-6 py-4">
                   {alertsList.length > 0 ? (
                     <div className="space-y-3">
                       {alertsList.map((alert: any, idx: number) => (
                         <div
                           key={idx}
-                          className="flex items-start gap-3 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] p-3 hover:bg-[#1A1A25] cursor-pointer transition-colors"
+                          className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
                         >
                           <AlertCircle
                             size={16}
                             className={
                               alert.severity === 'critical'
-                                ? 'text-[#FF4D6A] flex-shrink-0 mt-0.5'
-                                : 'text-[#FFB547] flex-shrink-0 mt-0.5'
+                                ? 'text-red-500 flex-shrink-0 mt-0.5'
+                                : 'text-amber-500 flex-shrink-0 mt-0.5'
                             }
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-medium text-[#F0F0F5] truncate">{alert.title}</p>
+                              <p className="text-sm font-medium text-gray-900 truncate">{alert.title}</p>
                               <Badge
                                 variant={alert.severity === 'critical' ? 'destructive' : 'secondary'}
                                 className={`flex-shrink-0 text-xs ${
                                   alert.severity === 'critical'
-                                    ? 'bg-[#FF4D6A]/20 text-[#FF4D6A] border-[#FF4D6A]/30'
-                                    : 'bg-[#FFB547]/20 text-[#FFB547] border-[#FFB547]/30'
+                                    ? 'bg-red-500/20 text-red-500 border-red-500/30'
+                                    : 'bg-amber-500/20 text-amber-500 border-amber-500/30'
                                 }`}
                               >
                                 {alert.severity}
                               </Badge>
                             </div>
-                            <p className="text-xs text-[#6B6B80] line-clamp-2 mt-1">{alert.message}</p>
-                            <p className="text-xs text-[#44445A] mt-2">{formatTimeAgo(alert.createdAt)}</p>
+                            <p className="text-xs text-gray-500 line-clamp-2 mt-1">{alert.message}</p>
+                            <p className="text-xs text-[#9CA3AF] mt-2">{formatTimeAgo(alert.createdAt)}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
-                      <AlertCircle size={24} className="text-[#44445A] mb-2" />
-                      <p className="text-sm text-[#6B6B80]">Aucune alerte récente</p>
+                      <AlertCircle size={24} className="text-[#9CA3AF] mb-2" />
+                      <p className="text-sm text-gray-500">Aucune alerte récente</p>
                     </div>
                   )}
                 </div>
@@ -1451,37 +1452,37 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Résumé des statuts</h3>
-                  <p className="text-xs text-[#6B6B80] mt-1">Dernières mises à jour véhicule</p>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-sans text-base font-bold text-gray-900">Résumé des statuts</h3>
+                  <p className="text-xs text-gray-500 mt-1">Dernières mises à jour véhicule</p>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-6 py-4">
                   <div className="space-y-3">
                     {recentlyUpdated.slice(0, 8).map((v: any) => {
                       const isMoving = (v.currentSpeed || 0) > 2
                       return (
                         <div
                           key={v.id}
-                          className="flex items-center gap-3 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] p-2.5 hover:bg-[#1A1A25] cursor-pointer"
+                          className="flex items-center gap-3 rounded-lg border border-gray-200 p-2.5 hover:bg-gray-100 cursor-pointer"
                           onClick={() => navigate(`/vehicles/${v.id}`)}
                         >
                           <span
                             className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                              isMoving ? 'bg-[#22C55E]' : 'bg-[#FFB547]'
+                              isMoving ? 'bg-[#22C55E]' : 'bg-amber-500'
                             }`}
                           ></span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#F0F0F5] truncate">{v.name}</p>
-                            <p className="text-xs text-[#6B6B80]">
+                            <p className="text-sm font-medium text-gray-900 truncate">{v.name}</p>
+                            <p className="text-xs text-gray-500">
                               {isMoving ? 'En mouvement' : 'Arrêté'} · {formatTimeAgo(v.lastCommunication)}
                             </p>
                           </div>
-                          <span className="text-xs font-semibold font-mono text-[#F0F0F5] flex-shrink-0">
+                          <span className="text-xs font-semibold font-mono text-gray-900 flex-shrink-0">
                             {(v.currentSpeed || 0).toFixed(0)}
-                            <span className="text-[#6B6B80] font-normal"> km/h</span>
+                            <span className="text-gray-500 font-normal"> km/h</span>
                           </span>
                         </div>
                       )
@@ -1507,32 +1508,32 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Tendance kilométrique</h3>
-                <p className="text-xs text-[#6B6B80] mt-1">Kilométrage quotidien sur 30 jours</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                <h3 className="font-sans text-base font-bold text-gray-900">Tendance kilométrique</h3>
+                <p className="text-xs text-gray-500 mt-1">Kilométrage quotidien sur 30 jours</p>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-6 py-4">
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={mileageTrendData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
-                    <XAxis dataKey="day" stroke="#6B6B80" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="day" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#12121A',
-                        border: '1px solid #1F1F2E',
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #E5E7EB',
                         borderRadius: '8px',
-                        color: '#F0F0F5',
+                        color: '#1F2937',
                       }}
                       formatter={(value: any) => [`${value} km`, 'Kilométrage']}
                     />
                     <Line
                       type="monotone"
                       dataKey="km"
-                      stroke="#00E5CC"
+                      stroke="#4361EE"
                       dot={false}
                       strokeWidth={2}
                       name="Kilométrage"
@@ -1558,14 +1559,14 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Utilisation de la flotte</h3>
-                <p className="text-xs text-[#6B6B80] mt-1">État des véhicules</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                <h3 className="font-sans text-base font-bold text-gray-900">Utilisation de la flotte</h3>
+                <p className="text-xs text-gray-500 mt-1">État des véhicules</p>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-6 py-4">
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
@@ -1585,10 +1586,10 @@ export default function DashboardPage() {
                     <Tooltip
                       formatter={(value: any) => `${value} véhicules`}
                       contentStyle={{
-                        backgroundColor: '#12121A',
-                        border: '1px solid #1F1F2E',
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #E5E7EB',
                         borderRadius: '8px',
-                        color: '#F0F0F5',
+                        color: '#1F2937',
                       }}
                     />
                   </PieChart>
@@ -1612,29 +1613,29 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Distribution des vitesses</h3>
-                <p className="text-xs text-[#6B6B80] mt-1">Nombre de véhicules par plage de vitesse</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                <h3 className="font-sans text-base font-bold text-gray-900">Distribution des vitesses</h3>
+                <p className="text-xs text-gray-500 mt-1">Nombre de véhicules par plage de vitesse</p>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-6 py-4">
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={speedDistributionData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
-                    <XAxis dataKey="range" stroke="#6B6B80" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="range" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#12121A',
-                        border: '1px solid #1F1F2E',
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #E5E7EB',
                         borderRadius: '8px',
-                        color: '#F0F0F5',
+                        color: '#1F2937',
                       }}
                       formatter={(value: any) => [`${value} véhicules`, 'Nombre']}
                     />
-                    <Bar dataKey="count" fill="#00E5CC" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="count" fill="#4361EE" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1656,29 +1657,29 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Fréquence des alertes</h3>
-                <p className="text-xs text-[#6B6B80] mt-1">Nombre d'alertes par jour (7 derniers jours)</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                <h3 className="font-sans text-base font-bold text-gray-900">Fréquence des alertes</h3>
+                <p className="text-xs text-gray-500 mt-1">Nombre d'alertes par jour (7 derniers jours)</p>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-6 py-4">
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={alertFrequencyData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
-                    <XAxis dataKey="day" stroke="#6B6B80" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="day" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#12121A',
-                        border: '1px solid #1F1F2E',
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #E5E7EB',
                         borderRadius: '8px',
-                        color: '#F0F0F5',
+                        color: '#1F2937',
                       }}
                       formatter={(value: any) => [`${value} alertes`, 'Nombre']}
                     />
-                    <Bar dataKey="count" fill="#FFB547" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="count" fill="#F59E0B" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1700,14 +1701,14 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Comparaison hebdomadaire</h3>
-                <p className="text-xs text-[#6B6B80] mt-1">Cette semaine vs semaine dernière</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                <h3 className="font-sans text-base font-bold text-gray-900">Comparaison hebdomadaire</h3>
+                <p className="text-xs text-gray-500 mt-1">Cette semaine vs semaine dernière</p>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-6 py-4">
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={[
@@ -1716,20 +1717,20 @@ export default function DashboardPage() {
                       { name: 'Heures actives', current: 856, previous: 790 },
                     ]}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
-                    <XAxis dataKey="name" stroke="#6B6B80" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="name" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#12121A',
-                        border: '1px solid #1F1F2E',
+                        backgroundColor: '#FFFFFF',
+                        border: '1px solid #E5E7EB',
                         borderRadius: '8px',
-                        color: '#F0F0F5',
+                        color: '#1F2937',
                       }}
                     />
-                    <Legend wrapperStyle={{ color: '#6B6B80' }} />
-                    <Bar dataKey="current" fill="#00E5CC" radius={[8, 8, 0, 0]} name="Cette semaine" />
-                    <Bar dataKey="previous" fill="#6B6B80" radius={[8, 8, 0, 0]} name="Semaine dernière" />
+                    <Legend wrapperStyle={{ color: '#6B7280' }} />
+                    <Bar dataKey="current" fill="#4361EE" radius={[8, 8, 0, 0]} name="Cette semaine" />
+                    <Bar dataKey="previous" fill="#9CA3AF" radius={[8, 8, 0, 0]} name="Semaine dernière" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -1751,30 +1752,30 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Zones d'activité (Carte thermique)</h3>
-                <p className="text-xs text-[#6B6B80] mt-1">Densité de véhicules autour de Nice</p>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                <h3 className="font-sans text-base font-bold text-gray-900">Zones d'activité (Carte thermique)</h3>
+                <p className="text-xs text-gray-500 mt-1">Densité de véhicules autour de Nice</p>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-6 py-4">
                 <div className="flex flex-col gap-4">
                   <div className="flex gap-6 text-xs">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                      <span className="text-[#6B6B80]">Élevé</span>
+                      <span className="text-gray-500">Élevé</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-amber-400"></div>
-                      <span className="text-[#6B6B80]">Moyen</span>
+                      <span className="text-gray-500">Moyen</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                      <span className="text-[#6B6B80]">Faible</span>
+                      <span className="text-gray-500">Faible</span>
                     </div>
                   </div>
-                  <div style={{ height: '400px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1F1F2E' }}>
+                  <div style={{ height: '400px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #E5E7EB' }}>
                     <MapContainer
                       center={[43.7, 7.12]}
                       zoom={12}
@@ -1813,26 +1814,26 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-[#6B6B80]" />
+              <GripHorizontal size={16} className="text-gray-500" />
             </div>
-            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <div className="px-4 md:px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Départements</h3>
-                    <p className="text-xs text-[#6B6B80] mt-1">Statut et performance par département</p>
+                    <h3 className="font-sans text-base font-bold text-gray-900">Départements</h3>
+                    <p className="text-xs text-gray-500 mt-1">Statut et performance par département</p>
                   </div>
                   <Dialog open={showNewDeptDialog} onOpenChange={setShowNewDeptDialog}>
                     <DialogTrigger asChild>
-                      <Button size="sm" className="gap-1 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80">
+                      <Button size="sm" className="gap-1 bg-blue-600 text-white hover:bg-blue-600/80">
                         <Plus size={14} />
                         Nouveau
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-[#12121A] border border-[#1F1F2E]">
+                    <DialogContent className="bg-white border border-gray-200">
                       <DialogHeader>
-                        <DialogTitle className="text-[#F0F0F5] font-syne">Ajouter un département</DialogTitle>
-                        <DialogDescription className="text-[#6B6B80]">Entrez le nom du nouveau département</DialogDescription>
+                        <DialogTitle className="text-gray-900 font-sans">Ajouter un département</DialogTitle>
+                        <DialogDescription className="text-gray-500">Entrez le nom du nouveau département</DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
                         <input
@@ -1840,57 +1841,57 @@ export default function DashboardPage() {
                           placeholder="Nom du département"
                           value={newDeptName}
                           onChange={(e) => setNewDeptName(e.target.value)}
-                          className="w-full px-3 py-2 border border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] rounded-[var(--tz-radius-sm)] focus:outline-none focus:ring-2 focus:ring-[#00E5CC]"
+                          className="w-full px-3 py-2 border border-gray-200 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                           onKeyDown={(e) => e.key === 'Enter' && addDepartment()}
                         />
                         <div className="flex gap-2 justify-end">
-                          <Button variant="outline" onClick={() => setShowNewDeptDialog(false)} className="border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]">
+                          <Button variant="outline" onClick={() => setShowNewDeptDialog(false)} className="border-gray-200 bg-gray-100 text-gray-900 hover:bg-[#F9FAFB]">
                             Annuler
                           </Button>
-                          <Button onClick={addDepartment} className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80">Ajouter</Button>
+                          <Button onClick={addDepartment} className="bg-blue-600 text-white hover:bg-blue-600/80">Ajouter</Button>
                         </div>
                       </div>
                     </DialogContent>
                   </Dialog>
                 </div>
               </div>
-              <div className="px-6 py-4">
+              <div className="px-4 md:px-6 py-4">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   {departments.map((dept) => (
-                    <div key={dept.id} className="p-4 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] hover:border-[#2A2A3D] transition-colors">
+                    <div key={dept.id} className="p-4 rounded-lg border border-gray-200 hover:border-[#E5E7EB] transition-colors">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <div className="rounded-[var(--tz-radius-sm)] bg-[rgba(59,130,246,0.1)] p-2">
+                          <div className="rounded-lg bg-[rgba(59,130,246,0.1)] p-2">
                             <Building2 size={16} className="text-[#3B82F6]" />
                           </div>
                           <div>
-                            <p className="font-medium text-[#F0F0F5]">{dept.name}</p>
-                            <p className="text-xs text-[#6B6B80]">Département</p>
+                            <p className="font-medium text-gray-900">{dept.name}</p>
+                            <p className="text-xs text-gray-500">Département</p>
                           </div>
                         </div>
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <p className="text-xs text-[#6B6B80] uppercase tracking-wide mb-1">Véhicules</p>
-                          <p className="text-2xl font-bold font-mono text-[#F0F0F5]">{dept.vehicleCount}</p>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Véhicules</p>
+                          <p className="text-2xl font-bold font-mono text-gray-900">{dept.vehicleCount}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-[#6B6B80] uppercase tracking-wide mb-1">Chauffeurs actifs</p>
-                          <p className="text-2xl font-bold font-mono text-[#F0F0F5]">{dept.driverCount}</p>
+                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Chauffeurs actifs</p>
+                          <p className="text-2xl font-bold font-mono text-gray-900">{dept.driverCount}</p>
                         </div>
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-xs font-medium text-[#6B6B80]">Performance</p>
-                            <p className="text-xs font-bold text-[#F0F0F5]">{dept.performanceScore}%</p>
+                            <p className="text-xs font-medium text-gray-500">Performance</p>
+                            <p className="text-xs font-bold text-gray-900">{dept.performanceScore}%</p>
                           </div>
-                          <div className="h-2 w-full rounded-full bg-[#1A1A25] overflow-hidden">
+                          <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
                             <div
                               className={`h-full transition-all ${
                                 dept.performanceScore >= 90
                                   ? 'bg-[#22C55E]'
                                   : dept.performanceScore >= 80
-                                    ? 'bg-[#FFB547]'
-                                    : 'bg-[#FF4D6A]'
+                                    ? 'bg-amber-500'
+                                    : 'bg-red-500'
                               }`}
                               style={{ width: `${dept.performanceScore}%` }}
                             ></div>
@@ -1921,19 +1922,19 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Activité de la flotte</h3>
-                      <p className="text-xs text-[#6B6B80] mt-1">Véhicules avec position GPS, triés par vitesse</p>
+                      <h3 className="font-sans text-base font-bold text-gray-900">Activité de la flotte</h3>
+                      <p className="text-xs text-gray-500 mt-1">Véhicules avec position GPS, triés par vitesse</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="gap-1 text-xs text-[#00E5CC] hover:bg-[#1A1A25]"
+                      className="gap-1 text-xs text-blue-600 hover:bg-gray-100"
                       onClick={() => navigate('/map')}
                     >
                       Carte
@@ -1941,42 +1942,42 @@ export default function DashboardPage() {
                     </Button>
                   </div>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-6 py-4">
                   <div className="space-y-2">
                     {topMoving.map((vehicle: any) => {
                       const isMoving = (vehicle.currentSpeed || 0) > 2
                       return (
                         <div
                           key={vehicle.id}
-                          className="flex items-center gap-3 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] p-3 hover:bg-[#1A1A25] cursor-pointer transition-colors"
+                          className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-100 cursor-pointer transition-colors"
                           onClick={() => navigate(`/vehicles/${vehicle.id}`)}
                         >
                           <span
                             className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
-                              isMoving ? 'bg-[#22C55E]' : 'bg-[#6B6B80]'
+                              isMoving ? 'bg-[#22C55E]' : 'bg-[#9CA3AF]'
                             }`}
                           ></span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#F0F0F5] truncate">{vehicle.name}</p>
-                            <p className="text-xs text-[#6B6B80]">{vehicle.plate}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">{vehicle.name}</p>
+                            <p className="text-xs text-gray-500">{vehicle.plate}</p>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-sm font-bold font-mono text-[#F0F0F5]">
+                            <p className="text-sm font-bold font-mono text-gray-900">
                               {(vehicle.currentSpeed || 0).toFixed(0)}{' '}
-                              <span className="text-xs font-normal text-[#6B6B80]">km/h</span>
+                              <span className="text-xs font-normal text-gray-500">km/h</span>
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0 min-w-20">
-                            <p className="text-xs text-[#44445A]">{formatTimeAgo(vehicle.lastCommunication)}</p>
+                            <p className="text-xs text-[#9CA3AF]">{formatTimeAgo(vehicle.lastCommunication)}</p>
                           </div>
-                          <ChevronRight size={14} className="text-[#44445A]" />
+                          <ChevronRight size={14} className="text-[#9CA3AF]" />
                         </div>
                       )
                     })}
                   </div>
                   <Button
                     variant="outline"
-                    className="mt-4 w-full text-sm border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
+                    className="mt-4 w-full text-sm border-gray-200 bg-gray-100 text-gray-900 hover:bg-[#F9FAFB]"
                     onClick={() => navigate('/vehicles')}
                   >
                     Voir tous les véhicules
@@ -2000,14 +2001,14 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Fournisseurs GPS</h3>
-                  <p className="text-xs text-[#6B6B80] mt-1">Répartition par provider</p>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-sans text-base font-bold text-gray-900">Fournisseurs GPS</h3>
+                  <p className="text-xs text-gray-500 mt-1">Répartition par provider</p>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-6 py-4">
                   <div className="space-y-3">
                     {Object.entries(stats.providers)
                       .sort(([, a], [, b]) => (b as number) - (a as number))
@@ -2018,15 +2019,15 @@ export default function DashboardPage() {
                             <div className="flex items-center justify-between text-sm mb-1">
                               <div className="flex items-center gap-2">
                                 <span
-                                  className={`h-3 w-3 rounded-full ${providerColors[name] || 'bg-[#6B6B80]'}`}
+                                  className={`h-3 w-3 rounded-full ${providerColors[name] || 'bg-[#9CA3AF]'}`}
                                 ></span>
-                                <span className="font-medium text-[#F0F0F5]">{name}</span>
+                                <span className="font-medium text-gray-900">{name}</span>
                               </div>
-                              <span className="text-[#6B6B80] font-medium">{count as number}</span>
+                              <span className="text-gray-500 font-medium">{count as number}</span>
                             </div>
-                            <div className="h-2 w-full rounded-full bg-[#1A1A25]">
+                            <div className="h-2 w-full rounded-full bg-gray-100">
                               <div
-                                className={`h-2 rounded-full ${providerColors[name] || 'bg-[#6B6B80]'} transition-all`}
+                                className={`h-2 rounded-full ${providerColors[name] || 'bg-[#9CA3AF]'} transition-all`}
                                 style={{ width: `${pct}%` }}
                               ></div>
                             </div>
@@ -2034,11 +2035,11 @@ export default function DashboardPage() {
                         )
                       })}
                   </div>
-                  <div className="mt-4 pt-3 border-t border-[#1F1F2E] text-center">
-                    <p className="text-xs text-[#6B6B80]">
-                      Vitesse max: <span className="font-bold text-[#F0F0F5]">{stats.maxSpeed.toFixed(0)} km/h</span>
+                  <div className="mt-4 pt-3 border-t border-gray-200 text-center">
+                    <p className="text-xs text-gray-500">
+                      Vitesse max: <span className="font-bold text-gray-900">{stats.maxSpeed.toFixed(0)} km/h</span>
                       {' · '}
-                      Moyenne: <span className="font-bold text-[#F0F0F5]">{stats.avgSpeed.toFixed(0)} km/h</span>
+                      Moyenne: <span className="font-bold text-gray-900">{stats.avgSpeed.toFixed(0)} km/h</span>
                     </p>
                   </div>
                 </div>
@@ -2060,19 +2061,19 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-[#6B6B80]" />
+                <GripHorizontal size={16} className="text-gray-500" />
               </div>
-              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
-                <div className="px-6 py-4 border-b border-[#1F1F2E]">
-                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Mises à jour récentes</h3>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="px-4 md:px-6 py-4 border-b border-gray-200">
+                  <h3 className="font-sans text-base font-bold text-gray-900">Mises à jour récentes</h3>
                 </div>
-                <div className="px-6 py-4">
+                <div className="px-4 md:px-6 py-4">
                   <div className="space-y-2.5">
                     {recentlyUpdated.map((v: any) => (
                       <div key={v.id} className="flex items-center gap-2 text-xs">
-                        <Clock size={12} className="text-[#6B6B80] flex-shrink-0" />
-                        <span className="font-medium text-[#F0F0F5] truncate flex-1">{v.name}</span>
-                        <span className="text-[#44445A] flex-shrink-0">{formatTimeAgo(v.lastCommunication)}</span>
+                        <Clock size={12} className="text-gray-500 flex-shrink-0" />
+                        <span className="font-medium text-gray-900 truncate flex-1">{v.name}</span>
+                        <span className="text-[#9CA3AF] flex-shrink-0">{formatTimeAgo(v.lastCommunication)}</span>
                       </div>
                     ))}
                   </div>
@@ -2081,6 +2082,7 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   )
