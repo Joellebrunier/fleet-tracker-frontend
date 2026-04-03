@@ -76,7 +76,7 @@ export default function VehiclesPage() {
 
   const { data: vehiclesData, isLoading } = useVehicles({
     page,
-    limit: 20,
+    limit: 50,
     status: selectedStatus as any,
     search: searchTerm,
     type: selectedType || undefined,
@@ -902,11 +902,11 @@ export default function VehiclesPage() {
                         </td>
                         <td className="px-6 py-4 text-sm">
                           {vehicle.status === 'active' ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#00E5CC] bg-opacity-20 text-[#00E5CC]">Disponible</span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#0D3B2E] text-[#00E5CC] border border-[#00E5CC]/30">Disponible</span>
                           ) : vehicle.status === 'maintenance' ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FFB547] bg-opacity-20 text-[#FFB547]">En maintenance</span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#3B2D0D] text-[#FFB547] border border-[#FFB547]/30">En maintenance</span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FF4D6A] bg-opacity-20 text-[#FF4D6A]">Indisponible</span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-[#3B0D1A] text-[#FF4D6A] border border-[#FF4D6A]/30">Indisponible</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm">
@@ -951,11 +951,11 @@ export default function VehiclesPage() {
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-[#F0F0F5]">
-                Page {page} sur {totalPages}
-              </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-[#F0F0F5]">
+              Page {page} sur {totalPages} — {vehiclesData?.total || vehicles.length} véhicule{(vehiclesData?.total || vehicles.length) > 1 ? 's' : ''} au total
+            </p>
+            {totalPages > 1 && (
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -976,8 +976,8 @@ export default function VehiclesPage() {
                   Suivant
                 </Button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </>
       )}
 
