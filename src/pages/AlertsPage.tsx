@@ -184,7 +184,7 @@ type TabView = 'alerts' | 'rules' | 'trends'
 export default function AlertsPage() {
   const [tab, setTab] = useState<TabView>('alerts')
   const [page, setPage] = useState(1)
-  const [status, setStatus] = useState<'unacknowledged' | 'acknowledged' | undefined>('unacknowledged')
+  const [status, setStatus] = useState<'unacknowledged' | 'acknowledged' | 'resolved' | undefined>('unacknowledged')
   const [search, setSearch] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -343,6 +343,23 @@ export default function AlertsPage() {
       setShowAssignDropdown(false)
     } catch (err) {
       console.error('Failed to save alert assignment:', err)
+    } finally {
+      setSavingAssignment((prev) => ({ ...prev, [alertId]: false }))
+    }
+  }
+
+  const handleMarkAlertResolved = async (alertId: string) => {
+    if (!organizationId) return
+    setSavingAssignment((prev) => ({ ...prev, [alertId]: true }))
+    try {
+      await axios.patch(
+        `/api/organizations/${organizationId}/alerts/${alertId}`,
+        { status: 'resolved' }
+      )
+      // Refresh alerts list
+      window.location.reload()
+    } catch (err) {
+      console.error('Failed to mark alert as resolved:', err)
     } finally {
       setSavingAssignment((prev) => ({ ...prev, [alertId]: false }))
     }
@@ -668,7 +685,7 @@ export default function AlertsPage() {
                 />
               </div>
               <div className="flex gap-2">
-                {(['all', 'unacknowledged', 'acknowledged'] as const).map((s) => (
+                {(['all', 'unacknowledged', 'acknowledged', 'resolved'] as const).map((s) => (
                   <button
                     key={s}
                     onClick={() => {
@@ -681,7 +698,7 @@ export default function AlertsPage() {
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    {s === 'all' ? 'Tout' : s === 'unacknowledged' ? 'Actif' : 'Reconnu'}
+                    {s === 'all' ? 'Tout' : s === 'unacknowledged' ? 'Actif' : s === 'acknowledged' ? 'Reconnu' : 'Résolu'}
                   </button>
                 ))}
               </div>
@@ -882,7 +899,12 @@ export default function AlertsPage() {
                                   >
                                     {alert.severity}
                                   </span>
-                                  {alert.isAcknowledged ? (
+                                  {(alert as any).status === 'resolved' ? (
+                                    <Badge className="bg-green-600 text-white text-xs">
+                                      <Check size={12} className="mr-1" />
+                                      Résolu
+                                    </Badge>
+                                  ) : alert.isAcknowledged ? (
                                     <Badge variant="secondary" className="text-xs">
                                       <Check size={12} className="mr-1" />
                                       Reconnu
@@ -912,7 +934,7 @@ export default function AlertsPage() {
                                       </Badge>
                                     </div>
                                   )}
-                                  <div className="flex gap-2">
+                                  <div className="flex gap-2 flex-wrap">
                                     <Button
                                       size="sm"
                                       variant="outline"
@@ -936,6 +958,21 @@ export default function AlertsPage() {
                                     >
                                       Notes
                                     </Button>
+                                    {(alert as any).status !== 'resolved' && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="gap-1 text-xs text-green-600 border-green-200 hover:bg-green-50"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handleMarkAlertResolved(alert.id)
+                                        }}
+                                        disabled={savingAssignment[alert.id]}
+                                      >
+                                        <Check size={12} />
+                                        Marquer résolu
+                                      </Button>
+                                    )}
                                   </div>
 
                                   {showAssignDropdown && (

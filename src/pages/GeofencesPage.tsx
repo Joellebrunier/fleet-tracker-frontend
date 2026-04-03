@@ -691,14 +691,31 @@ export default function GeofencesPage() {
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Couleur de la zone</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={form.color}
-                    onChange={(e) => setForm((prev) => ({ ...prev, color: e.target.value }))}
-                    className="h-9 w-12 cursor-pointer rounded border border-gray-300"
-                  />
-                  <span className="text-sm text-gray-500">{form.color}</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={form.color}
+                      onChange={(e) => setForm((prev) => ({ ...prev, color: e.target.value }))}
+                      className="h-9 w-12 cursor-pointer rounded border border-gray-300"
+                    />
+                    <span className="text-sm text-gray-500">{form.color}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {['#FF0000', '#FF6600', '#FFCC00', '#00CC00', '#0066FF', '#9933FF', '#FF0099', '#666666'].map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setForm((prev) => ({ ...prev, color }))}
+                        className={`h-7 w-7 rounded border-2 transition-all ${
+                          form.color.toUpperCase() === color
+                            ? 'border-gray-800 shadow-md'
+                            : 'border-gray-300 hover:border-gray-500'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 

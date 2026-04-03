@@ -75,6 +75,23 @@ export default function SettingsPage() {
     ubiwan: { enabled: false, endpoint: '', credentials: '' },
   })
 
+  // Custom GPS Provider state
+  const [customProviders, setCustomProviders] = useState<Array<{
+    id?: string
+    name: string
+    type: 'HTTP' | 'MQTT'
+    endpoint: string
+    apiKey: string
+  }>>([])
+  const [showAddCustomProvider, setShowAddCustomProvider] = useState(false)
+  const [newCustomProvider, setNewCustomProvider] = useState({
+    name: '',
+    type: 'HTTP' as 'HTTP' | 'MQTT',
+    endpoint: '',
+    apiKey: '',
+  })
+  const [customProviderSaving, setCustomProviderSaving] = useState(false)
+
   // API Key state
   const [apiKey, setApiKey] = useState('ft_key_' + 'x'.repeat(24))
   const [showApiKey, setShowApiKey] = useState(false)
@@ -393,6 +410,34 @@ export default function SettingsPage() {
       console.error('Failed to save GPS providers:', error)
     } finally {
       setProvidersSaving(false)
+    }
+  }
+
+  const handleAddCustomProvider = async () => {
+    if (!organizationId || !newCustomProvider.name.trim() || !newCustomProvider.endpoint.trim() || !newCustomProvider.apiKey.trim()) {
+      console.error('Veuillez remplir tous les champs')
+      return
+    }
+    setCustomProviderSaving(true)
+    try {
+      await apiClient.post(API_ROUTES.GPS_PROVIDERS(organizationId), newCustomProvider)
+      setCustomProviders(prev => [...prev, newCustomProvider as any])
+      setNewCustomProvider({ name: '', type: 'HTTP', endpoint: '', apiKey: '' })
+      setShowAddCustomProvider(false)
+    } catch (error) {
+      console.error('Failed to add custom provider:', error)
+    } finally {
+      setCustomProviderSaving(false)
+    }
+  }
+
+  const handleDeleteCustomProvider = async (providerId: string) => {
+    if (!organizationId) return
+    try {
+      await apiClient.delete(`${API_ROUTES.GPS_PROVIDERS(organizationId)}/${providerId}`)
+      setCustomProviders(prev => prev.filter(p => p.id !== providerId))
+    } catch (error) {
+      console.error('Failed to delete custom provider:', error)
     }
   }
 
@@ -1344,6 +1389,106 @@ export default function SettingsPage() {
                 <><Save size={16} /> Enregistrer les fournisseurs</>
               )}
             </Button>
+          </div>
+
+          {/* Custom GPS Providers Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-900">Fournisseurs personnalisés</h3>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAddCustomProvider(!showAddCustomProvider)}
+                className="gap-1"
+              >
+                <Plus size={14} />
+                Ajouter un fournisseur personnalisé
+              </Button>
+            </div>
+
+            {showAddCustomProvider && (
+              <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom du fournisseur</label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: MonFournisseur GPS"
+                    value={newCustomProvider.name}
+                    onChange={(e) => setNewCustomProvider({ ...newCustomProvider, name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Type de connexion</label>
+                  <select
+                    value={newCustomProvider.type}
+                    onChange={(e) => setNewCustomProvider({ ...newCustomProvider, type: e.target.value as 'HTTP' | 'MQTT' })}
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <option value="HTTP">HTTP / REST</option>
+                    <option value="MQTT">MQTT</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">URL du point d'accès</label>
+                  <Input
+                    type="text"
+                    placeholder="https://api.example.com/gps"
+                    value={newCustomProvider.endpoint}
+                    onChange={(e) => setNewCustomProvider({ ...newCustomProvider, endpoint: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Clé API</label>
+                  <Input
+                    type="password"
+                    placeholder="Entrer votre clé API"
+                    value={newCustomProvider.apiKey}
+                    onChange={(e) => setNewCustomProvider({ ...newCustomProvider, apiKey: e.target.value })}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowAddCustomProvider(false)
+                      setNewCustomProvider({ name: '', type: 'HTTP', endpoint: '', apiKey: '' })
+                    }}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleAddCustomProvider}
+                    disabled={customProviderSaving}
+                    className="gap-1"
+                  >
+                    {customProviderSaving ? 'Ajout...' : 'Ajouter'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {customProviders.length > 0 && (
+              <div className="space-y-2">
+                {customProviders.map((provider) => (
+                  <div key={provider.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">{provider.name}</p>
+                      <p className="text-xs text-gray-500">{provider.type} • {provider.endpoint}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => provider.id && handleDeleteCustomProvider(provider.id)}
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

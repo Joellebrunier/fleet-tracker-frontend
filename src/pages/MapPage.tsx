@@ -456,9 +456,17 @@ export default function MapPage() {
                     )}
                   </div>
                   <div className="text-xs space-y-1">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-500">Vitesse:</span>
-                      <span className="font-medium">{getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}</span>
+                        {(vehicle.currentSpeed || 0) > 130 && (
+                          <Badge className="bg-red-600 text-white text-xs gap-1">
+                            <AlertCircle size={10} />
+                            EXCÈS
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Dernière com.:</span>
