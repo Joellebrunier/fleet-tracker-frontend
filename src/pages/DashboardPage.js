@@ -14,7 +14,7 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { MAPBOX_TILE_URL } from '@/lib/constants';
 import { formatTimeAgo } from '@/lib/utils';
 import 'leaflet/dist/leaflet.css';
-// TrackZone Design System Colors
+// Fleet Tracker Design System Colors
 const TZ_COLORS = {
     bgMain: '#0A0A0F',
     bgCard: '#12121A',

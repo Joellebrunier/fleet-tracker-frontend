@@ -35,7 +35,7 @@ const faqItems = [
   },
   {
     question: 'Quels formats d\'export sont supportés ?',
-    answer: 'TrackZone supporte l\'export en CSV, Excel (XLSX), PDF, KML et GPX pour les données GPS, et CSV/Excel pour les rapports et listes.',
+    answer: 'Fleet Tracker supporte l\'export en CSV, Excel (XLSX), PDF, KML et GPX pour les données GPS, et CSV/Excel pour les rapports et listes.',
   },
 ]
 
@@ -44,7 +44,7 @@ export default function HelpPage() {
     <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
       <div>
         <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Aide et documentation</h1>
-        <p className="mt-1 text-sm text-[#6B6B80]">Trouvez des réponses à vos questions et apprenez à utiliser TrackZone</p>
+        <p className="mt-1 text-sm text-[#6B6B80]">Trouvez des réponses à vos questions et apprenez à utiliser Fleet Tracker</p>
       </div>
 
       {/* Quick Links */}
@@ -53,14 +53,14 @@ export default function HelpPage() {
           <CardContent className="pt-6 text-center">
             <Book size={32} className="mx-auto mb-3 text-[#00E5CC]" />
             <p className="font-medium text-[#F0F0F5]">Guide de démarrage</p>
-            <p className="text-sm text-[#6B6B80] mt-1">Apprenez les bases de TrackZone</p>
+            <p className="text-sm text-[#6B6B80] mt-1">Apprenez les bases de Fleet Tracker</p>
           </CardContent>
         </Card>
         <Card className="hover:shadow-md transition-shadow cursor-pointer bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D]">
           <CardContent className="pt-6 text-center">
             <Globe size={32} className="mx-auto mb-3 text-[#00E5CC]" />
             <p className="font-medium text-[#F0F0F5]">Documentation API</p>
-            <p className="text-sm text-[#6B6B80] mt-1">Intégrez TrackZone à vos systèmes</p>
+            <p className="text-sm text-[#6B6B80] mt-1">Intégrez Fleet Tracker à vos systèmes</p>
           </CardContent>
         </Card>
         <Card className="hover:shadow-md transition-shadow cursor-pointer bg-[#12121A] border border-[#1F1F2E] rounded-[12px] hover:border-[#2A2A3D]">
@@ -125,7 +125,7 @@ export default function HelpPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-[#6B6B80]">
-            TrackZone est actuellement disponible en français. Le support multilingue (anglais, espagnol, allemand) est prévu dans une future mise à jour.
+            Fleet Tracker est actuellement disponible en français. Le support multilingue (anglais, espagnol, allemand) est prévu dans une future mise à jour.
             Vous pouvez changer la langue dans les Paramètres &gt; Préférences &gt; Langue.
           </p>
         </CardContent>

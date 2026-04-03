@@ -44,7 +44,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-4 relative z-10">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-[#F0F0F5]" style={{ fontFamily: 'Syne, sans-serif' }}>
-              TRACKZONE
+              FLEET TRACKER
             </h1>
             <p className="mt-2 text-sm text-[#6B6B80]" style={{ fontFamily: 'monospace' }}>
               MATÉRIEL TECH+
@@ -52,7 +52,7 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-center text-[#F0F0F5]">Login to your account</CardTitle>
           <CardDescription className="text-center text-[#6B6B80]">
-            Enter your credentials to access TrackZone
+            Enter your credentials to access Fleet Tracker
           </CardDescription>
         </CardHeader>
 

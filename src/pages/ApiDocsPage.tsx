@@ -198,7 +198,7 @@ export default function ApiDocsPage() {
       <div>
         <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Documentation API</h1>
         <p className="mt-2 text-[#6B6B80]">
-          Intégrez TrackZone dans votre application
+          Intégrez Fleet Tracker dans votre application
         </p>
       </div>
 
@@ -304,7 +304,7 @@ export default function ApiDocsPage() {
               <div>
                 <h3 className="font-semibold text-[#F0F0F5] mb-2">cURL</h3>
                 <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <code>{`curl -X GET "https://api.trackzone.com/api/vehicles" \\
+                  <code>{`curl -X GET "https://api.fleet-tracker.com/api/vehicles" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}</code>
                 </div>
@@ -314,7 +314,7 @@ export default function ApiDocsPage() {
                   className="mt-2"
                   onClick={() =>
                     copyToClipboard(
-                      `curl -X GET "https://api.trackzone.com/api/vehicles" \\
+                      `curl -X GET "https://api.fleet-tracker.com/api/vehicles" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`
                     )
@@ -330,7 +330,7 @@ export default function ApiDocsPage() {
                   JavaScript (fetch)
                 </h3>
                 <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <code>{`const response = await fetch('https://api.trackzone.com/api/vehicles', {
+                  <code>{`const response = await fetch('https://api.fleet-tracker.com/api/vehicles', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -345,7 +345,7 @@ const data = await response.json();`}</code>
                   className="mt-2"
                   onClick={() =>
                     copyToClipboard(
-                      `const response = await fetch('https://api.trackzone.com/api/vehicles', {
+                      `const response = await fetch('https://api.fleet-tracker.com/api/vehicles', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -371,7 +371,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.trackzone.com/api/vehicles', headers=headers)
+response = requests.get('https://api.fleet-tracker.com/api/vehicles', headers=headers)
 data = response.json()`}</code>
                 </div>
                 <Button
@@ -387,7 +387,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.trackzone.com/api/vehicles', headers=headers)
+response = requests.get('https://api.fleet-tracker.com/api/vehicles', headers=headers)
 data = response.json()`
                     )
                   }
@@ -407,7 +407,7 @@ data = response.json()`
               <div>
                 <h3 className="font-semibold text-[#F0F0F5] mb-2">cURL</h3>
                 <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <code>{`curl -X GET "https://api.trackzone.com/api/gps/history/vehicle-123" \\
+                  <code>{`curl -X GET "https://api.fleet-tracker.com/api/gps/history/vehicle-123" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}</code>
                 </div>
@@ -417,7 +417,7 @@ data = response.json()`
                   className="mt-2"
                   onClick={() =>
                     copyToClipboard(
-                      `curl -X GET "https://api.trackzone.com/api/gps/history/vehicle-123" \\
+                      `curl -X GET "https://api.fleet-tracker.com/api/gps/history/vehicle-123" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`
                     )
@@ -432,7 +432,7 @@ data = response.json()`
                 <h3 className="font-semibold text-[#F0F0F5] mb-2">JavaScript (fetch)</h3>
                 <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`const vehicleId = 'vehicle-123';
-const response = await fetch(\`https://api.trackzone.com/api/gps/history/\${vehicleId}\`, {
+const response = await fetch(\`https://api.fleet-tracker.com/api/gps/history/\${vehicleId}\`, {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -448,7 +448,7 @@ const history = await response.json();`}</code>
                   onClick={() =>
                     copyToClipboard(
                       `const vehicleId = 'vehicle-123';
-const response = await fetch(\`https://api.trackzone.com/api/gps/history/\${vehicleId}\`, {
+const response = await fetch(\`https://api.fleet-tracker.com/api/gps/history/\${vehicleId}\`, {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -475,7 +475,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-url = f'https://api.trackzone.com/api/gps/history/{vehicle_id}'
+url = f'https://api.fleet-tracker.com/api/gps/history/{vehicle_id}'
 response = requests.get(url, headers=headers)
 history = response.json()`}</code>
                 </div>
@@ -493,7 +493,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-url = f'https://api.trackzone.com/api/gps/history/{vehicle_id}'
+url = f'https://api.fleet-tracker.com/api/gps/history/{vehicle_id}'
 response = requests.get(url, headers=headers)
 history = response.json()`
                     )
@@ -514,7 +514,7 @@ history = response.json()`
               <div>
                 <h3 className="font-semibold text-[#F0F0F5] mb-2">cURL</h3>
                 <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <code>{`curl -X POST "https://api.trackzone.com/api/geofences" \\
+                  <code>{`curl -X POST "https://api.fleet-tracker.com/api/geofences" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -534,7 +534,7 @@ history = response.json()`
                   className="mt-2"
                   onClick={() =>
                     copyToClipboard(
-                      `curl -X POST "https://api.trackzone.com/api/geofences" \\
+                      `curl -X POST "https://api.fleet-tracker.com/api/geofences" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -560,7 +560,7 @@ history = response.json()`
                   JavaScript (fetch)
                 </h3>
                 <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <code>{`const response = await fetch('https://api.trackzone.com/api/geofences', {
+                  <code>{`const response = await fetch('https://api.fleet-tracker.com/api/geofences', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -585,7 +585,7 @@ const data = await response.json();`}</code>
                   className="mt-2"
                   onClick={() =>
                     copyToClipboard(
-                      `const response = await fetch('https://api.trackzone.com/api/geofences', {
+                      `const response = await fetch('https://api.fleet-tracker.com/api/geofences', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -633,7 +633,7 @@ payload = {
     'alertOnExit': True
 }
 
-response = requests.post('https://api.trackzone.com/api/geofences',
+response = requests.post('https://api.fleet-tracker.com/api/geofences',
                          headers=headers, json=payload)
 data = response.json()`}</code>
                 </div>
@@ -662,7 +662,7 @@ payload = {
     'alertOnExit': True
 }
 
-response = requests.post('https://api.trackzone.com/api/geofences',
+response = requests.post('https://api.fleet-tracker.com/api/geofences',
                          headers=headers, json=payload)
 data = response.json()`
                     )
@@ -683,7 +683,7 @@ data = response.json()`
               <div>
                 <h3 className="font-semibold text-[#F0F0F5] mb-2">cURL</h3>
                 <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <code>{`curl -X GET "https://api.trackzone.com/api/alerts" \\
+                  <code>{`curl -X GET "https://api.fleet-tracker.com/api/alerts" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}</code>
                 </div>
@@ -693,7 +693,7 @@ data = response.json()`
                   className="mt-2"
                   onClick={() =>
                     copyToClipboard(
-                      `curl -X GET "https://api.trackzone.com/api/alerts" \\
+                      `curl -X GET "https://api.fleet-tracker.com/api/alerts" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`
                     )
@@ -707,7 +707,7 @@ data = response.json()`
               <div>
                 <h3 className="font-semibold text-[#F0F0F5] mb-2">JavaScript (fetch)</h3>
                 <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                  <code>{`const response = await fetch('https://api.trackzone.com/api/alerts', {
+                  <code>{`const response = await fetch('https://api.fleet-tracker.com/api/alerts', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -722,7 +722,7 @@ const alerts = await response.json();`}</code>
                   className="mt-2"
                   onClick={() =>
                     copyToClipboard(
-                      `const response = await fetch('https://api.trackzone.com/api/alerts', {
+                      `const response = await fetch('https://api.fleet-tracker.com/api/alerts', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -748,7 +748,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.trackzone.com/api/alerts', headers=headers)
+response = requests.get('https://api.fleet-tracker.com/api/alerts', headers=headers)
 alerts = response.json()`}</code>
                 </div>
                 <Button
@@ -764,7 +764,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.trackzone.com/api/alerts', headers=headers)
+response = requests.get('https://api.fleet-tracker.com/api/alerts', headers=headers)
 alerts = response.json()`
                     )
                   }
@@ -801,7 +801,7 @@ alerts = response.json()`
               <h3 className="font-semibold text-[#F0F0F5] mb-2">Exemple</h3>
               <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                 <code>{`GET /api/vehicles HTTP/1.1
-Host: api.trackzone.com
+Host: api.fleet-tracker.com
 Authorization: Bearer sk_live_1a2b3c4d5e6f7g8h9i0j
 Content-Type: application/json`}</code>
               </div>

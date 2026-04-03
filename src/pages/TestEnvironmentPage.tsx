@@ -57,8 +57,8 @@ export default function TestEnvironmentPage() {
   const [requestHistory, setRequestHistory] = useState<RequestHistoryItem[]>([])
 
   const baseUrls: Record<Environment, string> = {
-    production: 'https://api.trackzone.com',
-    staging: 'https://staging-api.trackzone.com',
+    production: 'https://api.fleet-tracker.com',
+    staging: 'https://staging-api.fleet-tracker.com',
     development: 'http://localhost:3000',
   }
 
@@ -215,7 +215,7 @@ export default function TestEnvironmentPage() {
           Environnement de test
         </h1>
         <p className="mt-2 text-[#6B6B80]">
-          Testez l'API TrackZone avant la mise en production
+          Testez l'API Fleet Tracker avant la mise en production
         </p>
       </div>
 

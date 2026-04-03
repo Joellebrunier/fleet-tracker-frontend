@@ -119,11 +119,11 @@ export default function Sidebar() {
         <div className="border-b border-[#1F1F2E] p-4 flex items-center gap-3">
           {/* Logo mark */}
           <div className="shrink-0 w-9 h-9 rounded-[var(--tz-radius-sm)] bg-gradient-to-br from-[#00E5CC] to-[#00C4B0] flex items-center justify-center shadow-[0_0_16px_rgba(0,229,204,0.2)]">
-            <span className="text-[#0A0A0F] font-extrabold text-sm tracking-tighter font-syne">TZ</span>
+            <span className="text-[#0A0A0F] font-extrabold text-sm tracking-tighter font-syne">FT</span>
           </div>
           {!collapsed && (
             <div className="animate-slide-in">
-              <h1 className="text-base font-bold tracking-[0.15em] text-[#F0F0F5] font-syne leading-none">TRACKZONE</h1>
+              <h1 className="text-base font-bold tracking-[0.15em] text-[#F0F0F5] font-syne leading-none">FLEET TRACKER</h1>
               <p className="text-[10px] font-medium tracking-[0.2em] text-[#44445A] mt-0.5 font-mono uppercase">Matériel Tech+</p>
             </div>
           )}

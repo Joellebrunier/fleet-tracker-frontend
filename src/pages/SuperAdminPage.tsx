@@ -186,7 +186,7 @@ const mockSupportTickets: SupportTicket[] = [
     status: 'en cours',
     priority: 'normale',
     createdAt: '2026-03-31T14:15:00Z',
-    assignedTo: 'support@trackzone.com',
+    assignedTo: 'support@fleet-tracker.com',
     lastUpdate: '2026-03-31T16:45:00Z',
   },
   {
@@ -197,7 +197,7 @@ const mockSupportTickets: SupportTicket[] = [
     status: 'résolu',
     priority: 'normale',
     createdAt: '2026-03-28T09:00:00Z',
-    assignedTo: 'billing@trackzone.com',
+    assignedTo: 'billing@fleet-tracker.com',
     lastUpdate: '2026-03-30T12:00:00Z',
   },
   {
@@ -208,7 +208,7 @@ const mockSupportTickets: SupportTicket[] = [
     status: 'en cours',
     priority: 'critique',
     createdAt: '2026-04-01T08:20:00Z',
-    assignedTo: 'support@trackzone.com',
+    assignedTo: 'support@fleet-tracker.com',
     lastUpdate: '2026-04-01T11:15:00Z',
   },
 ]
@@ -2018,7 +2018,7 @@ export default function SuperAdminPage() {
                   <Input
                     type="text"
                     placeholder="app.votresociete.com"
-                    defaultValue="trackzone.techcorp.com"
+                    defaultValue="fleet-tracker.techcorp.com"
                     className="w-full"
                   />
                   <p className="text-xs text-[#6B6B80] mt-2">Configurez les enregistrements DNS pour activer le domaine</p>
@@ -2030,7 +2030,7 @@ export default function SuperAdminPage() {
                   <Input
                     type="text"
                     placeholder="© 2026 Votre entreprise. Tous droits réservés."
-                    defaultValue="Propulsé par TrackZone"
+                    defaultValue="Propulsé par Fleet Tracker"
                     className="w-full"
                   />
                 </div>

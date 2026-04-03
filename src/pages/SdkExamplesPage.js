@@ -10,7 +10,7 @@ const examples = {
         description: 'Fetchez la liste complète des véhicules de votre flotte',
         snippets: {
             javascript: `const getVehicles = async () => {
-  const response = await fetch('https://api.trackzone.com/api/vehicles', {
+  const response = await fetch('https://api.fleet-tracker.com/api/vehicles', {
     method: 'GET',
     headers: {
       'Authorization': 'Bearer sk_live_YOUR_KEY',
@@ -31,7 +31,7 @@ def get_vehicles():
         'Content-Type': 'application/json'
     }
     response = requests.get(
-        'https://api.trackzone.com/api/vehicles',
+        'https://api.fleet-tracker.com/api/vehicles',
         headers=headers
     )
     vehicles = response.json()
@@ -41,7 +41,7 @@ def get_vehicles():
 get_vehicles()`,
             php: `<?php
 $apiKey = 'sk_live_YOUR_KEY';
-$url = 'https://api.trackzone.com/api/vehicles';
+$url = 'https://api.fleet-tracker.com/api/vehicles';
 
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -56,7 +56,7 @@ print_r($vehicles);
 
 curl_close($ch);
 ?>`,
-            curl: `curl -X GET "https://api.trackzone.com/api/vehicles" \\
+            curl: `curl -X GET "https://api.fleet-tracker.com/api/vehicles" \\
   -H "Authorization: Bearer sk_live_YOUR_KEY" \\
   -H "Content-Type: application/json"`,
         },
@@ -66,7 +66,7 @@ curl_close($ch);
         description: 'Créez une nouvelle zone de contrôle pour vos véhicules',
         snippets: {
             javascript: `const createGeofence = async () => {
-  const response = await fetch('https://api.trackzone.com/api/geofences', {
+  const response = await fetch('https://api.fleet-tracker.com/api/geofences', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer sk_live_YOUR_KEY',
@@ -112,7 +112,7 @@ def create_geofence():
     }
 
     response = requests.post(
-        'https://api.trackzone.com/api/geofences',
+        'https://api.fleet-tracker.com/api/geofences',
         headers=headers,
         json=payload
     )
@@ -124,7 +124,7 @@ def create_geofence():
 create_geofence()`,
             php: `<?php
 $apiKey = 'sk_live_YOUR_KEY';
-$url = 'https://api.trackzone.com/api/geofences';
+$url = 'https://api.fleet-tracker.com/api/geofences';
 
 $payload = array(
     'name' => 'Zone de dépôt',
@@ -154,7 +154,7 @@ print_r($geofence);
 
 curl_close($ch);
 ?>`,
-            curl: `curl -X POST "https://api.trackzone.com/api/geofences" \\
+            curl: `curl -X POST "https://api.fleet-tracker.com/api/geofences" \\
   -H "Authorization: Bearer sk_live_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -176,7 +176,7 @@ curl_close($ch);
         snippets: {
             javascript: `const subscribeToAlerts = () => {
   const ws = new WebSocket(
-    'wss://api.trackzone.com/ws/alerts?token=sk_live_YOUR_KEY'
+    'wss://api.fleet-tracker.com/ws/alerts?token=sk_live_YOUR_KEY'
   );
 
   ws.onopen = () => {
@@ -227,7 +227,7 @@ def on_open(ws):
 
 def subscribe_to_alerts():
     ws = websocket.WebSocketApp(
-        'wss://api.trackzone.com/ws/alerts?token=sk_live_YOUR_KEY',
+        'wss://api.fleet-tracker.com/ws/alerts?token=sk_live_YOUR_KEY',
         on_open=on_open,
         on_message=on_message,
         on_error=on_error,
@@ -241,7 +241,7 @@ require_once 'vendor/autoload.php';
 
 use WebSocket\\Client\\WebSocket;
 
-$ws = new WebSocket('wss://api.trackzone.com/ws/alerts?token=sk_live_YOUR_KEY');
+$ws = new WebSocket('wss://api.fleet-tracker.com/ws/alerts?token=sk_live_YOUR_KEY');
 
 $ws->onopen = function(WebSocket\\Connection $connection) {
     echo "Connecté aux alertes\\n";
@@ -285,7 +285,7 @@ $ws->run();
   });
 
   const response = await fetch(
-    \`https://api.trackzone.com/api/gps/history/\${vehicleId}?\${params}\`,
+    \`https://api.fleet-tracker.com/api/gps/history/\${vehicleId}?\${params}\`,
     {
       method: 'GET',
       headers: {
@@ -320,7 +320,7 @@ def get_gps_history(vehicle_id, start_date, end_date):
     }
 
     response = requests.get(
-        f'https://api.trackzone.com/api/gps/history/{vehicle_id}',
+        f'https://api.fleet-tracker.com/api/gps/history/{vehicle_id}',
         headers=headers,
         params=params
     )
@@ -346,7 +346,7 @@ $params = array(
     'limit' => 1000
 );
 
-$url = 'https://api.trackzone.com/api/gps/history/' . $vehicleId;
+$url = 'https://api.fleet-tracker.com/api/gps/history/' . $vehicleId;
 $url .= '?' . http_build_query($params);
 
 $ch = curl_init($url);
@@ -363,7 +363,7 @@ print_r($history);
 
 curl_close($ch);
 ?>`,
-            curl: `curl -X GET "https://api.trackzone.com/api/gps/history/vehicle-123" \\
+            curl: `curl -X GET "https://api.fleet-tracker.com/api/gps/history/vehicle-123" \\
   -H "Authorization: Bearer sk_live_YOUR_KEY" \\
   -H "Content-Type: application/json" \\
   -G \\
@@ -390,7 +390,7 @@ export default function SdkExamplesPage() {
         setCopiedSnippet(snippetId);
         setTimeout(() => setCopiedSnippet(null), 2000);
     };
-    return (_jsxs("div", { className: "space-y-6 bg-[#0A0A0F] min-h-screen p-6", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-3xl font-bold text-[#F0F0F5] font-syne", children: "Exemples SDK" }), _jsx("p", { className: "mt-2 text-[#6B6B80]", children: "Int\u00E9grez l'API TrackZone avec votre langage pr\u00E9f\u00E9r\u00E9" })] }), _jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-4 gap-6", children: [_jsx("div", { className: "space-y-4", children: _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { className: "text-base", children: "Exemples" }) }), _jsx(CardContent, { className: "space-y-2", children: Object.keys(examples).map((example) => (_jsx("button", { onClick: () => setSelectedExample(example), className: cn('w-full text-left px-4 py-2 rounded-lg transition-colors', selectedExample === example
+    return (_jsxs("div", { className: "space-y-6 bg-[#0A0A0F] min-h-screen p-6", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-3xl font-bold text-[#F0F0F5] font-syne", children: "Exemples SDK" }), _jsx("p", { className: "mt-2 text-[#6B6B80]", children: "Int\u00E9grez l'API Fleet Tracker avec votre langage pr\u00E9f\u00E9r\u00E9" })] }), _jsxs("div", { className: "grid grid-cols-1 lg:grid-cols-4 gap-6", children: [_jsx("div", { className: "space-y-4", children: _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { className: "text-base", children: "Exemples" }) }), _jsx(CardContent, { className: "space-y-2", children: Object.keys(examples).map((example) => (_jsx("button", { onClick: () => setSelectedExample(example), className: cn('w-full text-left px-4 py-2 rounded-lg transition-colors', selectedExample === example
                                             ? 'bg-[#00E5CC] text-[#0A0A0F] font-bold'
                                             : 'hover:bg-[#0A0A0F]'), children: examples[example].title }, example))) })] }) }), _jsxs("div", { className: "lg:col-span-3 space-y-6", children: [_jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsx("div", { className: "flex gap-2 flex-wrap", children: languages.map((lang) => (_jsx("button", { onClick: () => setSelectedLanguage(lang.id), className: cn('px-4 py-2 rounded-lg font-medium transition-colors', selectedLanguage === lang.id
                                                 ? 'bg-[#00E5CC] text-[#0A0A0F] font-bold'

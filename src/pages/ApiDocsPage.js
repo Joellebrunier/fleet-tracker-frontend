@@ -167,7 +167,7 @@ export default function ApiDocsPage() {
     const revokeKey = () => {
         setApiKey('sk_revoked_' + Date.now());
     };
-    return (_jsxs("div", { className: "space-y-6 bg-[#0A0A0F] min-h-screen p-6", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-3xl font-bold text-[#F0F0F5] font-syne", children: "Documentation API" }), _jsx("p", { className: "mt-2 text-[#6B6B80]", children: "Int\u00E9grez TrackZone dans votre application" })] }), _jsx("div", { className: "flex gap-2 border-b border-[#1F1F2E] flex-wrap", children: [
+    return (_jsxs("div", { className: "space-y-6 bg-[#0A0A0F] min-h-screen p-6", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-3xl font-bold text-[#F0F0F5] font-syne", children: "Documentation API" }), _jsx("p", { className: "mt-2 text-[#6B6B80]", children: "Int\u00E9grez Fleet Tracker dans votre application" })] }), _jsx("div", { className: "flex gap-2 border-b border-[#1F1F2E] flex-wrap", children: [
                     { id: 'endpoints', label: 'Endpoints' },
                     { id: 'examples', label: 'Exemples' },
                     { id: 'auth', label: 'Authentification' },
@@ -179,18 +179,18 @@ export default function ApiDocsPage() {
                                             ? 'bg-[#00E5CC] text-[#0A0A0F]'
                                             : 'bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#2A2A3D]'), children: "Tous" }), categories.map((cat) => (_jsx("button", { onClick: () => setSelectedCategory(cat), className: cn('px-4 py-2 rounded-lg font-medium transition-colors', selectedCategory === cat
                                             ? 'bg-[#00E5CC] text-[#0A0A0F]'
-                                            : 'bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#2A2A3D]'), children: cat }, cat)))] }) }) }), filteredEndpoints.map((endpoint, idx) => (_jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "flex items-start justify-between gap-4", children: [_jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "flex items-center gap-3 mb-2", children: [_jsx(Badge, { variant: getMethodColor(endpoint.method), children: getMethodLabel(endpoint.method) }), _jsx("code", { className: "text-sm font-mono bg-[#0A0A0F] px-3 py-1 rounded text-[#F0F0F5]", children: endpoint.path })] }), _jsx("p", { className: "text-[#6B6B80]", children: endpoint.description })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: () => copyToClipboard(endpoint.path), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }) }) }, idx)))] })), activeTab === 'examples' && (_jsxs("div", { className: "space-y-6", children: [_jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "R\u00E9cup\u00E9rer les v\u00E9hicules" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "cURL" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `curl -X GET "https://api.trackzone.com/api/vehicles" \\
+                                            : 'bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#2A2A3D]'), children: cat }, cat)))] }) }) }), filteredEndpoints.map((endpoint, idx) => (_jsx(Card, { children: _jsx(CardContent, { className: "pt-6", children: _jsxs("div", { className: "flex items-start justify-between gap-4", children: [_jsxs("div", { className: "flex-1", children: [_jsxs("div", { className: "flex items-center gap-3 mb-2", children: [_jsx(Badge, { variant: getMethodColor(endpoint.method), children: getMethodLabel(endpoint.method) }), _jsx("code", { className: "text-sm font-mono bg-[#0A0A0F] px-3 py-1 rounded text-[#F0F0F5]", children: endpoint.path })] }), _jsx("p", { className: "text-[#6B6B80]", children: endpoint.description })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: () => copyToClipboard(endpoint.path), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }) }) }, idx)))] })), activeTab === 'examples' && (_jsxs("div", { className: "space-y-6", children: [_jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "R\u00E9cup\u00E9rer les v\u00E9hicules" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "cURL" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `curl -X GET "https://api.fleet-tracker.com/api/vehicles" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json"` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`curl -X GET "https://api.trackzone.com/api/vehicles" \\
+  -H "Content-Type: application/json"` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`curl -X GET "https://api.fleet-tracker.com/api/vehicles" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json"`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "JavaScript (fetch)" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `const response = await fetch('https://api.trackzone.com/api/vehicles', {
+  -H "Content-Type: application/json"`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "JavaScript (fetch)" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `const response = await fetch('https://api.fleet-tracker.com/api/vehicles', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
     'Content-Type': 'application/json'
   }
 });
-const data = await response.json();` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`const response = await fetch('https://api.trackzone.com/api/vehicles', {
+const data = await response.json();` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`const response = await fetch('https://api.fleet-tracker.com/api/vehicles', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -204,7 +204,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.trackzone.com/api/vehicles', headers=headers)
+response = requests.get('https://api.fleet-tracker.com/api/vehicles', headers=headers)
 data = response.json()` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`import requests
 
 headers = {
@@ -212,13 +212,13 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.trackzone.com/api/vehicles', headers=headers)
-data = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "R\u00E9cup\u00E9rer l'historique GPS" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "cURL" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `curl -X GET "https://api.trackzone.com/api/gps/history/vehicle-123" \\
+response = requests.get('https://api.fleet-tracker.com/api/vehicles', headers=headers)
+data = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "R\u00E9cup\u00E9rer l'historique GPS" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "cURL" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `curl -X GET "https://api.fleet-tracker.com/api/gps/history/vehicle-123" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json"` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`curl -X GET "https://api.trackzone.com/api/gps/history/vehicle-123" \\
+  -H "Content-Type: application/json"` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`curl -X GET "https://api.fleet-tracker.com/api/gps/history/vehicle-123" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "JavaScript (fetch)" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `const vehicleId = 'vehicle-123';
-const response = await fetch(\`https://api.trackzone.com/api/gps/history/\${vehicleId}\`, {
+const response = await fetch(\`https://api.fleet-tracker.com/api/gps/history/\${vehicleId}\`, {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -226,7 +226,7 @@ const response = await fetch(\`https://api.trackzone.com/api/gps/history/\${vehi
   }
 });
 const history = await response.json();` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`const vehicleId = 'vehicle-123';
-const response = await fetch(\`https://api.trackzone.com/api/gps/history/\${vehicleId}\`, {
+const response = await fetch(\`https://api.fleet-tracker.com/api/gps/history/\${vehicleId}\`, {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -241,7 +241,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-url = f'https://api.trackzone.com/api/gps/history/{vehicle_id}'
+url = f'https://api.fleet-tracker.com/api/gps/history/{vehicle_id}'
 response = requests.get(url, headers=headers)
 history = response.json()` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`import requests
 
@@ -251,9 +251,9 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-url = f'https://api.trackzone.com/api/gps/history/{vehicle_id}'
+url = f'https://api.fleet-tracker.com/api/gps/history/{vehicle_id}'
 response = requests.get(url, headers=headers)
-history = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "Cr\u00E9er un g\u00E9ofence" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "cURL" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `curl -X POST "https://api.trackzone.com/api/geofences" \\
+history = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "Cr\u00E9er un g\u00E9ofence" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "cURL" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `curl -X POST "https://api.fleet-tracker.com/api/geofences" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -265,7 +265,7 @@ history = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2"
     },
     "alertOnEntry": true,
     "alertOnExit": true
-  }'` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`curl -X POST "https://api.trackzone.com/api/geofences" \\
+  }'` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`curl -X POST "https://api.fleet-tracker.com/api/geofences" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -277,7 +277,7 @@ history = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2"
     },
     "alertOnEntry": true,
     "alertOnExit": true
-  }'`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "JavaScript (fetch)" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `const response = await fetch('https://api.trackzone.com/api/geofences', {
+  }'`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "JavaScript (fetch)" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `const response = await fetch('https://api.fleet-tracker.com/api/geofences', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -294,7 +294,7 @@ history = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2"
     alertOnExit: true
   })
 });
-const data = await response.json();` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`const response = await fetch('https://api.trackzone.com/api/geofences', {
+const data = await response.json();` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`const response = await fetch('https://api.fleet-tracker.com/api/geofences', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -330,7 +330,7 @@ payload = {
     'alertOnExit': True
 }
 
-response = requests.post('https://api.trackzone.com/api/geofences',
+response = requests.post('https://api.fleet-tracker.com/api/geofences',
                          headers=headers, json=payload)
 data = response.json()` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`import requests
 import json
@@ -351,20 +351,20 @@ payload = {
     'alertOnExit': True
 }
 
-response = requests.post('https://api.trackzone.com/api/geofences',
+response = requests.post('https://api.fleet-tracker.com/api/geofences',
                          headers=headers, json=payload)
-data = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "R\u00E9cup\u00E9rer les alertes" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "cURL" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `curl -X GET "https://api.trackzone.com/api/alerts" \\
+data = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] })] })] }), _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "R\u00E9cup\u00E9rer les alertes" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "cURL" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `curl -X GET "https://api.fleet-tracker.com/api/alerts" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json"` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`curl -X GET "https://api.trackzone.com/api/alerts" \\
+  -H "Content-Type: application/json"` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`curl -X GET "https://api.fleet-tracker.com/api/alerts" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json"`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "JavaScript (fetch)" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `const response = await fetch('https://api.trackzone.com/api/alerts', {
+  -H "Content-Type: application/json"`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "JavaScript (fetch)" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `const response = await fetch('https://api.fleet-tracker.com/api/alerts', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
     'Content-Type': 'application/json'
   }
 });
-const alerts = await response.json();` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`const response = await fetch('https://api.trackzone.com/api/alerts', {
+const alerts = await response.json();` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`const response = await fetch('https://api.fleet-tracker.com/api/alerts', {
   method: 'GET',
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
@@ -378,7 +378,7 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.trackzone.com/api/alerts', headers=headers)
+response = requests.get('https://api.fleet-tracker.com/api/alerts', headers=headers)
 alerts = response.json()` }) }), _jsxs(Button, { variant: "outline", size: "sm", className: "mt-2", onClick: () => copyToClipboard(`import requests
 
 headers = {
@@ -386,9 +386,9 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.trackzone.com/api/alerts', headers=headers)
+response = requests.get('https://api.fleet-tracker.com/api/alerts', headers=headers)
 alerts = response.json()`), children: [_jsx(Copy, { size: 16, className: "mr-2" }), "Copier"] })] })] })] })] })), activeTab === 'auth' && (_jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "Authentification par Bearer Token" }) }), _jsxs(CardContent, { className: "space-y-4", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "Utiliser une cl\u00E9 API" }), _jsx("p", { className: "text-[#6B6B80] mb-4", children: "Incluez votre cl\u00E9 API dans l'en-t\u00EAte Authorization de chaque requ\u00EAte :" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: "Authorization: Bearer sk_live_YOUR_KEY_HERE" }) })] }), _jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "Exemple" }), _jsx("div", { className: "bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto", children: _jsx("code", { children: `GET /api/vehicles HTTP/1.1
-Host: api.trackzone.com
+Host: api.fleet-tracker.com
 Authorization: Bearer sk_live_1a2b3c4d5e6f7g8h9i0j
 Content-Type: application/json` }) })] }), _jsx("div", { className: "bg-[#12121A] border border-[#1F1F2E] p-4 rounded-lg", children: _jsxs("p", { className: "text-[#F0F0F5]", children: [_jsx("strong", { children: "S\u00E9curit\u00E9 :" }), " Ne stockez pas vos cl\u00E9s API dans le code source. Utilisez des variables d'environnement."] }) })] })] })), activeTab === 'limits' && (_jsx("div", { className: "space-y-6", children: _jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "Limites de taux (Rate Limiting)" }) }), _jsx(CardContent, { children: _jsxs("div", { className: "space-y-4", children: [_jsxs("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4", children: [_jsxs("div", { className: "border border-[#1F1F2E] p-4 rounded-lg", children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "Plan Starter" }), _jsx("p", { className: "text-3xl font-bold text-[#00E5CC] mb-2", children: "100" }), _jsx("p", { className: "text-[#6B6B80] text-sm", children: "requ\u00EAtes par minute" })] }), _jsxs("div", { className: "border border-[#1F1F2E] p-4 rounded-lg", children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "Plan Professionnel" }), _jsx("p", { className: "text-3xl font-bold text-[#00E5CC] mb-2", children: "500" }), _jsx("p", { className: "text-[#6B6B80] text-sm", children: "requ\u00EAtes par minute" })] }), _jsxs("div", { className: "border border-[#1F1F2E] p-4 rounded-lg", children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-2", children: "Plan Entreprise" }), _jsx("p", { className: "text-3xl font-bold text-[#00E5CC] mb-2", children: "Illimit\u00E9" }), _jsx("p", { className: "text-[#6B6B80] text-sm", children: "Support prioritaire" })] })] }), _jsx("div", { className: "bg-[#12121A] border border-[#FFB547] p-4 rounded-lg", children: _jsxs("p", { className: "text-[#FFB547]", children: [_jsx("strong", { children: "En cas de d\u00E9passement :" }), " Vous recevrez une r\u00E9ponse 429 Too Many Requests. Attendez avant de r\u00E9essayer."] }) })] }) })] }) })), activeTab === 'keys' && (_jsxs(Card, { children: [_jsx(CardHeader, { children: _jsx(CardTitle, { children: "Gestion des cl\u00E9s API" }) }), _jsxs(CardContent, { className: "space-y-6", children: [_jsxs("div", { children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5] mb-4", children: "Cl\u00E9s actives" }), _jsxs("div", { className: "border border-[#1F1F2E] rounded-lg p-4 space-y-4", children: [_jsx("div", { className: "flex items-center justify-between", children: _jsx("div", { className: "flex items-center gap-3 flex-1", children: _jsxs("div", { className: "flex-1", children: [_jsx("p", { className: "text-sm font-medium text-[#F0F0F5]", children: "Production" }), _jsxs("div", { className: "flex items-center gap-2 mt-1", children: [_jsx("code", { className: "text-xs font-mono bg-[#0A0A0F] px-2 py-1 rounded flex-1", children: showKey ? apiKey : apiKey.substring(0, 10) + '...' }), _jsx("button", { onClick: () => setShowKey(!showKey), className: "p-1 hover:bg-[#0A0A0F] rounded", children: showKey ? _jsx(EyeOff, { size: 16 }) : _jsx(Eye, { size: 16 }) }), _jsx("button", { onClick: () => copyToClipboard(apiKey), className: "p-1 hover:bg-[#0A0A0F] rounded", children: _jsx(Copy, { size: 16 }) })] })] }) }) }), _jsxs("div", { className: "flex gap-2", children: [_jsxs(Button, { variant: "outline", onClick: generateNewKey, className: "flex-1", children: [_jsx(RefreshCw, { size: 16, className: "mr-2" }), "G\u00E9n\u00E9rer une nouvelle cl\u00E9"] }), _jsx(Button, { variant: "destructive", onClick: revokeKey, className: "flex-1", children: "R\u00E9voquer" })] })] })] }), _jsx("div", { className: "bg-[#12121A] border border-[#1F1F2E] p-4 rounded-lg", children: _jsxs("p", { className: "text-[#F0F0F5]", children: [_jsx("strong", { children: "Conseil :" }), " G\u00E9n\u00E9rez une nouvelle cl\u00E9 r\u00E9guli\u00E8rement pour renforcer la s\u00E9curit\u00E9. Les anciennes cl\u00E9s seront d\u00E9sactiv\u00E9es."] }) })] })] }))] }));
 }
