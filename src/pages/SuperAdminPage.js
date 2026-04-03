@@ -22,9 +22,9 @@ const mockErrors = [
 // Mock GPS provider health data
 const gpsProviderHealth = [
     { name: 'Flespi', status: 'connected', latency: 45 },
-    { name: 'Echoes', status: 'degraded', latency: 350 },
+    { name: 'Echoes', status: 'connected', latency: 120 },
     { name: 'KeepTrace', status: 'connected', latency: 89 },
-    { name: 'Ubiwan', status: 'disconnected', latency: null },
+    { name: 'Ubiwan', status: 'connected', latency: 95 },
 ];
 // Mock revenue data
 const mockRevenueData = [
