@@ -516,8 +516,8 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Paramètres</h1>
-        <p className="mt-2 text-gray-600">Gérez votre profil et vos préférences</p>
+        <h1 className="text-3xl font-bold text-[#F0F0F5]">Paramètres</h1>
+        <p className="mt-2 text-[#6B6B80]">Gérez votre profil et vos préférences</p>
       </div>
 
       {/* Profile section */}
@@ -531,7 +531,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Prénom</label>
+            <label className="block text-sm font-medium text-[#6B6B80]">Prénom</label>
             <Input
               type="text"
               value={user?.firstName || ''}
@@ -540,7 +540,7 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Nom</label>
+            <label className="block text-sm font-medium text-[#6B6B80]">Nom</label>
             <Input
               type="text"
               value={user?.lastName || ''}
@@ -549,11 +549,11 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-[#6B6B80]">Email</label>
             <Input type="email" value={user?.email || ''} disabled className="mt-1" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Rôle</label>
+            <label className="block text-sm font-medium text-[#6B6B80]">Rôle</label>
             <Input type="text" value={user?.role || ''} disabled className="mt-1" />
           </div>
           <Button
@@ -577,11 +577,11 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {orgLoading ? (
-            <p className="text-sm text-gray-500">Chargement...</p>
+            <p className="text-sm text-[#6B6B80]">Chargement...</p>
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Nom de l'organisation</label>
+                <label className="block text-sm font-medium text-[#6B6B80]">Nom de l'organisation</label>
                 <Input
                   type="text"
                   value={organization.name}
@@ -591,7 +591,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Adresse</label>
+                <label className="block text-sm font-medium text-[#6B6B80]">Adresse</label>
                 <Input
                   type="text"
                   value={organization.address}
@@ -601,7 +601,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Téléphone</label>
+                <label className="block text-sm font-medium text-[#6B6B80]">Téléphone</label>
                 <Input
                   type="tel"
                   value={organization.phone}
@@ -646,7 +646,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {deptsLoading ? (
-            <p className="text-sm text-gray-500">Chargement...</p>
+            <p className="text-sm text-[#6B6B80]">Chargement...</p>
           ) : (
             <>
               {departments.length > 0 ? (
@@ -654,18 +654,18 @@ export default function SettingsPage() {
                   {departments.map((dept) => (
                     <div
                       key={dept.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200"
+                      className="flex items-center justify-between p-3 bg-[#1A1A25] rounded border border-[#1F1F2E]"
                     >
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">{dept.name}</p>
+                        <p className="text-sm font-medium text-[#F0F0F5]">{dept.name}</p>
                         {dept.description && (
-                          <p className="text-xs text-gray-500">{dept.description}</p>
+                          <p className="text-xs text-[#6B6B80]">{dept.description}</p>
                         )}
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-red-600"
+                        className="text-[#FF4D6A]"
                         onClick={() => handleDeleteDepartment(dept.id)}
                       >
                         <Trash2 size={16} />
@@ -674,13 +674,13 @@ export default function SettingsPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">Aucun département</p>
+                <p className="text-sm text-[#6B6B80]">Aucun département</p>
               )}
 
               {showNewDept ? (
-                <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="space-y-3 p-4 bg-[#1A1A25] rounded-lg border border-[#1F1F2E]">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nom du département</label>
+                    <label className="block text-sm font-medium text-[#6B6B80] mb-1">Nom du département</label>
                     <Input
                       type="text"
                       value={newDeptName}
@@ -689,7 +689,7 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description (optionnel)</label>
+                    <label className="block text-sm font-medium text-[#6B6B80] mb-1">Description (optionnel)</label>
                     <Input
                       type="text"
                       value={newDeptDesc}
@@ -739,29 +739,29 @@ export default function SettingsPage() {
           <CardDescription>Gérez la sécurité de votre compte</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg">
             <div>
-              <p className="font-medium text-gray-900">Authentification à deux facteurs (2FA)</p>
-              <p className="text-sm text-gray-500">Ajoutez une couche de sécurité supplémentaire à votre compte</p>
+              <p className="font-medium text-[#F0F0F5]">Authentification à deux facteurs (2FA)</p>
+              <p className="text-sm text-[#6B6B80]">Ajoutez une couche de sécurité supplémentaire à votre compte</p>
             </div>
             <Button variant="outline">Activer</Button>
           </div>
-          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg">
             <div>
-              <p className="font-medium text-gray-900">Dernière connexion</p>
-              <p className="text-sm text-gray-500">{user?.lastLogin ? new Date(user.lastLogin).toLocaleString('fr-FR') : 'Information non disponible'}</p>
+              <p className="font-medium text-[#F0F0F5]">Dernière connexion</p>
+              <p className="text-sm text-[#6B6B80]">{user?.lastLogin ? new Date(user.lastLogin).toLocaleString('fr-FR') : 'Information non disponible'}</p>
             </div>
           </div>
-          <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
+          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="font-medium text-gray-900">Sessions actives</p>
-                <p className="text-sm text-gray-500">{sessions.length} session(s) active(s)</p>
+                <p className="font-medium text-[#F0F0F5]">Sessions actives</p>
+                <p className="text-sm text-[#6B6B80]">{sessions.length} session(s) active(s)</p>
               </div>
               {sessions.length > 0 && (
                 <Button
                   variant="outline"
-                  className="text-red-600"
+                  className="text-[#FF4D6A]"
                   onClick={handleDisconnectAllSessions}
                 >
                   Déconnecter tout
@@ -769,25 +769,25 @@ export default function SettingsPage() {
               )}
             </div>
             {sessionsLoading ? (
-              <p className="text-sm text-gray-500">Chargement...</p>
+              <p className="text-sm text-[#6B6B80]">Chargement...</p>
             ) : sessions.length > 0 ? (
               <div className="space-y-2">
                 {sessions.map((session) => (
                   <div
                     key={session.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200"
+                    className="flex items-center justify-between p-3 bg-[#1A1A25] rounded border border-[#1F1F2E]"
                   >
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{session.deviceName}</p>
-                      <p className="text-xs text-gray-500">IP: {session.ipAddress}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-medium text-[#F0F0F5]">{session.deviceName}</p>
+                      <p className="text-xs text-[#6B6B80]">IP: {session.ipAddress}</p>
+                      <p className="text-xs text-[#6B6B80]">
                         Dernière activité: {new Date(session.lastActive).toLocaleString('fr-FR')}
                       </p>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-red-600"
+                      className="text-[#FF4D6A]"
                       onClick={() => handleDisconnectSession(session.id)}
                     >
                       <LogOut size={16} className="mr-1" />
@@ -797,13 +797,13 @@ export default function SettingsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Aucune session active</p>
+              <p className="text-sm text-[#6B6B80]">Aucune session active</p>
             )}
           </div>
-          <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
+          <div className="flex items-center justify-between p-4 border border-[#1F1F2E] rounded-lg">
             <div>
-              <p className="font-medium text-gray-900">Changer le mot de passe</p>
-              <p className="text-sm text-gray-500">Mettez à jour votre mot de passe régulièrement</p>
+              <p className="font-medium text-[#F0F0F5]">Changer le mot de passe</p>
+              <p className="text-sm text-[#6B6B80]">Mettez à jour votre mot de passe régulièrement</p>
             </div>
             <Button variant="outline">Modifier</Button>
           </div>
@@ -821,7 +821,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Thème</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Thème</label>
             <div className="flex gap-4">
               {['light', 'dark'].map((t) => (
                 <button
@@ -830,7 +830,7 @@ export default function SettingsPage() {
                   className={`rounded-lg px-4 py-2 font-medium transition-colors ${
                     theme === t
                       ? 'bg-fleet-tracker-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-[#12121A] text-[#6B6B80] hover:bg-[#1A1A25]'
                   }`}
                 >
                   {t === 'light' ? 'Clair' : 'Sombre'}
@@ -840,11 +840,11 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Langue</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Langue</label>
             <select
               value={locale}
               onChange={(e) => setLocale(e.target.value)}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
             >
               <option value="en">English</option>
               <option value="es">Español</option>
@@ -854,11 +854,11 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Unité de vitesse</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Unité de vitesse</label>
             <select
               value={speedUnit}
               onChange={(e) => handleSpeedUnitChange(e.target.value)}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
             >
               <option value="kmh">Kilomètres par heure (km/h)</option>
               <option value="mph">Miles par heure (mph)</option>
@@ -867,11 +867,11 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Unité de distance</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Unité de distance</label>
             <select
               value={distanceUnit}
               onChange={(e) => handleDistanceUnitChange(e.target.value)}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
             >
               <option value="km">Kilomètres (km)</option>
               <option value="mi">Miles (mi)</option>
@@ -891,11 +891,11 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Délai d'expiration de session</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Délai d'expiration de session</label>
             <select
               value={sessionTimeout}
               onChange={(e) => handleSessionTimeoutChange(e.target.value)}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 w-full text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
             >
               <option value="30m">30 minutes</option>
               <option value="1h">1 heure</option>
@@ -905,7 +905,7 @@ export default function SettingsPage() {
               <option value="24h">24 heures</option>
               <option value="7d">7 jours</option>
             </select>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-[#6B6B80] mt-2">
               Vous serez automatiquement déconnecté après cette période d'inactivité.
             </p>
           </div>
@@ -924,45 +924,45 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             {collabsLoading ? (
-              <p className="text-sm text-gray-500">Chargement...</p>
+              <p className="text-sm text-[#6B6B80]">Chargement...</p>
             ) : (
               <>
                 {collaborators.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="border-b border-gray-200">
+                      <thead className="border-b border-[#1F1F2E]">
                         <tr>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">Nom</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">Email</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">Rôle</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">Dernière activité</th>
-                          <th className="text-left py-2 px-3 font-medium text-gray-700">Actions</th>
+                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Nom</th>
+                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Email</th>
+                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Rôle</th>
+                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Dernière activité</th>
+                          <th className="text-left py-2 px-3 font-medium text-[#6B6B80]">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-[#1F1F2E]">
                         {collaborators.map((collab) => (
-                          <tr key={collab.id} className="hover:bg-gray-50">
+                          <tr key={collab.id} className="hover:bg-[#1A1A25]">
                             <td className="py-3 px-3">{collab.name}</td>
-                            <td className="py-3 px-3 text-gray-600">{collab.email}</td>
+                            <td className="py-3 px-3 text-[#6B6B80]">{collab.email}</td>
                             <td className="py-3 px-3">
                               <select
                                 value={collab.role}
                                 onChange={(e) => handleUpdateCollaboratorRole(collab.id, e.target.value)}
-                                className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                className="rounded-md border border-[#1F1F2E] bg-white px-2 py-1 text-xs font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
                               >
                                 <option value="Admin">Admin</option>
                                 <option value="Manager">Manager</option>
                                 <option value="Opérateur">Opérateur</option>
                               </select>
                             </td>
-                            <td className="py-3 px-3 text-gray-600 text-xs">
+                            <td className="py-3 px-3 text-[#6B6B80] text-xs">
                               {new Date(collab.lastActive).toLocaleString('fr-FR')}
                             </td>
                             <td className="py-3 px-3">
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-red-600"
+                                className="text-[#FF4D6A]"
                                 onClick={() => handleDeleteCollaborator(collab.id)}
                               >
                                 <Trash2 size={14} />
@@ -974,13 +974,13 @@ export default function SettingsPage() {
                     </table>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">Aucun collaborateur</p>
+                  <p className="text-sm text-[#6B6B80]">Aucun collaborateur</p>
                 )}
 
                 {showInviteForm ? (
-                  <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="space-y-3 p-4 bg-[#1A1A25] rounded-lg border border-[#1F1F2E]">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email du collaborateur</label>
+                      <label className="block text-sm font-medium text-[#6B6B80] mb-1">Email du collaborateur</label>
                       <Input
                         type="email"
                         value={inviteEmail}
@@ -989,11 +989,11 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
+                      <label className="block text-sm font-medium text-[#6B6B80] mb-1">Rôle</label>
                       <select
                         value={inviteRole}
                         onChange={(e) => setInviteRole(e.target.value)}
-                        className="rounded-md border border-gray-300 bg-white px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 w-full text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
                       >
                         <option value="Admin">Admin</option>
                         <option value="Manager">Manager</option>
@@ -1049,37 +1049,37 @@ export default function SettingsPage() {
             { label: 'Notifications SMS', key: 'sms' },
           ].map((item) => (
             <div key={item.key} className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">{item.label}</label>
+              <label className="text-sm font-medium text-[#6B6B80]">{item.label}</label>
               <input type="checkbox" defaultChecked className="h-4 w-4" />
             </div>
           ))}
 
           {/* WhatsApp Channel */}
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t border-[#1F1F2E]">
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium text-gray-700">WhatsApp</label>
-                <p className="text-xs text-gray-500">Bientôt disponible</p>
+                <label className="text-sm font-medium text-[#6B6B80]">WhatsApp</label>
+                <p className="text-xs text-[#6B6B80]">Bientôt disponible</p>
               </div>
               <input type="checkbox" disabled className="h-4 w-4" />
             </div>
           </div>
 
           {/* Push Mobile Channel */}
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t border-[#1F1F2E]">
             <div className="flex items-center justify-between">
               <div>
-                <label className="text-sm font-medium text-gray-700">Push mobile</label>
-                <p className="text-xs text-gray-500">Configurez l'app mobile</p>
+                <label className="text-sm font-medium text-[#6B6B80]">Push mobile</label>
+                <p className="text-xs text-[#6B6B80]">Configurez l'app mobile</p>
               </div>
               <input type="checkbox" disabled className="h-4 w-4" />
             </div>
           </div>
 
           {/* Quiet Hours Section */}
-          <div className="pt-4 border-t border-gray-100 space-y-3">
+          <div className="pt-4 border-t border-[#1F1F2E] space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Heures silencieuses</label>
+              <label className="text-sm font-medium text-[#6B6B80]">Heures silencieuses</label>
               <input
                 type="checkbox"
                 checked={quietHoursEnabled}
@@ -1088,25 +1088,25 @@ export default function SettingsPage() {
               />
             </div>
             {quietHoursEnabled && (
-              <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-600">Aucune notification ne sera envoyée pendant ces heures</p>
+              <div className="space-y-3 p-3 bg-[#1A1A25] rounded-lg">
+                <p className="text-xs text-[#6B6B80]">Aucune notification ne sera envoyée pendant ces heures</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">De</label>
+                    <label className="block text-xs font-medium text-[#6B6B80] mb-1">De</label>
                     <input
                       type="time"
                       value={quietHoursStart}
                       onChange={(e) => setQuietHoursStart(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm"
+                      className="w-full rounded-md border border-[#1F1F2E] px-2 py-2 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">À</label>
+                    <label className="block text-xs font-medium text-[#6B6B80] mb-1">À</label>
                     <input
                       type="time"
                       value={quietHoursEnd}
                       onChange={(e) => setQuietHoursEnd(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm"
+                      className="w-full rounded-md border border-[#1F1F2E] px-2 py-2 text-sm"
                     />
                   </div>
                 </div>
@@ -1114,7 +1114,7 @@ export default function SettingsPage() {
                   onClick={handleSaveQuietHours}
                   disabled={quietHoursSaving}
                   size="sm"
-                  className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+                  className="w-full gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
                 >
                   {quietHoursSaved ? (
                     <><Check size={14} /> Enregistré</>
@@ -1144,7 +1144,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Activer la marque blanche</label>
+              <label className="text-sm font-medium text-[#6B6B80]">Activer la marque blanche</label>
               <input
                 type="checkbox"
                 checked={whiteLabelEnabled}
@@ -1156,7 +1156,7 @@ export default function SettingsPage() {
             {whiteLabelEnabled && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">URL du logo</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">URL du logo</label>
                   <Input
                     type="url"
                     value={whiteLabel.logoUrl}
@@ -1166,7 +1166,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'entreprise</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Nom de l'entreprise</label>
                   <Input
                     type="text"
                     value={whiteLabel.companyName}
@@ -1176,13 +1176,13 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Couleur primaire</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Couleur primaire</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       value={whiteLabel.primaryColor}
                       onChange={(e) => setWhiteLabel({...whiteLabel, primaryColor: e.target.value})}
-                      className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                      className="h-10 w-20 rounded border border-[#1F1F2E] cursor-pointer"
                     />
                     <Input
                       type="text"
@@ -1195,7 +1195,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Domaine personnalisé</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Domaine personnalisé</label>
                   <Input
                     type="text"
                     value={whiteLabel.customDomain}
@@ -1207,7 +1207,7 @@ export default function SettingsPage() {
                 <Button
                   onClick={handleSaveWhiteLabel}
                   disabled={whiteLabelSaving}
-                  className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+                  className="w-full gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
                 >
                   {whiteLabelSaved ? (
                     <><Check size={16} /> Enregistré</>
@@ -1234,11 +1234,11 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Flespi */}
-          <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
+          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${providers.flespi.enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
-                <label className="font-medium text-gray-900">Flespi</label>
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.flespi.enabled ? 'bg-green-500' : 'bg-[#1F1F2E]'}`} />
+                <label className="font-medium text-[#F0F0F5]">Flespi</label>
               </div>
               <input
                 type="checkbox"
@@ -1250,7 +1250,7 @@ export default function SettingsPage() {
             {providers.flespi.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Token API</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Token API</label>
                   <Input
                     type="password"
                     placeholder="Entrer le token API Flespi"
@@ -1259,7 +1259,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">ID du canal</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">ID du canal</label>
                   <Input
                     type="text"
                     placeholder="Entrer l'ID du canal"
@@ -1272,11 +1272,11 @@ export default function SettingsPage() {
           </div>
 
           {/* Echoes */}
-          <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
+          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${providers.echoes.enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
-                <label className="font-medium text-gray-900">Echoes</label>
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.echoes.enabled ? 'bg-green-500' : 'bg-[#1F1F2E]'}`} />
+                <label className="font-medium text-[#F0F0F5]">Echoes</label>
               </div>
               <input
                 type="checkbox"
@@ -1288,7 +1288,7 @@ export default function SettingsPage() {
             {providers.echoes.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">URL API</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">URL API</label>
                   <Input
                     type="text"
                     placeholder="https://api.echoes.com"
@@ -1297,7 +1297,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Clé de confidentialité</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Clé de confidentialité</label>
                   <Input
                     type="password"
                     placeholder="Entrer la clé de confidentialité"
@@ -1310,11 +1310,11 @@ export default function SettingsPage() {
           </div>
 
           {/* KeepTrace */}
-          <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
+          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${providers.keeptrace.enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
-                <label className="font-medium text-gray-900">KeepTrace</label>
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.keeptrace.enabled ? 'bg-green-500' : 'bg-[#1F1F2E]'}`} />
+                <label className="font-medium text-[#F0F0F5]">KeepTrace</label>
               </div>
               <input
                 type="checkbox"
@@ -1325,7 +1325,7 @@ export default function SettingsPage() {
             </div>
             {providers.keeptrace.enabled && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Clé API</label>
+                <label className="block text-sm font-medium text-[#6B6B80] mb-1">Clé API</label>
                 <Input
                   type="password"
                   placeholder="Entrer la clé API KeepTrace"
@@ -1337,11 +1337,11 @@ export default function SettingsPage() {
           </div>
 
           {/* Ubiwan */}
-          <div className="space-y-3 p-4 border border-gray-100 rounded-lg">
+          <div className="space-y-3 p-4 border border-[#1F1F2E] rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${providers.ubiwan.enabled ? 'bg-green-500' : 'bg-gray-300'}`} />
-                <label className="font-medium text-gray-900">Ubiwan</label>
+                <span className={`h-2.5 w-2.5 rounded-full ${providers.ubiwan.enabled ? 'bg-green-500' : 'bg-[#1F1F2E]'}`} />
+                <label className="font-medium text-[#F0F0F5]">Ubiwan</label>
               </div>
               <input
                 type="checkbox"
@@ -1353,7 +1353,7 @@ export default function SettingsPage() {
             {providers.ubiwan.enabled && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">URL du point d'accès</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">URL du point d'accès</label>
                   <Input
                     type="text"
                     placeholder="https://api.ubiwan.com"
@@ -1362,7 +1362,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Identifiants</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Identifiants</label>
                   <Input
                     type="password"
                     placeholder="Entrer les identifiants"
@@ -1379,7 +1379,7 @@ export default function SettingsPage() {
             <Button
               onClick={handleSaveProviders}
               disabled={providersSaving}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+              className="gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
             >
               {providersSaved ? (
                 <><Check size={16} /> Enregistré</>
@@ -1392,9 +1392,9 @@ export default function SettingsPage() {
           </div>
 
           {/* Custom GPS Providers Section */}
-          <div className="border-t border-gray-200 pt-6">
+          <div className="border-t border-[#1F1F2E] pt-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">Fournisseurs personnalisés</h3>
+              <h3 className="text-sm font-semibold text-[#F0F0F5]">Fournisseurs personnalisés</h3>
               <Button
                 size="sm"
                 variant="outline"
@@ -1407,9 +1407,9 @@ export default function SettingsPage() {
             </div>
 
             {showAddCustomProvider && (
-              <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50 mb-4">
+              <div className="space-y-4 p-4 border border-[#1F1F2E] rounded-lg bg-[#1A1A25] mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom du fournisseur</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Nom du fournisseur</label>
                   <Input
                     type="text"
                     placeholder="Ex: MonFournisseur GPS"
@@ -1418,18 +1418,18 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type de connexion</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Type de connexion</label>
                   <select
                     value={newCustomProvider.type}
                     onChange={(e) => setNewCustomProvider({ ...newCustomProvider, type: e.target.value as 'HTTP' | 'MQTT' })}
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="w-full rounded-md border border-[#1F1F2E] bg-white px-3 py-2 text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
                   >
                     <option value="HTTP">HTTP / REST</option>
                     <option value="MQTT">MQTT</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">URL du point d'accès</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">URL du point d'accès</label>
                   <Input
                     type="text"
                     placeholder="https://api.example.com/gps"
@@ -1438,7 +1438,7 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Clé API</label>
+                  <label className="block text-sm font-medium text-[#6B6B80] mb-1">Clé API</label>
                   <Input
                     type="password"
                     placeholder="Entrer votre clé API"
@@ -1472,15 +1472,15 @@ export default function SettingsPage() {
             {customProviders.length > 0 && (
               <div className="space-y-2">
                 {customProviders.map((provider) => (
-                  <div key={provider.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                  <div key={provider.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] rounded-lg">
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{provider.name}</p>
-                      <p className="text-xs text-gray-500">{provider.type} • {provider.endpoint}</p>
+                      <p className="text-sm font-medium text-[#F0F0F5]">{provider.name}</p>
+                      <p className="text-xs text-[#6B6B80]">{provider.type} • {provider.endpoint}</p>
                     </div>
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-[#FF4D6A] hover:text-[#FF4D6A] hover:bg-[#1A1A25]"
                       onClick={() => provider.id && handleDeleteCustomProvider(provider.id)}
                     >
                       <Trash2 size={14} />
@@ -1504,7 +1504,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Votre clé API</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-2">Votre clé API</label>
             <div className="flex gap-2">
               <Input
                 type={showApiKey ? 'text' : 'password'}
@@ -1529,7 +1529,7 @@ export default function SettingsPage() {
                 <Copy size={16} />
               </Button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">Gardez votre clé API en sécurité. Ne la partagez jamais.</p>
+            <p className="text-xs text-[#6B6B80] mt-2">Gardez votre clé API en sécurité. Ne la partagez jamais.</p>
           </div>
           <Button
             variant="destructive"
@@ -1553,11 +1553,11 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Période de conservation de l'historique GPS</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-3">Période de conservation de l'historique GPS</label>
             <select
               value={dataRetention}
               onChange={(e) => setDataRetention(e.target.value)}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 w-full text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
             >
               <option value="30">30 jours</option>
               <option value="60">60 jours</option>
@@ -1565,14 +1565,14 @@ export default function SettingsPage() {
               <option value="180">180 jours</option>
               <option value="365">1 an</option>
             </select>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-[#6B6B80] mt-2">
               Les données plus anciennes que la période sélectionnée seront automatiquement supprimées.
             </p>
           </div>
           <Button
             onClick={handleSaveDataRetention}
             disabled={dataRetentionSaving}
-            className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+            className="w-full gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
           >
             {dataRetentionSaved ? (
               <><Check size={16} /> Enregistré</>
@@ -1597,7 +1597,7 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Latitude du centre</label>
+              <label className="block text-sm font-medium text-[#6B6B80] mb-1">Latitude du centre</label>
               <Input
                 type="text"
                 value={mapDefaults.centerLat}
@@ -1606,7 +1606,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Longitude du centre</label>
+              <label className="block text-sm font-medium text-[#6B6B80] mb-1">Longitude du centre</label>
               <Input
                 type="text"
                 value={mapDefaults.centerLng}
@@ -1616,7 +1616,7 @@ export default function SettingsPage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Niveau de zoom par défaut</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-1">Niveau de zoom par défaut</label>
             <Input
               type="text"
               value={mapDefaults.zoom}
@@ -1625,11 +1625,11 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Couche de tuiles</label>
+            <label className="block text-sm font-medium text-[#6B6B80] mb-1">Couche de tuiles</label>
             <select
               value={mapDefaults.tileLayer}
               onChange={(e) => handleMapDefaultChange('tileLayer', e.target.value)}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="rounded-md border border-[#1F1F2E] bg-white px-4 py-2 w-full text-sm font-medium text-[#6B6B80] hover:bg-[#1A1A25]"
             >
               <option value="streets">Mapbox Plan (streets-v12)</option>
               <option value="satellite">Mapbox Satellite (satellite-streets-v12)</option>
@@ -1640,7 +1640,7 @@ export default function SettingsPage() {
           <Button
             onClick={handleSaveMapDefaults}
             disabled={mapDefaultsSaving}
-            className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+            className="w-full gap-2 bg-[#0A0A0F] hover:bg-[#12121A] text-white"
           >
             {mapDefaultsSaved ? (
               <><Check size={16} /> Enregistré</>
@@ -1656,10 +1656,10 @@ export default function SettingsPage() {
       {/* Danger zone */}
       <Card className="border-red-200">
         <CardHeader>
-          <CardTitle className="text-red-600">Zone dangereuse</CardTitle>
+          <CardTitle className="text-[#FF4D6A]">Zone dangereuse</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600">La suppression de votre compte est irréversible. Soyez certain de votre choix.</p>
+          <p className="text-sm text-[#6B6B80]">La suppression de votre compte est irréversible. Soyez certain de votre choix.</p>
           <Button variant="destructive" className="w-full">
             Supprimer le compte
           </Button>

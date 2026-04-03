@@ -208,13 +208,13 @@ export default function TestEnvironmentPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#0A0A0F] min-h-screen p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">
           Environnement de test
         </h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-[#6B6B80]">
           Testez l'API TrackZone avant la mise en production
         </p>
       </div>
@@ -229,7 +229,7 @@ export default function TestEnvironmentPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
+                <label className="block text-sm font-medium text-[#F0F0F5] mb-2">
                   Environnement
                 </label>
                 <div className="flex gap-2">
@@ -242,8 +242,8 @@ export default function TestEnvironmentPage() {
                       className={cn(
                         'px-4 py-2 rounded-lg font-medium transition-colors',
                         environment === env
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                          ? 'bg-[#00E5CC] text-[#0A0A0F]'
+                          : 'bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#2A2A3D]'
                       )}
                     >
                       {env.charAt(0).toUpperCase() + env.slice(1)}
@@ -260,7 +260,7 @@ export default function TestEnvironmentPage() {
                     onChange={(e) => setSandboxMode(e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-[#F0F0F5]">
                     Mode Sandbox
                   </span>
                 </label>
@@ -282,7 +282,7 @@ export default function TestEnvironmentPage() {
                 <select
                   value={method}
                   onChange={(e) => setMethod(e.target.value as HttpMethod)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg font-medium bg-white"
+                  className="px-3 py-2 border border-[#1F1F2E] rounded-lg font-medium bg-[#12121A]"
                 >
                   <option>GET</option>
                   <option>POST</option>
@@ -300,14 +300,14 @@ export default function TestEnvironmentPage() {
               {/* Body */}
               {method !== 'GET' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">
                     Body (JSON)
                   </label>
                   <textarea
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     placeholder='{"name": "..."}'
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm h-40 resize-none"
+                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg font-mono text-sm h-40 resize-none"
                   />
                 </div>
               )}
@@ -328,10 +328,10 @@ export default function TestEnvironmentPage() {
           {response && (
             <Card className={
               response.status && response.status >= 200 && response.status < 300
-                ? 'border-green-200 bg-green-50'
+                ? 'border-[#00E5CC] bg-[#12121A]'
                 : response.error
-                  ? 'border-red-200 bg-red-50'
-                  : 'border-blue-200 bg-blue-50'
+                  ? 'border-[#FF4D6A] bg-[#12121A]'
+                  : 'border-[#1F1F2E] bg-[#12121A]'
             }>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -346,7 +346,7 @@ export default function TestEnvironmentPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-xs overflow-x-auto">
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-xs overflow-x-auto">
                   <code className="whitespace-pre-wrap break-words">
                     {JSON.stringify(response.data || response.error || response, null, 2)}
                   </code>
@@ -398,7 +398,7 @@ export default function TestEnvironmentPage() {
                 {requestHistory.length > 0 && (
                   <button
                     onClick={clearHistory}
-                    className="p-1 hover:bg-gray-200 rounded"
+                    className="p-1 hover:bg-[#1A1A25] rounded"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -407,13 +407,13 @@ export default function TestEnvironmentPage() {
             </CardHeader>
             <CardContent className="space-y-2 max-h-80 overflow-y-auto">
               {requestHistory.length === 0 ? (
-                <p className="text-sm text-gray-500">Aucune requête</p>
+                <p className="text-sm text-[#6B6B80]">Aucune requête</p>
               ) : (
                 requestHistory.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleHistoryClick(item)}
-                    className="w-full text-left p-2 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+                    className="w-full text-left p-2 hover:bg-[#0A0A0F] rounded-lg border border-[#1F1F2E] transition-colors"
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <Badge variant={getMethodBadgeVariant(item.method)}>
@@ -424,18 +424,18 @@ export default function TestEnvironmentPage() {
                           className={cn(
                             'text-xs font-medium',
                             item.status >= 200 && item.status < 300
-                              ? 'text-green-700'
-                              : 'text-red-700'
+                              ? 'text-[#00E5CC]'
+                              : 'text-[#FF4D6A]'
                           )}
                         >
                           {item.status}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-600 truncate">
+                    <p className="text-xs text-[#6B6B80] truncate">
                       {item.url}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-[#6B6B80]">
                       {item.timestamp.toLocaleTimeString()}
                     </p>
                   </button>
@@ -450,12 +450,12 @@ export default function TestEnvironmentPage() {
               <CardTitle className="text-base">Documentation</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-[#6B6B80]">
                 Besoin d'aide pour les endpoints ?
               </p>
               <Button
                 variant="outline"
-                className="w-full justify-start text-blue-600 hover:text-blue-700"
+                className="w-full justify-start text-[#00E5CC] hover:text-[#00E5CC]"
                 onClick={() =>
                   window.open('/api-docs', '_blank')
                 }
@@ -464,7 +464,7 @@ export default function TestEnvironmentPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start text-blue-600 hover:text-blue-700"
+                className="w-full justify-start text-[#00E5CC] hover:text-[#00E5CC]"
                 onClick={() =>
                   window.open('/sdk-examples', '_blank')
                 }

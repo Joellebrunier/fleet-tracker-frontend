@@ -63,6 +63,30 @@ import { MAPBOX_TILE_URL } from '@/lib/constants'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 import 'leaflet/dist/leaflet.css'
 
+// TrackZone Design System Colors
+const TZ_COLORS = {
+  bgMain: '#0A0A0F',
+  bgCard: '#12121A',
+  bgHover: '#1A1A25',
+  bgActive: '#1E1E2A',
+  borderDefault: '#1F1F2E',
+  borderHover: '#2A2A3D',
+  textPrimary: '#F0F0F5',
+  textMuted: '#6B6B80',
+  textDim: '#44445A',
+  accentCyan: '#00E5CC',
+  accentDanger: '#FF4D6A',
+  accentWarning: '#FFB547',
+}
+
+const PROVIDER_COLORS_DARK = {
+  Flespi: '#A855F7',
+  Echoes: '#3B82F6',
+  KeepTrace: '#00E5CC',
+  Ubiwan: '#FFB547',
+  Autre: '#6B6B80',
+}
+
 type WidgetSize = 'compact' | 'normal' | 'expanded'
 type WidgetId =
   | 'hourly-activity'
@@ -372,11 +396,11 @@ export default function DashboardPage() {
   )
 
   const providerColors: Record<string, string> = {
-    Flespi: 'bg-purple-500',
-    Echoes: 'bg-blue-500',
-    KeepTrace: 'bg-emerald-500',
-    Ubiwan: 'bg-orange-500',
-    Autre: 'bg-gray-400',
+    Flespi: 'bg-[#A855F7]',
+    Echoes: 'bg-[#3B82F6]',
+    KeepTrace: 'bg-[#00E5CC]',
+    Ubiwan: 'bg-[#FFB547]',
+    Autre: 'bg-[#6B6B80]',
   }
 
   // Generate mock hourly fleet activity data
@@ -567,12 +591,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#0A0A0F]">
       {/* Header with Widget Configuration */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-2xl font-bold font-syne text-[#F0F0F5]">Tableau de bord</h1>
+          <p className="mt-1 text-sm text-[#6B6B80]">
             Vue d'ensemble de votre flotte — {stats.total} véhicules, {stats.withGps} avec GPS actif
           </p>
         </div>
@@ -580,7 +604,7 @@ export default function DashboardPage() {
           variant="outline"
           size="sm"
           onClick={() => setShowWidgetConfig(!showWidgetConfig)}
-          className="gap-2"
+          className="gap-2 border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] hover:bg-[#1A1A25]"
         >
           <Settings size={16} />
           <span>Personnaliser</span>
@@ -589,32 +613,32 @@ export default function DashboardPage() {
 
       {/* Widget Configuration Panel */}
       {showWidgetConfig && (
-        <Card className="bg-blue-50 border-blue-200">
-          <CardHeader className="pb-4">
+        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+          <div className="pb-4 px-6 pt-6 border-b border-[#1F1F2E]">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Personnaliser les widgets</CardTitle>
-                <CardDescription className="text-sm mt-1">
+                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Personnaliser les widgets</h3>
+                <p className="text-sm mt-1 text-[#6B6B80]">
                   Gérez la visibilité, la taille et l'ordre des widgets de votre tableau de bord
-                </CardDescription>
+                </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={resetWidgetConfig}
-                className="gap-2 text-amber-600 border-amber-200 hover:bg-amber-50"
+                className="gap-2 text-[#FFB547] border-[#FFB547]/30 bg-[#FFB547]/10 hover:bg-[#FFB547]/20"
               >
                 <RotateCcw size={14} />
                 <span>Réinitialiser</span>
               </Button>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="px-6 py-6">
             <div className="space-y-3">
               {widgetOrder.map((id) => (
                 <div
                   key={id}
-                  className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-[#1A1A25] rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] hover:border-[#2A2A3D] transition-colors"
                 >
                   {/* Visibility Toggle */}
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -622,21 +646,21 @@ export default function DashboardPage() {
                       type="checkbox"
                       checked={widgetConfig[id].visible}
                       onChange={() => toggleWidgetVisibility(id)}
-                      className="w-4 h-4 rounded cursor-pointer"
+                      className="w-4 h-4 rounded cursor-pointer accent-[#00E5CC]"
                     />
                   </label>
 
                   {/* Widget Label */}
                   <div className="flex-1">
                     <span className={`text-sm font-medium ${
-                      widgetConfig[id].visible ? 'text-gray-900' : 'text-gray-500'
+                      widgetConfig[id].visible ? 'text-[#F0F0F5]' : 'text-[#6B6B80]'
                     }`}>
                       {widgetLabels[id]}
                     </span>
                   </div>
 
                   {/* Size Selector */}
-                  <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                  <div className="flex gap-1 bg-[#12121A] rounded-[var(--tz-radius-sm)] p-1">
                     {(['compact', 'normal', 'expanded'] as const).map((size) => (
                       <button
                         key={size}
@@ -644,8 +668,8 @@ export default function DashboardPage() {
                         title={size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large'}
                         className={`px-2 py-1 text-xs rounded transition-colors ${
                           widgetConfig[id].size === size
-                            ? 'bg-blue-500 text-white'
-                            : 'text-gray-600 hover:text-gray-900'
+                            ? 'bg-[#00E5CC] text-[#0A0A0F]'
+                            : 'text-[#6B6B80] hover:text-[#F0F0F5]'
                         }`}
                       >
                         {size === 'compact' ? 'C' : size === 'normal' ? 'N' : 'L'}
@@ -654,11 +678,11 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Reorder Buttons */}
-                  <div className="flex gap-1 border-l border-gray-200 pl-3">
+                  <div className="flex gap-1 border-l border-[#1F1F2E] pl-3">
                     <button
                       onClick={() => moveWidgetUp(id)}
                       disabled={widgetOrder.indexOf(id) === 0}
-                      className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="p-1 text-[#6B6B80] hover:text-[#00E5CC] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       title="Monter"
                     >
                       <ChevronUp size={16} />
@@ -666,7 +690,7 @@ export default function DashboardPage() {
                     <button
                       onClick={() => moveWidgetDown(id)}
                       disabled={widgetOrder.indexOf(id) === widgetOrder.length - 1}
-                      className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="p-1 text-[#6B6B80] hover:text-[#00E5CC] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       title="Descendre"
                     >
                       <ChevronDown size={16} />
@@ -675,91 +699,86 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* KPI Cards - Always visible */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total véhicules</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">{stats.withGps} GPS actif</p>
-              </div>
-              <div className="rounded-xl bg-blue-50 p-3">
-                <Truck className="text-blue-600" size={24} />
-              </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 stagger-children">
+        {/* Total Vehicles */}
+        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">Total véhicules</p>
+              <p className="text-3xl font-bold font-mono text-[#F0F0F5] mt-1">{stats.total}</p>
+              <p className="text-xs text-[#6B6B80] mt-1">{stats.withGps} GPS actif</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="rounded-[var(--tz-radius)] bg-[rgba(59,130,246,0.1)] p-3 border border-[rgba(59,130,246,0.2)]">
+              <Truck className="text-[#3B82F6]" size={24} />
+            </div>
+          </div>
+        </div>
 
-        <Card className="border-l-4 border-l-green-500">
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">En mouvement</p>
-                <p className="text-3xl font-bold text-green-600 mt-1">{stats.moving}</p>
-                <p className="text-xs text-gray-500 mt-1">{stats.stopped} à l'arrêt</p>
-              </div>
-              <div className="rounded-xl bg-green-50 p-3">
-                <Navigation className="text-green-600" size={24} />
-              </div>
+        {/* Moving Vehicles */}
+        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">En mouvement</p>
+              <p className="text-3xl font-bold font-mono text-[#22C55E] mt-1">{stats.moving}</p>
+              <p className="text-xs text-[#6B6B80] mt-1">{stats.stopped} à l'arrêt</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="rounded-[var(--tz-radius)] bg-[rgba(34,197,94,0.1)] p-3 border border-[rgba(34,197,94,0.2)]">
+              <Navigation className="text-[#22C55E]" size={24} />
+            </div>
+          </div>
+        </div>
 
-        <Card className="border-l-4 border-l-amber-500">
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Actifs récents</p>
-                <p className="text-3xl font-bold text-amber-600 mt-1">{stats.recentlyActive}</p>
-                <p className="text-xs text-gray-500 mt-1">dernières 10 min</p>
-              </div>
-              <div className="rounded-xl bg-amber-50 p-3">
-                <Activity className="text-amber-600" size={24} />
-              </div>
+        {/* Recently Active */}
+        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">Actifs récents</p>
+              <p className="text-3xl font-bold font-mono text-[#FFB547] mt-1">{stats.recentlyActive}</p>
+              <p className="text-xs text-[#6B6B80] mt-1">dernières 10 min</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="rounded-[var(--tz-radius)] bg-[rgba(255,181,71,0.1)] p-3 border border-[rgba(255,181,71,0.2)]">
+              <Activity className="text-[#FFB547]" size={24} />
+            </div>
+          </div>
+        </div>
 
-        <Card className="border-l-4 border-l-red-500">
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hors ligne</p>
-                <p className="text-3xl font-bold text-red-600 mt-1">{stats.noGps}</p>
-                <p className="text-xs text-gray-500 mt-1">sans position GPS</p>
-              </div>
-              <div className="rounded-xl bg-red-50 p-3">
-                <WifiOff className="text-red-600" size={24} />
-              </div>
+        {/* Offline */}
+        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">Hors ligne</p>
+              <p className="text-3xl font-bold font-mono text-[#FF4D6A] mt-1">{stats.noGps}</p>
+              <p className="text-xs text-[#6B6B80] mt-1">sans position GPS</p>
             </div>
-          </CardContent>
-        </Card>
+            <div className="rounded-[var(--tz-radius)] bg-[rgba(255,77,106,0.1)] p-3 border border-[rgba(255,77,106,0.2)]">
+              <WifiOff className="text-[#FF4D6A]" size={24} />
+            </div>
+          </div>
+        </div>
 
-        <Card className="border-l-4 border-l-indigo-500">
-          <CardContent className="pt-5 pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Km du jour</p>
-                <p className="text-3xl font-bold text-indigo-600 mt-1">{(dailySummary.totalKm / 1000).toFixed(1)}K</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <span className={`text-xs font-medium ${dailySummary.comparisons.km >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {dailySummary.comparisons.km >= 0 ? '+' : ''}{dailySummary.comparisons.km.toFixed(1)}%
-                  </span>
-                  <span className="text-xs text-gray-500">vs hier</span>
-                </div>
-              </div>
-              <div className="rounded-xl bg-indigo-50 p-3">
-                <Route className="text-indigo-600" size={24} />
+        {/* Daily KM */}
+        <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)] p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-[#6B6B80] uppercase tracking-wide">Km du jour</p>
+              <p className="text-3xl font-bold font-mono text-[#00E5CC] mt-1">{(dailySummary.totalKm / 1000).toFixed(1)}K</p>
+              <div className="flex items-center gap-1 mt-1">
+                <span className={`text-xs font-medium ${dailySummary.comparisons.km >= 0 ? 'text-[#22C55E]' : 'text-[#FF4D6A]'}`}>
+                  {dailySummary.comparisons.km >= 0 ? '+' : ''}{dailySummary.comparisons.km.toFixed(1)}%
+                </span>
+                <span className="text-xs text-[#6B6B80]">vs hier</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="rounded-[var(--tz-radius)] bg-[rgba(0,229,204,0.1)] p-3 border border-[rgba(0,229,204,0.2)]">
+              <Route className="text-[#00E5CC]" size={24} />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Daily Summary Widget */}
@@ -775,29 +794,29 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-gray-400" />
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
             </div>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Résumé du jour</CardTitle>
-                <CardDescription className="text-xs">Métriques clés d'aujourd'hui</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Résumé du jour</h3>
+                <p className="text-xs text-[#6B6B80] mt-1">Métriques clés d'aujourd'hui</p>
+              </div>
+              <div className="px-6 py-4">
                 <div className="space-y-4">
                   {/* Kilomètres */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-100">
+                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)]">
                     <div className="flex items-center gap-3">
-                      <Route className="text-blue-600" size={20} />
+                      <Route className="text-[#3B82F6]" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-gray-600">Kilomètres parcourus</p>
-                        <p className="text-lg font-bold text-gray-900 mt-0.5">{dailySummary.totalKm.toLocaleString()} km</p>
+                        <p className="text-xs font-medium text-[#6B6B80]">Kilomètres parcourus</p>
+                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">{dailySummary.totalKm.toLocaleString()} km</p>
                       </div>
                     </div>
                     <div
                       className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
                         dailySummary.comparisons.km >= 0
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
+                          ? 'bg-[rgba(34,197,94,0.2)] text-[#22C55E]'
+                          : 'bg-[rgba(255,77,106,0.2)] text-[#FF4D6A]'
                       }`}
                     >
                       {dailySummary.comparisons.km >= 0 ? (
@@ -810,19 +829,19 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Trajets */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-100">
+                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(168,85,247,0.08)] border border-[rgba(168,85,247,0.15)]">
                     <div className="flex items-center gap-3">
-                      <Navigation className="text-purple-600" size={20} />
+                      <Navigation className="text-[#A855F7]" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-gray-600">Nombre de trajets</p>
-                        <p className="text-lg font-bold text-gray-900 mt-0.5">{dailySummary.trips}</p>
+                        <p className="text-xs font-medium text-[#6B6B80]">Nombre de trajets</p>
+                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">{dailySummary.trips}</p>
                       </div>
                     </div>
                     <div
                       className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
                         dailySummary.comparisons.trips >= 0
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
+                          ? 'bg-[rgba(34,197,94,0.2)] text-[#22C55E]'
+                          : 'bg-[rgba(255,77,106,0.2)] text-[#FF4D6A]'
                       }`}
                     >
                       {dailySummary.comparisons.trips >= 0 ? (
@@ -835,12 +854,12 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Temps moyen */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100">
+                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(255,181,71,0.08)] border border-[rgba(255,181,71,0.15)]">
                     <div className="flex items-center gap-3">
-                      <Clock className="text-amber-600" size={20} />
+                      <Clock className="text-[#FFB547]" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-gray-600">Temps de conduite moyen</p>
-                        <p className="text-lg font-bold text-gray-900 mt-0.5">
+                        <p className="text-xs font-medium text-[#6B6B80]">Temps de conduite moyen</p>
+                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">
                           {Math.floor(dailySummary.avgDriveTime / 60)}h {dailySummary.avgDriveTime % 60}m
                         </p>
                       </div>
@@ -848,19 +867,19 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Alertes */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
+                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(255,77,106,0.08)] border border-[rgba(255,77,106,0.15)]">
                     <div className="flex items-center gap-3">
-                      <AlertCircle className="text-red-600" size={20} />
+                      <AlertCircle className="text-[#FF4D6A]" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-gray-600">Alertes du jour</p>
-                        <p className="text-lg font-bold text-gray-900 mt-0.5">{dailySummary.todayAlerts}</p>
+                        <p className="text-xs font-medium text-[#6B6B80]">Alertes du jour</p>
+                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">{dailySummary.todayAlerts}</p>
                       </div>
                     </div>
                     <div
                       className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
                         dailySummary.comparisons.alerts <= 0
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
+                          ? 'bg-[rgba(34,197,94,0.2)] text-[#22C55E]'
+                          : 'bg-[rgba(255,77,106,0.2)] text-[#FF4D6A]'
                       }`}
                     >
                       {dailySummary.comparisons.alerts <= 0 ? (
@@ -873,18 +892,18 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Géoclôtures violées */}
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-orange-50 border border-orange-100">
+                  <div className="flex items-center justify-between p-3 rounded-[var(--tz-radius-sm)] bg-[rgba(0,229,204,0.08)] border border-[rgba(0,229,204,0.15)]">
                     <div className="flex items-center gap-3">
-                      <Shield className="text-orange-600" size={20} />
+                      <Shield className="text-[#00E5CC]" size={20} />
                       <div>
-                        <p className="text-xs font-medium text-gray-600">Géoclôtures violées</p>
-                        <p className="text-lg font-bold text-gray-900 mt-0.5">{dailySummary.geofenceViolations}</p>
+                        <p className="text-xs font-medium text-[#6B6B80]">Géoclôtures violées</p>
+                        <p className="text-lg font-bold font-mono text-[#F0F0F5] mt-0.5">{dailySummary.geofenceViolations}</p>
                       </div>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -902,61 +921,61 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-gray-400" />
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
             </div>
-            <Card>
-              <CardHeader className="pb-3">
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base">Fil d'activité récente</CardTitle>
-                    <CardDescription className="text-xs">Événements de la dernière heure</CardDescription>
+                    <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Fil d'activité récente</h3>
+                    <p className="text-xs text-[#6B6B80] mt-1">Événements de la dernière heure</p>
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-xs"
+                    className="text-xs text-[#00E5CC] hover:bg-[#1A1A25]"
                     onClick={() => navigate('/activity')}
                   >
                     Tout voir
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div className="px-6 py-4">
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {activityFeedEvents.slice(0, 12).map((event) => {
                     const IconComponent = event.icon
                     const timeAgo = formatTimeAgo(event.timestamp)
                     const iconColorMap = {
-                      online: 'text-green-600 bg-green-50',
-                      offline: 'text-red-600 bg-red-50',
-                      alert: 'text-red-600 bg-red-50',
-                      geofence: 'text-purple-600 bg-purple-50',
-                      speed: 'text-amber-600 bg-amber-50',
+                      online: 'text-[#22C55E] bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.15)]',
+                      offline: 'text-[#FF4D6A] bg-[rgba(255,77,106,0.1)] border border-[rgba(255,77,106,0.15)]',
+                      alert: 'text-[#FF4D6A] bg-[rgba(255,77,106,0.1)] border border-[rgba(255,77,106,0.15)]',
+                      geofence: 'text-[#A855F7] bg-[rgba(168,85,247,0.1)] border border-[rgba(168,85,247,0.15)]',
+                      speed: 'text-[#FFB547] bg-[rgba(255,181,71,0.1)] border border-[rgba(255,181,71,0.15)]',
                     }
 
                     return (
                       <div
                         key={event.id}
-                        className="flex gap-3 p-2.5 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
+                        className="flex gap-3 p-2.5 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] hover:bg-[#1A1A25] transition-colors"
                       >
-                        <div className={`rounded-lg p-2 flex-shrink-0 ${iconColorMap[event.type]}`}>
+                        <div className={`rounded-[var(--tz-radius-sm)] p-2 flex-shrink-0 ${iconColorMap[event.type]}`}>
                           <IconComponent size={16} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">{event.title}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{event.description}</p>
+                          <p className="text-sm font-medium text-[#F0F0F5]">{event.title}</p>
+                          <p className="text-xs text-[#6B6B80] mt-0.5">{event.description}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-medium text-gray-700">{event.vehicleName}</span>
-                            <span className="text-xs text-gray-400">·</span>
-                            <span className="text-xs text-gray-400">{timeAgo}</span>
+                            <span className="text-xs font-medium text-[#44445A]">{event.vehicleName}</span>
+                            <span className="text-xs text-[#44445A]">·</span>
+                            <span className="text-xs text-[#44445A]">{timeAgo}</span>
                           </div>
                         </div>
                       </div>
                     )
                   })}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -976,14 +995,14 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Activité horaire (24h)</CardTitle>
-                  <CardDescription className="text-xs">Véhicules en mouvement vs arrêtés</CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Activité horaire (24h)</h3>
+                  <p className="text-xs text-[#6B6B80] mt-1">Véhicules en mouvement vs arrêtés</p>
+                </div>
+                <div className="px-6 py-4">
                   <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={hourlyData}>
                       <defs>
@@ -992,18 +1011,19 @@ export default function DashboardPage() {
                           <stop offset="95%" stopColor="#22c55e" stopOpacity={0.1} />
                         </linearGradient>
                         <linearGradient id="colorStopped" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
+                          <stop offset="5%" stopColor="#FF4D6A" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#FF4D6A" stopOpacity={0.1} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="hour" stroke="#9ca3af" style={{ fontSize: '12px' }} />
-                      <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                      <XAxis dataKey="hour" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #e5e7eb',
+                          backgroundColor: '#12121A',
+                          border: '1px solid #1F1F2E',
                           borderRadius: '8px',
+                          color: '#F0F0F5',
                         }}
                         formatter={(value: any) => [value, '']}
                       />
@@ -1018,15 +1038,15 @@ export default function DashboardPage() {
                       <Area
                         type="monotone"
                         dataKey="stopped"
-                        stroke="#ef4444"
+                        stroke="#FF4D6A"
                         fillOpacity={1}
                         fill="url(#colorStopped)"
                         name="Arrêtés"
                       />
                     </AreaChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1044,14 +1064,14 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">État de la flotte</CardTitle>
-                  <CardDescription className="text-xs">Distribution par statut véhicule</CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">État de la flotte</h3>
+                  <p className="text-xs text-[#6B6B80] mt-1">Distribution par statut véhicule</p>
+                </div>
+                <div className="px-6 py-4">
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
@@ -1068,11 +1088,19 @@ export default function DashboardPage() {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value: any) => `${value} véhicules`} />
+                      <Tooltip
+                        formatter={(value: any) => `${value} véhicules`}
+                        contentStyle={{
+                          backgroundColor: '#12121A',
+                          border: '1px solid #1F1F2E',
+                          borderRadius: '8px',
+                          color: '#F0F0F5',
+                        }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1090,32 +1118,33 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Distribution des alertes</CardTitle>
-                  <CardDescription className="text-xs">Nombre d'alertes par type (dernières 24h)</CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Distribution des alertes</h3>
+                  <p className="text-xs text-[#6B6B80] mt-1">Nombre d'alertes par type (dernières 24h)</p>
+                </div>
+                <div className="px-6 py-4">
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={alertDistributionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis dataKey="type" stroke="#9ca3af" style={{ fontSize: '12px' }} />
-                      <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                      <XAxis dataKey="type" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                      <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #e5e7eb',
+                          backgroundColor: '#12121A',
+                          border: '1px solid #1F1F2E',
                           borderRadius: '8px',
+                          color: '#F0F0F5',
                         }}
                         formatter={(value: any) => [`${value} alertes`, 'Nombre']}
                       />
-                      <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                      <Bar dataKey="count" fill="#00E5CC" radius={[8, 8, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1133,18 +1162,18 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Actions rapides</CardTitle>
-                  <CardDescription className="text-xs">Accès direct aux fonctionnalités</CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Actions rapides</h3>
+                  <p className="text-xs text-[#6B6B80] mt-1">Accès direct aux fonctionnalités</p>
+                </div>
+                <div className="px-6 py-4">
                   <div className="grid grid-cols-1 gap-2.5">
                     <Button
                       variant="outline"
-                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row"
+                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
                       onClick={() => navigate('/map')}
                     >
                       <MapPin size={16} />
@@ -1152,7 +1181,7 @@ export default function DashboardPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row"
+                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
                       onClick={() => navigate('/reports')}
                     >
                       <FileText size={16} />
@@ -1160,7 +1189,7 @@ export default function DashboardPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row"
+                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
                       onClick={() => navigate('/geofences')}
                     >
                       <Zap size={16} />
@@ -1168,15 +1197,15 @@ export default function DashboardPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row"
+                      className="flex items-center justify-start gap-3 h-auto py-2.5 flex-row border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
                       onClick={() => navigate('/alerts/new')}
                     >
                       <Plus size={16} />
                       <span className="text-xs">Alerte</span>
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1197,65 +1226,69 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-base">Fil d'activité récente</CardTitle>
-                      <CardDescription className="text-xs">Alertes et changements de statut</CardDescription>
+                      <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Fil d'activité récente</h3>
+                      <p className="text-xs text-[#6B6B80] mt-1">Alertes et changements de statut</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs"
+                      className="text-xs text-[#00E5CC] hover:bg-[#1A1A25]"
                       onClick={() => navigate('/alerts')}
                     >
                       Voir tous
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="px-6 py-4">
                   {alertsList.length > 0 ? (
                     <div className="space-y-3">
                       {alertsList.map((alert: any, idx: number) => (
                         <div
                           key={idx}
-                          className="flex items-start gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                          className="flex items-start gap-3 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] p-3 hover:bg-[#1A1A25] cursor-pointer transition-colors"
                         >
                           <AlertCircle
                             size={16}
                             className={
                               alert.severity === 'critical'
-                                ? 'text-red-500 flex-shrink-0 mt-0.5'
-                                : 'text-orange-500 flex-shrink-0 mt-0.5'
+                                ? 'text-[#FF4D6A] flex-shrink-0 mt-0.5'
+                                : 'text-[#FFB547] flex-shrink-0 mt-0.5'
                             }
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-medium text-gray-900 truncate">{alert.title}</p>
+                              <p className="text-sm font-medium text-[#F0F0F5] truncate">{alert.title}</p>
                               <Badge
                                 variant={alert.severity === 'critical' ? 'destructive' : 'secondary'}
-                                className="flex-shrink-0 text-xs"
+                                className={`flex-shrink-0 text-xs ${
+                                  alert.severity === 'critical'
+                                    ? 'bg-[#FF4D6A]/20 text-[#FF4D6A] border-[#FF4D6A]/30'
+                                    : 'bg-[#FFB547]/20 text-[#FFB547] border-[#FFB547]/30'
+                                }`}
                               >
                                 {alert.severity}
                               </Badge>
                             </div>
-                            <p className="text-xs text-gray-500 line-clamp-2 mt-1">{alert.message}</p>
-                            <p className="text-xs text-gray-400 mt-2">{formatTimeAgo(alert.createdAt)}</p>
+                            <p className="text-xs text-[#6B6B80] line-clamp-2 mt-1">{alert.message}</p>
+                            <p className="text-xs text-[#44445A] mt-2">{formatTimeAgo(alert.createdAt)}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
-                      <AlertCircle size={24} className="text-gray-300 mb-2" />
-                      <p className="text-sm text-gray-500">Aucune alerte récente</p>
+                      <AlertCircle size={24} className="text-[#44445A] mb-2" />
+                      <p className="text-sm text-[#6B6B80]">Aucune alerte récente</p>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1273,44 +1306,44 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Résumé des statuts</CardTitle>
-                  <CardDescription className="text-xs">Dernières mises à jour véhicule</CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Résumé des statuts</h3>
+                  <p className="text-xs text-[#6B6B80] mt-1">Dernières mises à jour véhicule</p>
+                </div>
+                <div className="px-6 py-4">
                   <div className="space-y-3">
                     {recentlyUpdated.slice(0, 8).map((v: any) => {
                       const isMoving = (v.currentSpeed || 0) > 2
                       return (
                         <div
                           key={v.id}
-                          className="flex items-center gap-3 rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50 cursor-pointer"
+                          className="flex items-center gap-3 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] p-2.5 hover:bg-[#1A1A25] cursor-pointer"
                           onClick={() => navigate(`/vehicles/${v.id}`)}
                         >
                           <span
                             className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                              isMoving ? 'bg-green-500' : 'bg-yellow-500'
+                              isMoving ? 'bg-[#22C55E]' : 'bg-[#FFB547]'
                             }`}
                           ></span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{v.name}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm font-medium text-[#F0F0F5] truncate">{v.name}</p>
+                            <p className="text-xs text-[#6B6B80]">
                               {isMoving ? 'En mouvement' : 'Arrêté'} · {formatTimeAgo(v.lastCommunication)}
                             </p>
                           </div>
-                          <span className="text-xs font-semibold text-gray-900 flex-shrink-0">
+                          <span className="text-xs font-semibold font-mono text-[#F0F0F5] flex-shrink-0">
                             {(v.currentSpeed || 0).toFixed(0)}
-                            <span className="text-gray-500 font-normal"> km/h</span>
+                            <span className="text-[#6B6B80] font-normal"> km/h</span>
                           </span>
                         </div>
                       )
                     })}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1329,14 +1362,14 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-gray-400" />
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
             </div>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Distribution des vitesses</CardTitle>
-                <CardDescription className="text-xs">Nombre de véhicules par plage de vitesse</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Distribution des vitesses</h3>
+                <p className="text-xs text-[#6B6B80] mt-1">Nombre de véhicules par plage de vitesse</p>
+              </div>
+              <div className="px-6 py-4">
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={[
@@ -1347,22 +1380,23 @@ export default function DashboardPage() {
                       { range: '>120 km/h', count: 5 },
                     ]}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="range" stroke="#9ca3af" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                    <XAxis dataKey="range" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #e5e7eb',
+                        backgroundColor: '#12121A',
+                        border: '1px solid #1F1F2E',
                         borderRadius: '8px',
+                        color: '#F0F0F5',
                       }}
                       formatter={(value: any) => [`${value} véhicules`, 'Nombre']}
                     />
-                    <Bar dataKey="count" fill="#06b6d4" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="count" fill="#00E5CC" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1380,14 +1414,14 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-gray-400" />
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
             </div>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Comparaison hebdomadaire</CardTitle>
-                <CardDescription className="text-xs">Cette semaine vs semaine dernière</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Comparaison hebdomadaire</h3>
+                <p className="text-xs text-[#6B6B80] mt-1">Cette semaine vs semaine dernière</p>
+              </div>
+              <div className="px-6 py-4">
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart
                     data={[
@@ -1396,23 +1430,24 @@ export default function DashboardPage() {
                       { name: 'Heures actives', current: 856, previous: 790 },
                     ]}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis dataKey="name" stroke="#9ca3af" style={{ fontSize: '12px' }} />
-                    <YAxis stroke="#9ca3af" style={{ fontSize: '12px' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2A2A3D" />
+                    <XAxis dataKey="name" stroke="#6B6B80" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#6B6B80" style={{ fontSize: '12px' }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#ffffff',
-                        border: '1px solid #e5e7eb',
+                        backgroundColor: '#12121A',
+                        border: '1px solid #1F1F2E',
                         borderRadius: '8px',
+                        color: '#F0F0F5',
                       }}
                     />
-                    <Legend />
-                    <Bar dataKey="current" fill="#3b82f6" radius={[8, 8, 0, 0]} name="Cette semaine" />
-                    <Bar dataKey="previous" fill="#9ca3af" radius={[8, 8, 0, 0]} name="Semaine dernière" />
+                    <Legend wrapperStyle={{ color: '#6B6B80' }} />
+                    <Bar dataKey="current" fill="#00E5CC" radius={[8, 8, 0, 0]} name="Cette semaine" />
+                    <Bar dataKey="previous" fill="#6B6B80" radius={[8, 8, 0, 0]} name="Semaine dernière" />
                   </BarChart>
                 </ResponsiveContainer>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1430,30 +1465,30 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <GripHorizontal size={16} className="text-gray-400" />
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
             </div>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Zones d'activité (Carte thermique)</CardTitle>
-                <CardDescription className="text-xs">Densité de véhicules autour de Nice</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Zones d'activité (Carte thermique)</h3>
+                <p className="text-xs text-[#6B6B80] mt-1">Densité de véhicules autour de Nice</p>
+              </div>
+              <div className="px-6 py-4">
                 <div className="flex flex-col gap-4">
                   <div className="flex gap-6 text-xs">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                      <span className="text-gray-600">Élevé</span>
+                      <span className="text-[#6B6B80]">Élevé</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-amber-400"></div>
-                      <span className="text-gray-600">Moyen</span>
+                      <span className="text-[#6B6B80]">Moyen</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                      <span className="text-gray-600">Faible</span>
+                      <span className="text-[#6B6B80]">Faible</span>
                     </div>
                   </div>
-                  <div style={{ height: '400px', borderRadius: '8px', overflow: 'hidden' }}>
+                  <div style={{ height: '400px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #1F1F2E' }}>
                     <MapContainer
                       center={[43.7, 7.12]}
                       zoom={12}
@@ -1473,8 +1508,8 @@ export default function DashboardPage() {
                     </MapContainer>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1492,26 +1527,26 @@ export default function DashboardPage() {
         >
           <div className="relative group">
             <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripHorizontal size={16} className="text-gray-400" />
+              <GripHorizontal size={16} className="text-[#6B6B80]" />
             </div>
-            <Card>
-              <CardHeader className="pb-3">
+            <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+              <div className="px-6 py-4 border-b border-[#1F1F2E]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base">Départements</CardTitle>
-                    <CardDescription className="text-xs">Statut et performance par département</CardDescription>
+                    <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Départements</h3>
+                    <p className="text-xs text-[#6B6B80] mt-1">Statut et performance par département</p>
                   </div>
                   <Dialog open={showNewDeptDialog} onOpenChange={setShowNewDeptDialog}>
                     <DialogTrigger asChild>
-                      <Button size="sm" className="gap-1">
+                      <Button size="sm" className="gap-1 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80">
                         <Plus size={14} />
                         Nouveau
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="bg-[#12121A] border border-[#1F1F2E]">
                       <DialogHeader>
-                        <DialogTitle>Ajouter un département</DialogTitle>
-                        <DialogDescription>Entrez le nom du nouveau département</DialogDescription>
+                        <DialogTitle className="text-[#F0F0F5] font-syne">Ajouter un département</DialogTitle>
+                        <DialogDescription className="text-[#6B6B80]">Entrez le nom du nouveau département</DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4">
                         <input
@@ -1519,57 +1554,57 @@ export default function DashboardPage() {
                           placeholder="Nom du département"
                           value={newDeptName}
                           onChange={(e) => setNewDeptName(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] rounded-[var(--tz-radius-sm)] focus:outline-none focus:ring-2 focus:ring-[#00E5CC]"
                           onKeyDown={(e) => e.key === 'Enter' && addDepartment()}
                         />
                         <div className="flex gap-2 justify-end">
-                          <Button variant="outline" onClick={() => setShowNewDeptDialog(false)}>
+                          <Button variant="outline" onClick={() => setShowNewDeptDialog(false)} className="border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]">
                             Annuler
                           </Button>
-                          <Button onClick={addDepartment}>Ajouter</Button>
+                          <Button onClick={addDepartment} className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00E5CC]/80">Ajouter</Button>
                         </div>
                       </div>
                     </DialogContent>
                   </Dialog>
                 </div>
-              </CardHeader>
-              <CardContent>
+              </div>
+              <div className="px-6 py-4">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   {departments.map((dept) => (
-                    <div key={dept.id} className="p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
+                    <div key={dept.id} className="p-4 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] hover:border-[#2A2A3D] transition-colors">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <div className="rounded-lg bg-blue-50 p-2">
-                            <Building2 size={16} className="text-blue-600" />
+                          <div className="rounded-[var(--tz-radius-sm)] bg-[rgba(59,130,246,0.1)] p-2">
+                            <Building2 size={16} className="text-[#3B82F6]" />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{dept.name}</p>
-                            <p className="text-xs text-gray-500">Département</p>
+                            <p className="font-medium text-[#F0F0F5]">{dept.name}</p>
+                            <p className="text-xs text-[#6B6B80]">Département</p>
                           </div>
                         </div>
                       </div>
                       <div className="space-y-3">
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Véhicules</p>
-                          <p className="text-2xl font-bold text-gray-900">{dept.vehicleCount}</p>
+                          <p className="text-xs text-[#6B6B80] uppercase tracking-wide mb-1">Véhicules</p>
+                          <p className="text-2xl font-bold font-mono text-[#F0F0F5]">{dept.vehicleCount}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Chauffeurs actifs</p>
-                          <p className="text-2xl font-bold text-gray-900">{dept.driverCount}</p>
+                          <p className="text-xs text-[#6B6B80] uppercase tracking-wide mb-1">Chauffeurs actifs</p>
+                          <p className="text-2xl font-bold font-mono text-[#F0F0F5]">{dept.driverCount}</p>
                         </div>
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <p className="text-xs font-medium text-gray-600">Performance</p>
-                            <p className="text-xs font-bold text-gray-900">{dept.performanceScore}%</p>
+                            <p className="text-xs font-medium text-[#6B6B80]">Performance</p>
+                            <p className="text-xs font-bold text-[#F0F0F5]">{dept.performanceScore}%</p>
                           </div>
-                          <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+                          <div className="h-2 w-full rounded-full bg-[#1A1A25] overflow-hidden">
                             <div
                               className={`h-full transition-all ${
                                 dept.performanceScore >= 90
-                                  ? 'bg-green-500'
+                                  ? 'bg-[#22C55E]'
                                   : dept.performanceScore >= 80
-                                    ? 'bg-amber-500'
-                                    : 'bg-red-500'
+                                    ? 'bg-[#FFB547]'
+                                    : 'bg-[#FF4D6A]'
                               }`}
                               style={{ width: `${dept.performanceScore}%` }}
                             ></div>
@@ -1579,8 +1614,8 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1600,68 +1635,68 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-base">Activité de la flotte</CardTitle>
-                      <CardDescription className="text-xs">Véhicules avec position GPS, triés par vitesse</CardDescription>
+                      <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Activité de la flotte</h3>
+                      <p className="text-xs text-[#6B6B80] mt-1">Véhicules avec position GPS, triés par vitesse</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="gap-1 text-xs"
+                      className="gap-1 text-xs text-[#00E5CC] hover:bg-[#1A1A25]"
                       onClick={() => navigate('/map')}
                     >
                       Carte
                       <ChevronRight size={14} />
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+                <div className="px-6 py-4">
                   <div className="space-y-2">
                     {topMoving.map((vehicle: any) => {
                       const isMoving = (vehicle.currentSpeed || 0) > 2
                       return (
                         <div
                           key={vehicle.id}
-                          className="flex items-center gap-3 rounded-lg border border-gray-100 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                          className="flex items-center gap-3 rounded-[var(--tz-radius-sm)] border border-[#1F1F2E] p-3 hover:bg-[#1A1A25] cursor-pointer transition-colors"
                           onClick={() => navigate(`/vehicles/${vehicle.id}`)}
                         >
                           <span
                             className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
-                              isMoving ? 'bg-green-500' : 'bg-gray-400'
+                              isMoving ? 'bg-[#22C55E]' : 'bg-[#6B6B80]'
                             }`}
                           ></span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{vehicle.name}</p>
-                            <p className="text-xs text-gray-500">{vehicle.plate}</p>
+                            <p className="text-sm font-medium text-[#F0F0F5] truncate">{vehicle.name}</p>
+                            <p className="text-xs text-[#6B6B80]">{vehicle.plate}</p>
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-sm font-bold text-gray-900">
+                            <p className="text-sm font-bold font-mono text-[#F0F0F5]">
                               {(vehicle.currentSpeed || 0).toFixed(0)}{' '}
-                              <span className="text-xs font-normal text-gray-500">km/h</span>
+                              <span className="text-xs font-normal text-[#6B6B80]">km/h</span>
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0 min-w-20">
-                            <p className="text-xs text-gray-400">{formatTimeAgo(vehicle.lastCommunication)}</p>
+                            <p className="text-xs text-[#44445A]">{formatTimeAgo(vehicle.lastCommunication)}</p>
                           </div>
-                          <ChevronRight size={14} className="text-gray-300" />
+                          <ChevronRight size={14} className="text-[#44445A]" />
                         </div>
                       )
                     })}
                   </div>
                   <Button
                     variant="outline"
-                    className="mt-4 w-full text-sm"
+                    className="mt-4 w-full text-sm border-[#1F1F2E] bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#1E1E2A]"
                     onClick={() => navigate('/vehicles')}
                   >
                     Voir tous les véhicules
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1679,14 +1714,14 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Fournisseurs GPS</CardTitle>
-                  <CardDescription className="text-xs">Répartition par provider</CardDescription>
-                </CardHeader>
-                <CardContent>
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Fournisseurs GPS</h3>
+                  <p className="text-xs text-[#6B6B80] mt-1">Répartition par provider</p>
+                </div>
+                <div className="px-6 py-4">
                   <div className="space-y-3">
                     {Object.entries(stats.providers)
                       .sort(([, a], [, b]) => (b as number) - (a as number))
@@ -1697,15 +1732,15 @@ export default function DashboardPage() {
                             <div className="flex items-center justify-between text-sm mb-1">
                               <div className="flex items-center gap-2">
                                 <span
-                                  className={`h-3 w-3 rounded-full ${providerColors[name] || 'bg-gray-400'}`}
+                                  className={`h-3 w-3 rounded-full ${providerColors[name] || 'bg-[#6B6B80]'}`}
                                 ></span>
-                                <span className="font-medium text-gray-700">{name}</span>
+                                <span className="font-medium text-[#F0F0F5]">{name}</span>
                               </div>
-                              <span className="text-gray-500 font-medium">{count as number}</span>
+                              <span className="text-[#6B6B80] font-medium">{count as number}</span>
                             </div>
-                            <div className="h-2 w-full rounded-full bg-gray-100">
+                            <div className="h-2 w-full rounded-full bg-[#1A1A25]">
                               <div
-                                className={`h-2 rounded-full ${providerColors[name] || 'bg-gray-400'} transition-all`}
+                                className={`h-2 rounded-full ${providerColors[name] || 'bg-[#6B6B80]'} transition-all`}
                                 style={{ width: `${pct}%` }}
                               ></div>
                             </div>
@@ -1713,15 +1748,15 @@ export default function DashboardPage() {
                         )
                       })}
                   </div>
-                  <div className="mt-4 pt-3 border-t border-gray-100 text-center">
-                    <p className="text-xs text-gray-500">
-                      Vitesse max: <span className="font-bold text-gray-700">{stats.maxSpeed.toFixed(0)} km/h</span>
+                  <div className="mt-4 pt-3 border-t border-[#1F1F2E] text-center">
+                    <p className="text-xs text-[#6B6B80]">
+                      Vitesse max: <span className="font-bold text-[#F0F0F5]">{stats.maxSpeed.toFixed(0)} km/h</span>
                       {' · '}
-                      Moyenne: <span className="font-bold text-gray-700">{stats.avgSpeed.toFixed(0)} km/h</span>
+                      Moyenne: <span className="font-bold text-[#F0F0F5]">{stats.avgSpeed.toFixed(0)} km/h</span>
                     </p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1739,24 +1774,24 @@ export default function DashboardPage() {
           >
             <div className="relative group">
               <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <GripHorizontal size={16} className="text-gray-400" />
+                <GripHorizontal size={16} className="text-[#6B6B80]" />
               </div>
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Mises à jour récentes</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <div className="tz-card bg-[#12121A] border border-[#1F1F2E] rounded-[var(--tz-radius)]">
+                <div className="px-6 py-4 border-b border-[#1F1F2E]">
+                  <h3 className="font-syne text-base font-bold text-[#F0F0F5]">Mises à jour récentes</h3>
+                </div>
+                <div className="px-6 py-4">
                   <div className="space-y-2.5">
                     {recentlyUpdated.map((v: any) => (
                       <div key={v.id} className="flex items-center gap-2 text-xs">
-                        <Clock size={12} className="text-gray-400 flex-shrink-0" />
-                        <span className="font-medium text-gray-700 truncate flex-1">{v.name}</span>
-                        <span className="text-gray-400 flex-shrink-0">{formatTimeAgo(v.lastCommunication)}</span>
+                        <Clock size={12} className="text-[#6B6B80] flex-shrink-0" />
+                        <span className="font-medium text-[#F0F0F5] truncate flex-1">{v.name}</span>
+                        <span className="text-[#44445A] flex-shrink-0">{formatTimeAgo(v.lastCommunication)}</span>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -109,21 +109,21 @@ export default function NotificationCenter() {
   }, [])
 
   const getNotificationColor = (type: string, severity?: string) => {
-    if (severity === 'critical') return 'text-red-600'
-    if (severity === 'high') return 'text-orange-500'
-    if (type === 'alert') return 'text-red-500'
-    if (type === 'location') return 'text-blue-500'
-    if (type === 'status') return 'text-amber-500'
-    return 'text-gray-500'
+    if (severity === 'critical') return 'text-[#FF4D6A]'
+    if (severity === 'high') return 'text-[#FFB547]'
+    if (type === 'alert') return 'text-[#FF4D6A]'
+    if (type === 'location') return 'text-[#00E5CC]'
+    if (type === 'status') return 'text-[#FFB547]'
+    return 'text-[#6B6B80]'
   }
 
   const getNotificationBgColor = (type: string, severity?: string) => {
-    if (severity === 'critical') return 'bg-red-50'
-    if (severity === 'high') return 'bg-orange-50'
-    if (type === 'alert') return 'bg-red-50'
-    if (type === 'location') return 'bg-blue-50'
-    if (type === 'status') return 'bg-amber-50'
-    return 'bg-gray-50'
+    if (severity === 'critical') return 'bg-[rgba(255,77,106,0.15)]'
+    if (severity === 'high') return 'bg-[rgba(255,181,71,0.15)]'
+    if (type === 'alert') return 'bg-[rgba(255,77,106,0.15)]'
+    if (type === 'location') return 'bg-[rgba(0,229,204,0.15)]'
+    if (type === 'status') return 'bg-[rgba(255,181,71,0.15)]'
+    return 'bg-[rgba(107,107,128,0.15)]'
   }
 
   return (
@@ -131,11 +131,11 @@ export default function NotificationCenter() {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative text-gray-500 hover:text-gray-700 transition-colors"
+        className="relative text-[#6B6B80] hover:text-[#F0F0F5] transition-colors"
       >
         <Bell size={20} />
         {store.unreadCount > 0 && (
-          <span className="absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+          <span className="absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FF4D6A] text-xs font-bold text-white">
             {store.unreadCount > 9 ? '9+' : store.unreadCount}
           </span>
         )}
@@ -143,14 +143,14 @@ export default function NotificationCenter() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 max-h-96 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden flex flex-col">
+        <div className="absolute right-0 mt-2 w-96 max-h-96 rounded-lg border border-[#1F1F2E] bg-[#12121A] shadow-lg overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
-            <h3 className="font-semibold text-gray-900">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#1F1F2E] bg-[#0A0A0F]">
+            <h3 className="font-semibold text-[#F0F0F5]">Notifications</h3>
             {store.unreadCount > 0 && (
               <button
                 onClick={() => store.markAllAsRead()}
-                className="text-xs text-fleet-tracker-600 hover:text-fleet-tracker-700 font-medium"
+                className="text-xs text-[#00E5CC] hover:text-[#00D4B8] font-medium"
               >
                 Mark all as read
               </button>
@@ -163,8 +163,8 @@ export default function NotificationCenter() {
               store.notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`border-b border-gray-100 p-3 hover:bg-gray-50 transition-colors cursor-pointer ${
-                    notification.read ? 'bg-white' : 'bg-blue-50'
+                  className={`border-b border-[#1F1F2E] p-3 hover:bg-[#1A1A25] transition-colors cursor-pointer ${
+                    notification.read ? 'bg-[#12121A]' : 'bg-[rgba(0,229,204,0.08)]'
                   }`}
                   onClick={() => store.markAsRead(notification.id)}
                 >
@@ -190,18 +190,18 @@ export default function NotificationCenter() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-sm font-medium text-gray-900">
+                          <p className="text-sm font-medium text-[#F0F0F5]">
                             {notification.title}
                           </p>
-                          <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+                          <p className="text-xs text-[#6B6B80] mt-0.5 line-clamp-2">
                             {notification.message}
                           </p>
                         </div>
                         {!notification.read && (
-                          <div className="flex-shrink-0 h-2 w-2 rounded-full bg-blue-600 mt-1" />
+                          <div className="flex-shrink-0 h-2 w-2 rounded-full bg-[#00E5CC] mt-1" />
                         )}
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-[#44445A] mt-1">
                         {formatTimeAgo(notification.timestamp)}
                       </p>
                     </div>
@@ -212,7 +212,7 @@ export default function NotificationCenter() {
                         e.stopPropagation()
                         store.removeNotification(notification.id)
                       }}
-                      className="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1"
+                      className="flex-shrink-0 text-[#44445A] hover:text-[#6B6B80] p-1"
                     >
                       <X size={14} />
                     </button>
@@ -221,16 +221,16 @@ export default function NotificationCenter() {
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Bell size={24} className="text-gray-300 mb-2" />
-                <p className="text-sm text-gray-500">No notifications</p>
+                <Bell size={24} className="text-[#44445A] mb-2" />
+                <p className="text-sm text-[#6B6B80]">No notifications</p>
               </div>
             )}
           </div>
 
           {/* Footer */}
           {store.notifications.length > 0 && (
-            <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-              <button className="w-full text-center text-sm font-medium text-fleet-tracker-600 hover:text-fleet-tracker-700">
+            <div className="px-4 py-3 border-t border-[#1F1F2E] bg-[#0A0A0F]">
+              <button className="w-full text-center text-sm font-medium text-[#00E5CC] hover:text-[#00D4B8]">
                 View all notifications
               </button>
             </div>

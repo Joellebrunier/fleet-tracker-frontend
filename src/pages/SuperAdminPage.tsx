@@ -555,15 +555,15 @@ export default function SuperAdminPage() {
       case 'operational':
       case 'connected':
       case 'active':
-        return 'bg-green-50'
+        return 'bg-[#12121A]'
       case 'degraded':
         return 'bg-yellow-50'
       case 'down':
       case 'disconnected':
       case 'suspended':
-        return 'bg-red-50'
+        return 'bg-[#12121A]'
       default:
-        return 'bg-gray-50'
+        return 'bg-[#12121A]'
     }
   }
 
@@ -572,15 +572,15 @@ export default function SuperAdminPage() {
       case 'operational':
       case 'connected':
       case 'active':
-        return 'text-green-600'
+        return 'text-[#00E5CC]'
       case 'degraded':
         return 'text-yellow-600'
       case 'down':
       case 'disconnected':
       case 'suspended':
-        return 'text-red-600'
+        return 'text-[#FF4D6A]'
       default:
-        return 'text-gray-600'
+        return 'text-[#6B6B80]'
     }
   }
 
@@ -589,15 +589,15 @@ export default function SuperAdminPage() {
       case 'operational':
       case 'connected':
       case 'active':
-        return <CheckCircle className="h-5 w-5 text-green-600" />
+        return <CheckCircle className="h-5 w-5 text-[#00E5CC]" />
       case 'degraded':
         return <AlertTriangle className="h-5 w-5 text-yellow-600" />
       case 'down':
       case 'disconnected':
       case 'suspended':
-        return <AlertTriangle className="h-5 w-5 text-red-600" />
+        return <AlertTriangle className="h-5 w-5 text-[#FF4D6A]" />
       default:
-        return <Clock className="h-5 w-5 text-gray-600" />
+        return <Clock className="h-5 w-5 text-[#6B6B80]" />
     }
   }
 
@@ -640,36 +640,36 @@ export default function SuperAdminPage() {
   const getErrorLevelColor = (level: string) => {
     switch (level) {
       case 'error':
-        return 'bg-red-100 text-red-900'
+        return 'bg-[#1A1A25] text-[#FF4D6A]'
       case 'warning':
         return 'bg-yellow-100 text-yellow-900'
       case 'info':
-        return 'bg-blue-100 text-blue-900'
+        return 'bg-[#1A1A25] text-[#00E5CC]'
       default:
-        return 'bg-gray-100 text-gray-900'
+        return 'bg-[#0A0A0F] text-[#F0F0F5]'
     }
   }
 
   const getErrorLevelDot = (level: string) => {
     switch (level) {
       case 'error':
-        return <div className="h-3 w-3 rounded-full bg-red-600" />
+        return <div className="h-3 w-3 rounded-full bg-[#FF4D6A]" />
       case 'warning':
         return <div className="h-3 w-3 rounded-full bg-yellow-600" />
       case 'info':
-        return <div className="h-3 w-3 rounded-full bg-blue-600" />
+        return <div className="h-3 w-3 rounded-full bg-[#00E5CC]" />
       default:
-        return <div className="h-3 w-3 rounded-full bg-gray-600" />
+        return <div className="h-3 w-3 rounded-full bg-[#1A1A25]" />
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#0A0A0F] min-h-screen p-6">
       {/* Header */}
-      <div className="flex items-start justify-between rounded-lg border-l-4 border-red-500 bg-red-50 p-4">
+      <div className="flex items-start justify-between rounded-lg border-l-4 border-[#FF4D6A] bg-[#12121A] p-4 border border-[#1F1F2E]">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Administration système</h1>
-          <p className="mt-2 text-gray-600">Super admin uniquement — gestion de toutes les organisations et utilisateurs</p>
+          <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Administration système</h1>
+          <p className="mt-2 text-[#6B6B80]">Super admin uniquement — gestion de toutes les organisations et utilisateurs</p>
         </div>
         <Button
           variant="outline"
@@ -683,15 +683,15 @@ export default function SuperAdminPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-200 overflow-x-auto">
+      <div className="flex gap-2 border-b border-[#1F1F2E] overflow-x-auto">
         {(['overview', 'organizations', 'users', 'revenue', 'support', 'billing', 'whitelabel', 'echoes', 'config'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors whitespace-nowrap ${
               activeTab === tab
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                ? 'border-[#00E5CC] text-[#00E5CC]'
+                : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
             }`}
           >
             {tab === 'overview' && 'Vue d\'ensemble'}
@@ -723,10 +723,10 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Utilisateurs totaux</p>
-                        <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.totalUsers || 0}</p>
+                        <p className="text-sm text-[#6B6B80]">Utilisateurs totaux</p>
+                        <p className="mt-2 text-2xl font-bold text-[#F0F0F5]">{stats?.totalUsers || 0}</p>
                       </div>
-                      <Users className="h-8 w-8 text-blue-600 opacity-20" />
+                      <Users className="h-8 w-8 text-[#00E5CC] opacity-20" />
                     </div>
                   </>
                 )}
@@ -744,10 +744,10 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Organisations</p>
-                        <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.totalOrganizations || 0}</p>
+                        <p className="text-sm text-[#6B6B80]">Organisations</p>
+                        <p className="mt-2 text-2xl font-bold text-[#F0F0F5]">{stats?.totalOrganizations || 0}</p>
                       </div>
-                      <Building2 className="h-8 w-8 text-green-600 opacity-20" />
+                      <Building2 className="h-8 w-8 text-[#00E5CC] opacity-20" />
                     </div>
                   </>
                 )}
@@ -765,8 +765,8 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Véhicules totaux</p>
-                        <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.totalVehicles || 0}</p>
+                        <p className="text-sm text-[#6B6B80]">Véhicules totaux</p>
+                        <p className="mt-2 text-2xl font-bold text-[#F0F0F5]">{stats?.totalVehicles || 0}</p>
                       </div>
                       <BarChart3 className="h-8 w-8 text-purple-600 opacity-20" />
                     </div>
@@ -786,8 +786,8 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Traceurs actifs</p>
-                        <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.activeTrackers || 0}</p>
+                        <p className="text-sm text-[#6B6B80]">Traceurs actifs</p>
+                        <p className="mt-2 text-2xl font-bold text-[#F0F0F5]">{stats?.activeTrackers || 0}</p>
                       </div>
                       <Activity className="h-8 w-8 text-orange-600 opacity-20" />
                     </div>
@@ -807,10 +807,10 @@ export default function SuperAdminPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">Alertes actives</p>
-                        <p className="mt-2 text-2xl font-bold text-gray-900">{stats?.activeAlerts || 0}</p>
+                        <p className="text-sm text-[#6B6B80]">Alertes actives</p>
+                        <p className="mt-2 text-2xl font-bold text-[#F0F0F5]">{stats?.activeAlerts || 0}</p>
                       </div>
-                      <AlertTriangle className="h-8 w-8 text-red-600 opacity-20" />
+                      <AlertTriangle className="h-8 w-8 text-[#FF4D6A] opacity-20" />
                     </div>
                   </>
                 )}
@@ -832,28 +832,28 @@ export default function SuperAdminPage() {
                 {gpsProviderHealth.map(provider => (
                   <div
                     key={provider.name}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 p-4"
+                    className="flex items-center justify-between rounded-lg border border-[#1F1F2E] p-4"
                   >
                     <div className="flex items-center gap-3">
                       {provider.status === 'connected' && (
                         <>
-                          <div className="h-3 w-3 rounded-full bg-green-600" />
-                          <span className="text-sm font-medium text-gray-900">{provider.name}</span>
-                          <span className="text-xs text-green-600">Connecté — {provider.latency}ms</span>
+                          <div className="h-3 w-3 rounded-full bg-[#00E5CC]" />
+                          <span className="text-sm font-medium text-[#F0F0F5]">{provider.name}</span>
+                          <span className="text-xs text-[#00E5CC]">Connecté — {provider.latency}ms</span>
                         </>
                       )}
                       {provider.status === 'degraded' && (
                         <>
                           <div className="h-3 w-3 rounded-full bg-yellow-600" />
-                          <span className="text-sm font-medium text-gray-900">{provider.name}</span>
+                          <span className="text-sm font-medium text-[#F0F0F5]">{provider.name}</span>
                           <span className="text-xs text-yellow-600">Latence élevée — {provider.latency}ms</span>
                         </>
                       )}
                       {provider.status === 'disconnected' && (
                         <>
-                          <div className="h-3 w-3 rounded-full bg-red-600" />
-                          <span className="text-sm font-medium text-gray-900">{provider.name}</span>
-                          <span className="text-xs text-red-600">Déconnecté</span>
+                          <div className="h-3 w-3 rounded-full bg-[#FF4D6A]" />
+                          <span className="text-sm font-medium text-[#F0F0F5]">{provider.name}</span>
+                          <span className="text-xs text-[#FF4D6A]">Déconnecté</span>
                         </>
                       )}
                     </div>
@@ -892,14 +892,14 @@ export default function SuperAdminPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(health?.api?.status || 'down')}
-                        <span className="font-semibold text-gray-900 capitalize">
+                        <span className="font-semibold text-[#F0F0F5] capitalize">
                           {health?.api?.status || 'Unknown'}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-[#6B6B80]">
                         Réponse : {health?.api?.responseTime}ms
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-[#6B6B80]">
                         Dernière vérif. : {health?.api?.lastCheck ? formatTimeAgo(new Date(health.api.lastCheck)) : 'N/A'}
                       </p>
                     </div>
@@ -916,14 +916,14 @@ export default function SuperAdminPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(health?.database?.status || 'down')}
-                        <span className="font-semibold text-gray-900 capitalize">
+                        <span className="font-semibold text-[#F0F0F5] capitalize">
                           {health?.database?.status || 'Unknown'}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-[#6B6B80]">
                         Réponse : {health?.database?.responseTime}ms
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-[#6B6B80]">
                         Connexions : {health?.database?.connections || 0}
                       </p>
                     </div>
@@ -940,14 +940,14 @@ export default function SuperAdminPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(health?.gpsProviders?.status || 'down')}
-                        <span className="font-semibold text-gray-900 capitalize">
+                        <span className="font-semibold text-[#F0F0F5] capitalize">
                           {health?.gpsProviders?.status || 'Unknown'}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-[#6B6B80]">
                         Actifs : {health?.gpsProviders?.activeTrackers || 0}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-[#6B6B80]">
                         Mis à jour : {health?.gpsProviders?.lastUpdate ? formatTimeAgo(new Date(health.gpsProviders.lastUpdate)) : 'N/A'}
                       </p>
                     </div>
@@ -980,15 +980,15 @@ export default function SuperAdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-lg border border-gray-200 p-4">
-                    <p className="text-sm text-gray-600">Disponibilité</p>
-                    <p className="mt-2 text-xl font-semibold text-gray-900">
+                  <div className="rounded-lg border border-[#1F1F2E] p-4">
+                    <p className="text-sm text-[#6B6B80]">Disponibilité</p>
+                    <p className="mt-2 text-xl font-semibold text-[#F0F0F5]">
                       {stats?.uptime ? `${(stats.uptime * 100).toFixed(2)}%` : 'N/A'}
                     </p>
                   </div>
-                  <div className="rounded-lg border border-gray-200 p-4">
-                    <p className="text-sm text-gray-600">Requêtes par seconde</p>
-                    <p className="mt-2 text-xl font-semibold text-gray-900">
+                  <div className="rounded-lg border border-[#1F1F2E] p-4">
+                    <p className="text-sm text-[#6B6B80]">Requêtes par seconde</p>
+                    <p className="mt-2 text-xl font-semibold text-[#F0F0F5]">
                       {stats?.requestsPerSecond || 0} RPS
                     </p>
                   </div>
@@ -1003,7 +1003,7 @@ export default function SuperAdminPage() {
       {activeTab === 'organizations' && (
         <div className="space-y-6">
           <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-[#44445A]" />
             <Input
               placeholder="Rechercher par nom ou ID..."
               value={searchOrg}
@@ -1044,22 +1044,22 @@ export default function SuperAdminPage() {
               <CardContent>
                 <div className="space-y-3">
                   {filteredOrganizations.length === 0 ? (
-                    <p className="text-center text-gray-600 py-8">Aucune organisation trouvée</p>
+                    <p className="text-center text-[#6B6B80] py-8">Aucune organisation trouvée</p>
                   ) : (
                     filteredOrganizations.map(org => {
                       const isSuspended = suspendedOrgs.has(org.id)
                       return (
                         <div
                           key={org.id}
-                          className="flex flex-col rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors space-y-3"
+                          className="flex flex-col rounded-lg border border-[#1F1F2E] p-4 hover:border-[#1F1F2E] transition-colors space-y-3"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <p className="font-medium text-gray-900">{org.name}</p>
-                              <p className="text-sm text-gray-600 mt-1">
+                              <p className="font-medium text-[#F0F0F5]">{org.name}</p>
+                              <p className="text-sm text-[#6B6B80] mt-1">
                                 {org.users} utilisateurs • {org.vehicles} véhicules
                               </p>
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-[#6B6B80] mt-1">
                                 Créé {formatTimeAgo(new Date(org.createdAt))} • Dernière activité{' '}
                                 {formatTimeAgo(new Date(org.lastActivity))}
                               </p>
@@ -1074,9 +1074,9 @@ export default function SuperAdminPage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                          <div className="flex items-center justify-between pt-2 border-t border-[#1F1F2E]">
                             <div className="flex-1">
-                              <p className="text-xs text-gray-600">
+                              <p className="text-xs text-[#6B6B80]">
                                 Facturation : {org.plan} — Prochaine échéance : 01/05/2026
                               </p>
                             </div>
@@ -1109,7 +1109,7 @@ export default function SuperAdminPage() {
                                 <Eye className="h-4 w-4" />
                                 Éditer
                               </Button>
-                              <Button variant="outline" size="sm" className="gap-1 text-red-600 hover:bg-red-50" onClick={() => deleteOrganization(org.id)}>
+                              <Button variant="outline" size="sm" className="gap-1 text-[#FF4D6A] hover:bg-[#12121A]" onClick={() => deleteOrganization(org.id)}>
                                 <AlertTriangle className="h-4 w-4" />
                                 Supprimer
                               </Button>
@@ -1130,7 +1130,7 @@ export default function SuperAdminPage() {
       {activeTab === 'users' && (
         <div className="space-y-6">
           <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-gray-400" />
+            <Search className="h-5 w-5 text-[#44445A]" />
             <Input
               placeholder="Rechercher par email ou nom..."
               value={searchUser}
@@ -1171,17 +1171,17 @@ export default function SuperAdminPage() {
               <CardContent>
                 <div className="space-y-3">
                   {filteredUsers.length === 0 ? (
-                    <p className="text-center text-gray-600 py-8">Aucun utilisateur trouvé</p>
+                    <p className="text-center text-[#6B6B80] py-8">Aucun utilisateur trouvé</p>
                   ) : (
                     filteredUsers.map(user => (
                       <div
                         key={user.id}
-                        className="flex items-center justify-between rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors"
+                        className="flex items-center justify-between rounded-lg border border-[#1F1F2E] p-4 hover:border-[#1F1F2E] transition-colors"
                       >
                         <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="font-medium text-[#F0F0F5]">{user.name}</p>
+                          <p className="text-sm text-[#6B6B80]">{user.email}</p>
+                          <p className="text-xs text-[#6B6B80] mt-1">
                             {user.organizationName} • {user.role} • Inscrit{' '}
                             {formatTimeAgo(new Date(user.createdAt))}
                           </p>
@@ -1197,7 +1197,7 @@ export default function SuperAdminPage() {
                             <Eye className="h-4 w-4" />
                             Éditer
                           </Button>
-                          <Button variant="outline" size="sm" className="gap-1 text-red-600 hover:bg-red-50" onClick={() => deleteUser(user.id)}>
+                          <Button variant="outline" size="sm" className="gap-1 text-[#FF4D6A] hover:bg-[#12121A]" onClick={() => deleteUser(user.id)}>
                             <AlertTriangle className="h-4 w-4" />
                             Supprimer
                           </Button>
@@ -1227,7 +1227,7 @@ export default function SuperAdminPage() {
               <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-[#F0F0F5] mb-2">
                       Intervalle max. de mise à jour GPS
                     </label>
                     <Input
@@ -1235,11 +1235,11 @@ export default function SuperAdminPage() {
                       value={configData.gpsUpdateInterval}
                       onChange={e => setConfigData({ ...configData, gpsUpdateInterval: parseInt(e.target.value) })}
                     />
-                    <p className="text-xs text-gray-600 mt-1">en secondes</p>
+                    <p className="text-xs text-[#6B6B80] mt-1">en secondes</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-[#F0F0F5] mb-2">
                       Période de conservation des données
                     </label>
                     <Input
@@ -1247,11 +1247,11 @@ export default function SuperAdminPage() {
                       value={configData.dataRetentionDays}
                       onChange={e => setConfigData({ ...configData, dataRetentionDays: parseInt(e.target.value) })}
                     />
-                    <p className="text-xs text-gray-600 mt-1">en jours</p>
+                    <p className="text-xs text-[#6B6B80] mt-1">en jours</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-[#F0F0F5] mb-2">
                       Véhicules max. par organisation
                     </label>
                     <Input
@@ -1269,14 +1269,14 @@ export default function SuperAdminPage() {
                         onChange={e => setConfigData({ ...configData, enableRegistration: e.target.checked })}
                         className="rounded"
                       />
-                      <span className="text-sm text-gray-700">Activer les nouvelles inscriptions</span>
+                      <span className="text-sm text-[#F0F0F5]">Activer les nouvelles inscriptions</span>
                     </label>
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
-                  <h4 className="font-medium text-gray-900 mb-3">À propos</h4>
-                  <p className="text-sm text-gray-700">
+                <div className="rounded-lg bg-[#12121A] p-4 border border-[#1F1F2E]">
+                  <h4 className="font-medium text-[#F0F0F5] mb-3">À propos</h4>
+                  <p className="text-sm text-[#F0F0F5]">
                     Ces paramètres affectent le comportement global du système pour toutes les organisations.
                   </p>
                 </div>
@@ -1360,13 +1360,13 @@ export default function SuperAdminPage() {
                 {mockErrors.map((error, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 p-3 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between rounded-lg border border-[#1F1F2E] p-3 hover:bg-[#12121A] transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1">
                       {getErrorLevelDot(error.level)}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-gray-600">{error.time}</p>
-                        <p className="text-sm text-gray-900 truncate">{error.message}</p>
+                        <p className="text-xs font-medium text-[#6B6B80]">{error.time}</p>
+                        <p className="text-sm text-[#F0F0F5] truncate">{error.message}</p>
                       </div>
                     </div>
                     <Badge variant="outline" className="ml-2">
@@ -1377,7 +1377,7 @@ export default function SuperAdminPage() {
               </div>
               <Button
                 variant="link"
-                className="w-full mt-4 justify-center text-blue-600 hover:text-blue-700"
+                className="w-full mt-4 justify-center text-[#00E5CC] hover:text-[#00E5CC]"
               >
                 Voir tous les journaux
               </Button>
@@ -1395,8 +1395,8 @@ export default function SuperAdminPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="rounded-lg border border-gray-200 p-4 bg-gray-50">
-                  <p className="text-sm text-gray-700">
+                <div className="rounded-lg border border-[#1F1F2E] p-4 bg-[#12121A]">
+                  <p className="text-sm text-[#F0F0F5]">
                     <span className="font-medium">Dernière sauvegarde :</span> il y a 6 heures
                   </p>
                 </div>
@@ -1411,17 +1411,17 @@ export default function SuperAdminPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    className="w-full gap-2 text-[#FF4D6A] hover:bg-[#12121A] hover:text-[#FF4D6A]"
                     onClick={handleRestore}
                   >
                     <AlertTriangle className="h-4 w-4" />
                     Restaurer depuis une sauvegarde
                   </Button>
                 </div>
-                <div className="rounded-lg bg-blue-50 p-3 border border-blue-200">
+                <div className="rounded-lg bg-[#12121A] p-3 border border-[#1F1F2E]">
                   <div className="flex items-center gap-2">
-                    <Info className="h-4 w-4 text-blue-600" />
-                    <p className="text-xs text-blue-800">
+                    <Info className="h-4 w-4 text-[#00E5CC]" />
+                    <p className="text-xs text-[#00E5CC]">
                       Opération: 0% - Estimation: 5 minutes
                     </p>
                   </div>
@@ -1446,7 +1446,7 @@ export default function SuperAdminPage() {
                 <Button variant="outline" className="w-full justify-start">
                   Archiver les anciennes données
                 </Button>
-                <Button variant="outline" className="w-full justify-start text-red-600 hover:bg-red-50">
+                <Button variant="outline" className="w-full justify-start text-[#FF4D6A] hover:bg-[#12121A]">
                   Redémarrer les services
                 </Button>
               </div>
@@ -1508,36 +1508,36 @@ export default function SuperAdminPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Revenu annuel (ARR)</p>
-                  <p className="text-3xl font-bold text-gray-900">€342.2K</p>
-                  <p className="text-xs text-green-600 font-medium">+12% vs année précédente</p>
+                  <p className="text-sm text-[#6B6B80]">Revenu annuel (ARR)</p>
+                  <p className="text-3xl font-bold text-[#F0F0F5]">€342.2K</p>
+                  <p className="text-xs text-[#00E5CC] font-medium">+12% vs année précédente</p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Revenu mensuel récurrent</p>
-                  <p className="text-3xl font-bold text-gray-900">€28.5K</p>
-                  <p className="text-xs text-green-600 font-medium">+18% vs mois dernier</p>
+                  <p className="text-sm text-[#6B6B80]">Revenu mensuel récurrent</p>
+                  <p className="text-3xl font-bold text-[#F0F0F5]">€28.5K</p>
+                  <p className="text-xs text-[#00E5CC] font-medium">+18% vs mois dernier</p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Taux de croissance</p>
-                  <p className="text-3xl font-bold text-gray-900">+3.2%</p>
-                  <p className="text-xs text-gray-600 font-medium">Croissance mensuelle</p>
+                  <p className="text-sm text-[#6B6B80]">Taux de croissance</p>
+                  <p className="text-3xl font-bold text-[#F0F0F5]">+3.2%</p>
+                  <p className="text-xs text-[#6B6B80] font-medium">Croissance mensuelle</p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Organisations actives</p>
-                  <p className="text-3xl font-bold text-gray-900">{organizations.length}</p>
-                  <p className="text-xs text-gray-600 font-medium">Avec facturation active</p>
+                  <p className="text-sm text-[#6B6B80]">Organisations actives</p>
+                  <p className="text-3xl font-bold text-[#F0F0F5]">{organizations.length}</p>
+                  <p className="text-xs text-[#6B6B80] font-medium">Avec facturation active</p>
                 </div>
               </CardContent>
             </Card>
@@ -1553,18 +1553,18 @@ export default function SuperAdminPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Organisation</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Plan</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Revenu mensuel</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">État</th>
+                    <tr className="border-b border-[#1F1F2E]">
+                      <th className="text-left py-3 px-4 font-medium text-[#F0F0F5]">Organisation</th>
+                      <th className="text-left py-3 px-4 font-medium text-[#F0F0F5]">Plan</th>
+                      <th className="text-left py-3 px-4 font-medium text-[#F0F0F5]">Revenu mensuel</th>
+                      <th className="text-left py-3 px-4 font-medium text-[#F0F0F5]">État</th>
                     </tr>
                   </thead>
                   <tbody>
                     {organizations.slice(0, 5).map(org => {
                       const monthlyRevenue = org.plan === 'Enterprise' ? 1299 : org.plan === 'Pro' ? 299 : 99
                       return (
-                        <tr key={org.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <tr key={org.id} className="border-b border-[#1F1F2E] hover:bg-[#12121A]">
                           <td className="py-3 px-4">{org.name}</td>
                           <td className="py-3 px-4">
                             <Badge variant="outline">{org.plan}</Badge>
@@ -1627,15 +1627,15 @@ export default function SuperAdminPage() {
                           onClick={() => setSelectedTicket(ticket)}
                           className={`w-full text-left p-3 rounded-lg border transition-colors ${
                             selectedTicket?.id === ticket.id
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-blue-500 bg-[#12121A]'
+                              : 'border-[#1F1F2E] hover:border-[#1F1F2E]'
                           }`}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium text-gray-600">{ticket.id}</p>
-                              <p className="text-sm font-medium text-gray-900 truncate">{ticket.subject}</p>
-                              <p className="text-xs text-gray-600 mt-1">{ticket.organizationName}</p>
+                              <p className="text-xs font-medium text-[#6B6B80]">{ticket.id}</p>
+                              <p className="text-sm font-medium text-[#F0F0F5] truncate">{ticket.subject}</p>
+                              <p className="text-xs text-[#6B6B80] mt-1">{ticket.organizationName}</p>
                             </div>
                             <Badge
                               variant={
@@ -1682,19 +1682,19 @@ export default function SuperAdminPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-gray-600">Organisation</p>
+                          <p className="text-[#6B6B80]">Organisation</p>
                           <p className="font-medium">{selectedTicket.organizationName}</p>
                         </div>
                         <div>
-                          <p className="text-gray-600">Créé</p>
+                          <p className="text-[#6B6B80]">Créé</p>
                           <p className="font-medium">{formatTimeAgo(new Date(selectedTicket.createdAt))}</p>
                         </div>
                         <div>
-                          <p className="text-gray-600">Assigné à</p>
+                          <p className="text-[#6B6B80]">Assigné à</p>
                           <p className="font-medium">{selectedTicket.assignedTo || 'Non assigné'}</p>
                         </div>
                         <div>
-                          <p className="text-gray-600">Dernière mise à jour</p>
+                          <p className="text-[#6B6B80]">Dernière mise à jour</p>
                           <p className="font-medium">{formatTimeAgo(new Date(selectedTicket.lastUpdate))}</p>
                         </div>
                       </div>
@@ -1707,7 +1707,7 @@ export default function SuperAdminPage() {
                               const updated = { ...selectedTicket, status: newStatus }
                               setSelectedTicket(updated)
                             }}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            className="px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm"
                           >
                             <option value="ouvert">Ouvert</option>
                             <option value="en cours">En cours</option>
@@ -1724,25 +1724,25 @@ export default function SuperAdminPage() {
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">Réponses</p>
+                        <p className="text-sm font-medium text-[#F0F0F5] mb-2">Réponses</p>
                         <div className="space-y-3 max-h-48 overflow-y-auto">
-                          <div className="bg-gray-50 rounded-lg p-3">
-                            <p className="text-xs text-gray-600 mb-1">Client - 2026-04-01 10:30</p>
-                            <p className="text-sm text-gray-900">Nous avons un problème urgent avec l'intégration GPS.</p>
+                          <div className="bg-[#12121A] rounded-lg p-3">
+                            <p className="text-xs text-[#6B6B80] mb-1">Client - 2026-04-01 10:30</p>
+                            <p className="text-sm text-[#F0F0F5]">Nous avons un problème urgent avec l'intégration GPS.</p>
                           </div>
-                          <div className="bg-blue-50 rounded-lg p-3">
-                            <p className="text-xs text-gray-600 mb-1">Support - 2026-04-01 11:00</p>
-                            <p className="text-sm text-gray-900">Merci de nous signaler ce problème. Nous enquêtons.</p>
+                          <div className="bg-[#12121A] rounded-lg p-3">
+                            <p className="text-xs text-[#6B6B80] mb-1">Support - 2026-04-01 11:00</p>
+                            <p className="text-sm text-[#F0F0F5]">Merci de nous signaler ce problème. Nous enquêtons.</p>
                           </div>
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">Ajouter une réponse</p>
+                        <p className="text-sm font-medium text-[#F0F0F5] mb-2">Ajouter une réponse</p>
                         <textarea
                           value={ticketReply}
                           onChange={e => setTicketReply(e.target.value)}
                           placeholder="Tapez votre réponse..."
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                           rows={3}
                         />
                         <Button className="mt-2 gap-2" onClick={submitTicketReply}>
@@ -1755,7 +1755,7 @@ export default function SuperAdminPage() {
                 </Card>
               ) : (
                 <Card className="flex items-center justify-center h-96">
-                  <p className="text-gray-500">Sélectionnez un ticket pour voir les détails</p>
+                  <p className="text-[#6B6B80]">Sélectionnez un ticket pour voir les détails</p>
                 </Card>
               )}
             </div>
@@ -1768,11 +1768,11 @@ export default function SuperAdminPage() {
         <div className="space-y-6">
           {/* Organization Selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sélectionner une organisation</label>
+            <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Sélectionner une organisation</label>
             <select
               value={selectedOrgForBilling}
               onChange={e => setSelectedOrgForBilling(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {organizations.map(org => (
                 <option key={org.id} value={org.id}>
@@ -1787,8 +1787,8 @@ export default function SuperAdminPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Plan actuel</p>
-                  <p className="text-2xl font-bold text-gray-900">Pro</p>
+                  <p className="text-sm text-[#6B6B80]">Plan actuel</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5]">Pro</p>
                   <Badge className="w-fit">Actif</Badge>
                 </div>
               </CardContent>
@@ -1796,18 +1796,18 @@ export default function SuperAdminPage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Montant mensuel</p>
-                  <p className="text-2xl font-bold text-gray-900">€299</p>
-                  <p className="text-xs text-gray-600">Facturé mensuellement</p>
+                  <p className="text-sm text-[#6B6B80]">Montant mensuel</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5]">€299</p>
+                  <p className="text-xs text-[#6B6B80]">Facturé mensuellement</p>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Prochaine facturation</p>
-                  <p className="text-2xl font-bold text-gray-900">01 Mai</p>
-                  <p className="text-xs text-gray-600">2026</p>
+                  <p className="text-sm text-[#6B6B80]">Prochaine facturation</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5]">01 Mai</p>
+                  <p className="text-xs text-[#6B6B80]">2026</p>
                 </div>
               </CardContent>
             </Card>
@@ -1821,25 +1821,25 @@ export default function SuperAdminPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-sm text-gray-600">Véhicules suivis</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">847 / 1000</p>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '84.7%' }}></div>
+                <div className="rounded-lg border border-[#1F1F2E] p-4">
+                  <p className="text-sm text-[#6B6B80]">Véhicules suivis</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5] mt-2">847 / 1000</p>
+                  <div className="w-full bg-[#1A1A25] rounded-full h-2 mt-3">
+                    <div className="bg-[#00E5CC] h-2 rounded-full" style={{ width: '84.7%' }}></div>
                   </div>
                 </div>
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-sm text-gray-600">Appels API (mois)</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">2.4M / 5M</p>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '48%' }}></div>
+                <div className="rounded-lg border border-[#1F1F2E] p-4">
+                  <p className="text-sm text-[#6B6B80]">Appels API (mois)</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5] mt-2">2.4M / 5M</p>
+                  <div className="w-full bg-[#1A1A25] rounded-full h-2 mt-3">
+                    <div className="bg-[#00E5CC] h-2 rounded-full" style={{ width: '48%' }}></div>
                   </div>
                 </div>
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-sm text-gray-600">Stockage utilisé</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">45.2 GB / 100 GB</p>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '45.2%' }}></div>
+                <div className="rounded-lg border border-[#1F1F2E] p-4">
+                  <p className="text-sm text-[#6B6B80]">Stockage utilisé</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5] mt-2">45.2 GB / 100 GB</p>
+                  <div className="w-full bg-[#1A1A25] rounded-full h-2 mt-3">
+                    <div className="bg-[#00E5CC] h-2 rounded-full" style={{ width: '45.2%' }}></div>
                   </div>
                 </div>
               </div>
@@ -1854,24 +1854,24 @@ export default function SuperAdminPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="font-medium text-gray-900">Starter</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">€99</p>
-                  <p className="text-xs text-gray-600 mt-1">/mois</p>
+                <div className="rounded-lg border border-[#1F1F2E] p-4">
+                  <p className="font-medium text-[#F0F0F5]">Starter</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5] mt-2">€99</p>
+                  <p className="text-xs text-[#6B6B80] mt-1">/mois</p>
                   <Button variant="outline" className="w-full mt-4">
                     Rétrograder
                   </Button>
                 </div>
-                <div className="rounded-lg border-2 border-blue-600 p-4 bg-blue-50">
-                  <p className="font-medium text-gray-900">Pro</p>
-                  <p className="text-2xl font-bold text-blue-600 mt-2">€299</p>
-                  <p className="text-xs text-gray-600 mt-1">/mois</p>
+                <div className="rounded-lg border-2 border-[#00E5CC] p-4 bg-[#12121A]">
+                  <p className="font-medium text-[#F0F0F5]">Pro</p>
+                  <p className="text-2xl font-bold text-[#00E5CC] mt-2">€299</p>
+                  <p className="text-xs text-[#6B6B80] mt-1">/mois</p>
                   <Badge className="w-fit mt-4">Plan actuel</Badge>
                 </div>
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="font-medium text-gray-900">Enterprise</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">€1299</p>
-                  <p className="text-xs text-gray-600 mt-1">/mois</p>
+                <div className="rounded-lg border border-[#1F1F2E] p-4">
+                  <p className="font-medium text-[#F0F0F5]">Enterprise</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5] mt-2">€1299</p>
+                  <p className="text-xs text-[#6B6B80] mt-1">/mois</p>
                   <Button className="w-full mt-4">
                     Passer à Enterprise
                   </Button>
@@ -1894,16 +1894,16 @@ export default function SuperAdminPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Date</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Description</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Montant</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">État</th>
+                    <tr className="border-b border-[#1F1F2E]">
+                      <th className="text-left py-3 px-4 font-medium text-[#F0F0F5]">Date</th>
+                      <th className="text-left py-3 px-4 font-medium text-[#F0F0F5]">Description</th>
+                      <th className="text-left py-3 px-4 font-medium text-[#F0F0F5]">Montant</th>
+                      <th className="text-left py-3 px-4 font-medium text-[#F0F0F5]">État</th>
                     </tr>
                   </thead>
                   <tbody>
                     {billingData.map(record => (
-                      <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <tr key={record.id} className="border-b border-[#1F1F2E] hover:bg-[#12121A]">
                         <td className="py-3 px-4">{new Date(record.date).toLocaleDateString('fr-FR')}</td>
                         <td className="py-3 px-4">{record.description}</td>
                         <td className="py-3 px-4 font-medium">€{record.amount}</td>
@@ -1935,11 +1935,11 @@ export default function SuperAdminPage() {
         <div className="space-y-6">
           {/* Organization Selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sélectionner une organisation</label>
+            <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Sélectionner une organisation</label>
             <select
               value={whitelabelOrg}
               onChange={e => setWhitelabelOrg(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {organizations.map(org => (
                 <option key={org.id} value={org.id}>
@@ -1962,9 +1962,9 @@ export default function SuperAdminPage() {
                 <input
                   type="checkbox"
                   defaultChecked
-                  className="h-4 w-4 rounded border-gray-300"
+                  className="h-4 w-4 rounded border-[#1F1F2E]"
                 />
-                <label className="text-sm text-gray-700">
+                <label className="text-sm text-[#F0F0F5]">
                   Activer la personnalisation White Label pour cette organisation
                 </label>
               </div>
@@ -1981,32 +1981,32 @@ export default function SuperAdminPage() {
               <div className="space-y-6">
                 {/* Logo Upload */}
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Logo personnalisé</p>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                    <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Cliquez pour télécharger votre logo</p>
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG ou SVG - Max 5 MB</p>
+                  <p className="text-sm font-medium text-[#F0F0F5] mb-2">Logo personnalisé</p>
+                  <div className="border-2 border-dashed border-[#1F1F2E] rounded-lg p-8 text-center hover:border-[#1F1F2E] transition-colors">
+                    <Upload className="h-8 w-8 text-[#44445A] mx-auto mb-2" />
+                    <p className="text-sm text-[#6B6B80]">Cliquez pour télécharger votre logo</p>
+                    <p className="text-xs text-[#6B6B80] mt-1">PNG, JPG ou SVG - Max 5 MB</p>
                   </div>
                 </div>
 
                 {/* Color Pickers */}
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Couleurs personnalisées</p>
+                  <p className="text-sm font-medium text-[#F0F0F5] mb-2">Couleurs personnalisées</p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="block text-sm text-gray-600 mb-2">Couleur primaire</label>
+                      <label className="block text-sm text-[#6B6B80] mb-2">Couleur primaire</label>
                       <input
                         type="color"
                         defaultValue="#3b82f6"
-                        className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                        className="h-10 w-20 rounded border border-[#1F1F2E] cursor-pointer"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-gray-600 mb-2">Couleur secondaire</label>
+                      <label className="block text-sm text-[#6B6B80] mb-2">Couleur secondaire</label>
                       <input
                         type="color"
                         defaultValue="#8b5cf6"
-                        className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                        className="h-10 w-20 rounded border border-[#1F1F2E] cursor-pointer"
                       />
                     </div>
                   </div>
@@ -2014,19 +2014,19 @@ export default function SuperAdminPage() {
 
                 {/* Custom Domain */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Domaine personnalisé</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Domaine personnalisé</label>
                   <Input
                     type="text"
                     placeholder="app.votresociete.com"
                     defaultValue="trackzone.techcorp.com"
                     className="w-full"
                   />
-                  <p className="text-xs text-gray-600 mt-2">Configurez les enregistrements DNS pour activer le domaine</p>
+                  <p className="text-xs text-[#6B6B80] mt-2">Configurez les enregistrements DNS pour activer le domaine</p>
                 </div>
 
                 {/* Footer Text */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Texte du pied de page</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Texte du pied de page</label>
                   <Input
                     type="text"
                     placeholder="© 2026 Votre entreprise. Tous droits réservés."
@@ -2039,7 +2039,7 @@ export default function SuperAdminPage() {
                 <div>
                   <label className="flex items-center gap-2">
                     <input type="checkbox" defaultChecked className="rounded" />
-                    <span className="text-sm text-gray-700">Utiliser le logo dans les e-mails</span>
+                    <span className="text-sm text-[#F0F0F5]">Utiliser le logo dans les e-mails</span>
                   </label>
                 </div>
 
@@ -2060,12 +2060,12 @@ export default function SuperAdminPage() {
               <CardTitle>Aperçu</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="border border-gray-300 rounded-lg p-6 bg-gradient-to-br from-blue-50 to-purple-50">
-                <div className="w-24 h-24 rounded-lg bg-white border-2 border-blue-600 flex items-center justify-center mb-4">
-                  <span className="text-xs text-gray-500">Logo</span>
+              <div className="border border-[#1F1F2E] rounded-lg p-6 bg-gradient-to-br from-blue-50 to-purple-50">
+                <div className="w-24 h-24 rounded-lg bg-[#12121A] border-2 border-[#00E5CC] flex items-center justify-center mb-4">
+                  <span className="text-xs text-[#6B6B80]">Logo</span>
                 </div>
-                <p className="text-sm font-medium text-gray-700 mb-4">Aperçu de votre marque personnalisée</p>
-                <p className="text-xs text-gray-600">© 2026 Votre entreprise. Tous droits réservés.</p>
+                <p className="text-sm font-medium text-[#F0F0F5] mb-4">Aperçu de votre marque personnalisée</p>
+                <p className="text-xs text-[#6B6B80]">© 2026 Votre entreprise. Tous droits réservés.</p>
               </div>
             </CardContent>
           </Card>
@@ -2081,10 +2081,10 @@ export default function SuperAdminPage() {
               <CardContent className="pt-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Circle className="h-3 w-3 text-green-600 fill-green-600" />
-                    <p className="text-sm text-gray-600">En ligne</p>
+                    <Circle className="h-3 w-3 text-[#00E5CC] fill-[#00E5CC]" />
+                    <p className="text-sm text-[#6B6B80]">En ligne</p>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">2</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5]">2</p>
                 </div>
               </CardContent>
             </Card>
@@ -2092,10 +2092,10 @@ export default function SuperAdminPage() {
               <CardContent className="pt-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Circle className="h-3 w-3 text-gray-400 fill-gray-400" />
-                    <p className="text-sm text-gray-600">Hors ligne</p>
+                    <Circle className="h-3 w-3 text-[#44445A] fill-gray-400" />
+                    <p className="text-sm text-[#6B6B80]">Hors ligne</p>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">1</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5]">1</p>
                 </div>
               </CardContent>
             </Card>
@@ -2104,9 +2104,9 @@ export default function SuperAdminPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Circle className="h-3 w-3 text-yellow-600 fill-yellow-600" />
-                    <p className="text-sm text-gray-600">Maintenance</p>
+                    <p className="text-sm text-[#6B6B80]">Maintenance</p>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">1</p>
+                  <p className="text-2xl font-bold text-[#F0F0F5]">1</p>
                 </div>
               </CardContent>
             </Card>
@@ -2142,22 +2142,22 @@ export default function SuperAdminPage() {
                   .map(tracker => (
                     <div
                       key={tracker.id}
-                      className="flex items-center justify-between rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors"
+                      className="flex items-center justify-between rounded-lg border border-[#1F1F2E] p-4 hover:border-[#1F1F2E] transition-colors"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <Circle
                             className={`h-3 w-3 ${
                               tracker.status === 'online'
-                                ? 'text-green-600 fill-green-600'
+                                ? 'text-[#00E5CC] fill-[#00E5CC]'
                                 : tracker.status === 'offline'
-                                ? 'text-gray-400 fill-gray-400'
+                                ? 'text-[#44445A] fill-gray-400'
                                 : 'text-yellow-600 fill-yellow-600'
                             }`}
                           />
-                          <p className="font-medium text-gray-900">{tracker.name}</p>
+                          <p className="font-medium text-[#F0F0F5]">{tracker.name}</p>
                         </div>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-4 mt-2 text-sm text-[#6B6B80]">
                           <span>{tracker.organizationName}</span>
                           <span>
                             Dernier contact:{' '}
@@ -2198,19 +2198,19 @@ export default function SuperAdminPage() {
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-3">
                 <Button variant="outline" className="gap-2 h-auto flex-col justify-start p-4">
-                  <Radio className="h-5 w-5 text-blue-600" />
+                  <Radio className="h-5 w-5 text-[#00E5CC]" />
                   <span className="text-sm font-medium">Localiser</span>
-                  <span className="text-xs text-gray-600">Position GPS immédiate</span>
+                  <span className="text-xs text-[#6B6B80]">Position GPS immédiate</span>
                 </Button>
                 <Button variant="outline" className="gap-2 h-auto flex-col justify-start p-4">
-                  <Power className="h-5 w-5 text-red-600" />
+                  <Power className="h-5 w-5 text-[#FF4D6A]" />
                   <span className="text-sm font-medium">Redémarrer</span>
-                  <span className="text-xs text-gray-600">Redémarrage du tracker</span>
+                  <span className="text-xs text-[#6B6B80]">Redémarrage du tracker</span>
                 </Button>
                 <Button variant="outline" className="gap-2 h-auto flex-col justify-start p-4">
                   <AlertOctagon className="h-5 w-5 text-yellow-600" />
                   <span className="text-sm font-medium">Diagnostic</span>
-                  <span className="text-xs text-gray-600">État et santé du tracker</span>
+                  <span className="text-xs text-[#6B6B80]">État et santé du tracker</span>
                 </Button>
               </div>
             </CardContent>
@@ -2226,18 +2226,18 @@ export default function SuperAdminPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-sm text-gray-600 mb-2">Serveur Echoes</p>
+                <div className="rounded-lg border border-[#1F1F2E] p-4">
+                  <p className="text-sm text-[#6B6B80] mb-2">Serveur Echoes</p>
                   <div className="flex items-center gap-2">
-                    <Circle className="h-3 w-3 text-green-600 fill-green-600" />
-                    <p className="font-medium text-green-600">Connecté</p>
+                    <Circle className="h-3 w-3 text-[#00E5CC] fill-[#00E5CC]" />
+                    <p className="font-medium text-[#00E5CC]">Connecté</p>
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">Latence: 42ms</p>
+                  <p className="text-xs text-[#6B6B80] mt-2">Latence: 42ms</p>
                 </div>
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-sm text-gray-600 mb-2">Synchronisation</p>
-                  <p className="font-medium text-gray-900">À jour</p>
-                  <p className="text-xs text-gray-600 mt-2">Dernière sync: à l'instant</p>
+                <div className="rounded-lg border border-[#1F1F2E] p-4">
+                  <p className="text-sm text-[#6B6B80] mb-2">Synchronisation</p>
+                  <p className="font-medium text-[#F0F0F5]">À jour</p>
+                  <p className="text-xs text-[#6B6B80] mt-2">Dernière sync: à l'instant</p>
                 </div>
               </div>
             </CardContent>
@@ -2258,7 +2258,7 @@ export default function SuperAdminPage() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Nom</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Nom</label>
                   <Input
                     value={orgFormData.name}
                     onChange={e => setOrgFormData({ ...orgFormData, name: e.target.value })}
@@ -2267,11 +2267,11 @@ export default function SuperAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Plan</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Plan</label>
                   <select
                     value={orgFormData.plan}
                     onChange={e => setOrgFormData({ ...orgFormData, plan: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm"
                   >
                     <option value="Starter">Starter</option>
                     <option value="Pro">Pro</option>
@@ -2280,7 +2280,7 @@ export default function SuperAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Paramètres</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Paramètres</label>
                   <Input
                     value={orgFormData.settings}
                     onChange={e => setOrgFormData({ ...orgFormData, settings: e.target.value })}
@@ -2315,7 +2315,7 @@ export default function SuperAdminPage() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Nom</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Nom</label>
                   <Input
                     value={userFormData.name}
                     onChange={e => setUserFormData({ ...userFormData, name: e.target.value })}
@@ -2324,7 +2324,7 @@ export default function SuperAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Email</label>
                   <Input
                     value={userFormData.email}
                     onChange={e => setUserFormData({ ...userFormData, email: e.target.value })}
@@ -2334,11 +2334,11 @@ export default function SuperAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Rôle</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Rôle</label>
                   <select
                     value={userFormData.role}
                     onChange={e => setUserFormData({ ...userFormData, role: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm"
                   >
                     <option value="super_admin">Super Admin</option>
                     <option value="admin">Admin</option>
@@ -2349,11 +2349,11 @@ export default function SuperAdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">Organisation</label>
+                  <label className="block text-sm font-medium text-[#F0F0F5] mb-2">Organisation</label>
                   <select
                     value={userFormData.organizationId}
                     onChange={e => setUserFormData({ ...userFormData, organizationId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-[#1F1F2E] rounded-lg text-sm"
                   >
                     <option value="">-- Sélectionner une organisation --</option>
                     {organizations.map(org => (

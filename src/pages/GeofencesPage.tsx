@@ -300,20 +300,20 @@ export default function GeofencesPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Géoclôtures</h1>
-          <p className="mt-1 text-gray-600">Créer et gérer les limites de localisation pour votre flotte</p>
+          <h1 className="text-3xl font-bold text-[#F0F0F5]">Géoclôtures</h1>
+          <p className="mt-1 text-[#6B6B80]">Créer et gérer les limites de localisation pour votre flotte</p>
         </div>
         <div className="flex gap-2">
           <div className="relative">
             <Button
               variant="outline"
-              className="gap-2"
+              className="gap-2 border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
               onClick={() => setShowTemplates(!showTemplates)}
             >
               Modèles
             </Button>
             {showTemplates && (
-              <div className="absolute right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+              <div className="absolute right-0 mt-1 w-64 bg-[#12121A] rounded-lg shadow-lg border border-[#1F1F2E] z-10">
                 <div className="p-2 space-y-1">
                   {geofenceTemplates.map((template) => (
                     <button
@@ -322,7 +322,7 @@ export default function GeofencesPage() {
                         openCreateModal()
                         applyTemplate(template)
                       }}
-                      className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm"
+                      className="w-full text-left px-3 py-2 rounded-md hover:bg-[#1A1A25] text-sm text-[#F0F0F5]"
                     >
                       <div className="flex items-center gap-2">
                         <div
@@ -337,7 +337,7 @@ export default function GeofencesPage() {
               </div>
             )}
           </div>
-          <Button className="gap-2" onClick={openCreateModal}>
+          <Button className="gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D4BB]" onClick={openCreateModal}>
             <Plus size={18} />
             Créer
           </Button>
@@ -347,58 +347,58 @@ export default function GeofencesPage() {
       {/* Stats */}
       {stats && (
         <div className="grid gap-4 sm:grid-cols-4">
-          <Card>
+          <Card className="bg-[#12121A] border-[#1F1F2E]">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total géoclôtures</p>
-                  <p className="mt-1 text-2xl font-bold">{filteredGeofences.length}</p>
+                  <p className="text-sm text-[#6B6B80]">Total géoclôtures</p>
+                  <p className="mt-1 text-2xl font-bold text-[#F0F0F5]">{filteredGeofences.length}</p>
                 </div>
-                <div className="rounded-full bg-blue-100 p-3">
-                  <MapPin size={20} className="text-blue-600" />
+                <div className="rounded-full bg-[#00E5CC]/10 p-3">
+                  <MapPin size={20} className="text-[#00E5CC]" />
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-[#12121A] border-[#1F1F2E]">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Actives</p>
-                  <p className="mt-1 text-2xl font-bold text-green-600">
+                  <p className="text-sm text-[#6B6B80]">Actives</p>
+                  <p className="mt-1 text-2xl font-bold text-[#00E5CC]">
                     {filteredGeofences.filter((g) => g.isActive).length}
                   </p>
                 </div>
-                <div className="rounded-full bg-green-100 p-3">
-                  <Eye size={20} className="text-green-600" />
+                <div className="rounded-full bg-[#00E5CC]/10 p-3">
+                  <Eye size={20} className="text-[#00E5CC]" />
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-[#12121A] border-[#1F1F2E]">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Alertes aujourd'hui</p>
-                  <p className="mt-1 text-2xl font-bold text-red-600">0</p>
+                  <p className="text-sm text-[#6B6B80]">Alertes aujourd'hui</p>
+                  <p className="mt-1 text-2xl font-bold text-[#FF4D6A]">0</p>
                 </div>
-                <div className="rounded-full bg-red-100 p-3">
-                  <EyeOff size={20} className="text-red-600" />
+                <div className="rounded-full bg-[#FF4D6A]/10 p-3">
+                  <EyeOff size={20} className="text-[#FF4D6A]" />
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-[#12121A] border-[#1F1F2E]">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Véhicules surveillés</p>
-                  <p className="mt-1 text-2xl font-bold">
+                  <p className="text-sm text-[#6B6B80]">Véhicules surveillés</p>
+                  <p className="mt-1 text-2xl font-bold text-[#F0F0F5]">
                     {filteredGeofences.reduce((sum, g) => sum + ((g as any).vehicleCount || 0), 0)}
                   </p>
                 </div>
-                <div className="rounded-full bg-purple-100 p-3">
-                  <MapPin size={20} className="text-purple-600" />
+                <div className="rounded-full bg-[#6B6B80]/10 p-3">
+                  <MapPin size={20} className="text-[#6B6B80]" />
                 </div>
               </div>
             </CardContent>
@@ -408,12 +408,12 @@ export default function GeofencesPage() {
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#44445A]" size={18} />
         <Input
           placeholder="Rechercher les géoclôtures..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
+          className="pl-10 bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC] focus:ring-[#00E5CC]"
         />
       </div>
 
@@ -421,23 +421,23 @@ export default function GeofencesPage() {
       {isLoading ? (
         <div className="grid gap-4 lg:grid-cols-2">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-48" />
+            <Skeleton key={i} className="h-48 bg-[#12121A]" />
           ))}
         </div>
       ) : filteredGeofences.length === 0 ? (
-        <Card className="text-center">
+        <Card className="bg-[#12121A] border-[#1F1F2E] text-center">
           <CardContent className="py-12">
-            <MapPin className="mx-auto mb-4 text-gray-400" size={48} />
-            <h3 className="text-lg font-medium text-gray-700">
+            <MapPin className="mx-auto mb-4 text-[#44445A]" size={48} />
+            <h3 className="text-lg font-medium text-[#F0F0F5]">
               {search ? 'Aucune géoclôture ne correspond à votre recherche' : 'Aucune géoclôture créée'}
             </h3>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-[#6B6B80]">
               {search
                 ? 'Essayez un terme de recherche différent'
                 : 'Cliquez sur "Créer" pour définir votre première zone'}
             </p>
             {!search && (
-              <Button className="mt-4 gap-2" onClick={openCreateModal}>
+              <Button className="mt-4 gap-2 bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D4BB]" onClick={openCreateModal}>
                 <Plus size={16} />
                 Créer votre première géoclôture
               </Button>
@@ -449,7 +449,7 @@ export default function GeofencesPage() {
           {filteredGeofences.map((geofence) => (
             <Card
               key={geofence.id}
-              className="cursor-pointer transition-shadow hover:shadow-md"
+              className="bg-[#12121A] border-[#1F1F2E] cursor-pointer transition-all hover:border-[#2A2A3D] hover:shadow-lg"
               onClick={() => openViewModal(geofence)}
             >
               <CardHeader className="pb-3">
@@ -465,13 +465,13 @@ export default function GeofencesPage() {
                       {getShapeIcon(geofence.shape?.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base">{geofence.name}</CardTitle>
+                      <CardTitle className="text-base text-[#F0F0F5]">{geofence.name}</CardTitle>
                       {geofence.description && (
-                        <p className="mt-0.5 text-xs text-gray-500">{geofence.description}</p>
+                        <p className="mt-0.5 text-xs text-[#6B6B80]">{geofence.description}</p>
                       )}
                     </div>
                   </div>
-                  <Badge variant={geofence.isActive ? 'default' : 'secondary'}>
+                  <Badge variant={geofence.isActive ? 'default' : 'secondary'} className="bg-[#00E5CC] text-[#0A0A0F]">
                     {geofence.isActive ? 'Actif' : 'Inactif'}
                   </Badge>
                 </div>
@@ -479,42 +479,42 @@ export default function GeofencesPage() {
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
-                    <p className="text-gray-500">Type</p>
-                    <p className="font-medium capitalize">{geofence.shape?.type || 'N/A'}</p>
+                    <p className="text-[#6B6B80]">Type</p>
+                    <p className="font-medium capitalize text-[#F0F0F5]">{geofence.shape?.type || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Déclencheur</p>
-                    <p className="font-medium capitalize">{geofence.triggerEvent}</p>
+                    <p className="text-[#6B6B80]">Déclencheur</p>
+                    <p className="font-medium capitalize text-[#F0F0F5]">{geofence.triggerEvent}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Détails</p>
-                    <p className="font-medium text-xs">{geofence.shape ? getShapeLabel(geofence.shape) : 'N/A'}</p>
+                    <p className="text-[#6B6B80]">Détails</p>
+                    <p className="font-medium text-xs text-[#F0F0F5]">{geofence.shape ? getShapeLabel(geofence.shape) : 'N/A'}</p>
                   </div>
                 </div>
 
                 {/* Day/Time based rules and status badges */}
                 <div className="flex flex-wrap gap-2">
                   {(geofence as any).isTemporary && (
-                    <Badge className="gap-1 bg-orange-500 text-white text-xs">
+                    <Badge className="gap-1 bg-[#FFB547] text-[#0A0A0F] text-xs">
                       Temporaire
                     </Badge>
                   )}
                   {!(geofence as any).isTemporary && (
-                    <Badge className="gap-1 bg-blue-500 text-white text-xs">
+                    <Badge className="gap-1 bg-[#00E5CC] text-[#0A0A0F] text-xs">
                       Permanente
                     </Badge>
                   )}
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs border-[#1F1F2E] text-[#F0F0F5]">
                     {getDayLabel((geofence as any).activeDays || [true, true, true, true, true, false, false])}
                   </Badge>
                   {(geofence as any).activeHours && (
-                    <Badge variant="outline" className="gap-1 text-xs">
+                    <Badge variant="outline" className="gap-1 text-xs border-[#1F1F2E] text-[#F0F0F5]">
                       <Clock size={12} />
                       {(geofence as any).activeHours.from} - {(geofence as any).activeHours.to}
                     </Badge>
                   )}
                   {!(geofence as any).activeHours && (
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs border-[#1F1F2E] text-[#F0F0F5]">
                       24h/24
                     </Badge>
                   )}
@@ -522,8 +522,8 @@ export default function GeofencesPage() {
 
                 {/* Violations badge */}
                 {((geofence as any).violationCount ?? 0) > 0 && (
-                  <div className="rounded-lg bg-red-50 px-3 py-2 text-sm">
-                    <p className="text-red-700">
+                  <div className="rounded-lg bg-[#FF4D6A]/10 px-3 py-2 text-sm">
+                    <p className="text-[#FF4D6A]">
                       <span className="font-semibold">{(geofence as any).violationCount}</span> violation{(geofence as any).violationCount > 1 ? 's' : ''}
                     </p>
                   </div>
@@ -531,9 +531,9 @@ export default function GeofencesPage() {
 
                 {/* Real-time detection feedback */}
                 {getVehiclesInsideCount(geofence) > 0 && (
-                  <div className="rounded-lg bg-green-50 px-3 py-2 flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="text-green-700">
+                  <div className="rounded-lg bg-[#00E5CC]/10 px-3 py-2 flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 rounded-full bg-[#00E5CC] animate-pulse"></div>
+                    <span className="text-[#00E5CC]">
                       <span className="font-semibold">{getVehiclesInsideCount(geofence)}</span> véhicule{getVehiclesInsideCount(geofence) > 1 ? 's' : ''} à l'intérieur
                     </span>
                   </div>
@@ -541,41 +541,41 @@ export default function GeofencesPage() {
 
                 {/* Vehicle groups */}
                 {((geofence as any).groupCount ?? 0) > 0 && (
-                  <div className="text-xs text-gray-600">
+                  <div className="text-xs text-[#6B6B80]">
                     <span className="font-medium">{(geofence as any).groupCount}</span> groupe{(geofence as any).groupCount > 1 ? 's' : ''} assigné{(geofence as any).groupCount > 1 ? 's' : ''}
                   </div>
                 )}
 
                 {/* Assigned vehicles */}
                 {((geofence as any).assignedVehicleIds?.length ?? 0) > 0 && (
-                  <div className="text-xs text-gray-600">
+                  <div className="text-xs text-[#6B6B80]">
                     <span className="font-medium">{(geofence as any).assignedVehicleIds.length}</span> véhicule{(geofence as any).assignedVehicleIds.length > 1 ? 's' : ''} assigné{(geofence as any).assignedVehicleIds.length > 1 ? 's' : ''}
                   </div>
                 )}
 
                 {/* Time spent stats */}
                 {((geofence as any).avgTimeInside || (geofence as any).lastEntry) && (
-                  <div className="space-y-1 border-t border-gray-100 pt-3 text-xs">
+                  <div className="space-y-1 border-t border-[#1F1F2E] pt-3 text-xs">
                     {(geofence as any).avgTimeInside && (
-                      <p className="text-gray-600">
-                        Temps moyen: <span className="font-medium">{(geofence as any).avgTimeInside}</span>
+                      <p className="text-[#6B6B80]">
+                        Temps moyen: <span className="font-medium text-[#F0F0F5]">{(geofence as any).avgTimeInside}</span>
                       </p>
                     )}
                     {(geofence as any).lastEntry && (
-                      <p className="text-gray-600">
-                        Dernière entrée: <span className="font-medium">{(geofence as any).lastEntry}</span>
+                      <p className="text-[#6B6B80]">
+                        Dernière entrée: <span className="font-medium text-[#F0F0F5]">{(geofence as any).lastEntry}</span>
                       </p>
                     )}
                   </div>
                 )}
 
-                <div className="flex items-center justify-between border-t border-gray-100 pt-3">
-                  <p className="text-xs text-gray-400">Créé {formatDateTime(geofence.createdAt)}</p>
+                <div className="flex items-center justify-between border-t border-[#1F1F2E] pt-3">
+                  <p className="text-xs text-[#44445A]">Créé {formatDateTime(geofence.createdAt)}</p>
                   <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="h-8 w-8 p-0 text-[#6B6B80] hover:text-[#F0F0F5] hover:bg-[#1A1A25]"
                       onClick={() => openEditModal(geofence)}
                     >
                       <Edit2 size={14} />
@@ -583,7 +583,7 @@ export default function GeofencesPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                      className="h-8 w-8 p-0 text-[#FF4D6A] hover:text-[#FF4D6A] hover:bg-[#1A1A25]"
                       onClick={() => setDeleteConfirmId(geofence.id)}
                     >
                       <Trash2 size={14} />
@@ -599,13 +599,14 @@ export default function GeofencesPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-[#6B6B80]">
             Page {page} of {totalPages}
           </p>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
+              className="border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
               onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
             >
@@ -614,6 +615,7 @@ export default function GeofencesPage() {
             <Button
               variant="outline"
               size="sm"
+              className="border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]"
               onClick={() => setPage(Math.min(totalPages, page + 1))}
               disabled={page === totalPages}
             >
@@ -625,12 +627,12 @@ export default function GeofencesPage() {
 
       {/* Create / Edit Modal */}
       <Dialog open={modalMode === 'create' || modalMode === 'edit'} onOpenChange={() => closeModal()}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#12121A] border-[#1F1F2E]">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-[#F0F0F5]">
               {modalMode === 'create' ? 'Créer une nouvelle géoclôture' : `Modifier: ${selectedGeofence?.name}`}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-[#6B6B80]">
               {modalMode === 'create'
                 ? 'Dessinez une zone sur la carte et configurez les paramètres d\'alerte.'
                 : 'Modifiez la forme de la géoclôture et les paramètres.'}
@@ -646,7 +648,7 @@ export default function GeofencesPage() {
             />
 
             {form.shape && (
-              <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700">
+              <div className="flex items-center gap-2 rounded-lg bg-[#00E5CC]/10 px-3 py-2 text-sm text-[#00E5CC] border border-[#00E5CC]/20">
                 {getShapeIcon(form.shape.type)}
                 <span>{getShapeLabel(form.shape)}</span>
               </div>
@@ -655,34 +657,36 @@ export default function GeofencesPage() {
             {/* Form Fields */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700">Nom *</label>
+                <label className="mb-1 block text-sm font-medium text-[#F0F0F5]">Nom *</label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Exemple: Zone d'entrepôt, Site client..."
+                  className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC] focus:ring-[#00E5CC]"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
+                <label className="mb-1 block text-sm font-medium text-[#F0F0F5]">Description</label>
                 <Input
                   value={form.description}
                   onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                   placeholder="Description facultative..."
+                  className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] placeholder-[#44445A] focus:border-[#00E5CC] focus:ring-[#00E5CC]"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Événement de déclenchement</label>
+                <label className="mb-1 block text-sm font-medium text-[#F0F0F5]">Événement de déclenchement</label>
                 <select
                   value={form.triggerEvent}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, triggerEvent: e.target.value as GeofenceEvent }))
                   }
-                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5] focus:border-[#00E5CC] focus:outline-none focus:ring-1 focus:ring-[#00E5CC]"
                 >
                   {triggerOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
+                    <option key={opt.value} value={opt.value} className="bg-[#12121A]">
                       {opt.label}
                     </option>
                   ))}
@@ -690,16 +694,16 @@ export default function GeofencesPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Couleur de la zone</label>
+                <label className="mb-1 block text-sm font-medium text-[#F0F0F5]">Couleur de la zone</label>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={form.color}
                       onChange={(e) => setForm((prev) => ({ ...prev, color: e.target.value }))}
-                      className="h-9 w-12 cursor-pointer rounded border border-gray-300"
+                      className="h-9 w-12 cursor-pointer rounded border border-[#1F1F2E] bg-[#0A0A0F]"
                     />
-                    <span className="text-sm text-gray-500">{form.color}</span>
+                    <span className="text-sm text-[#6B6B80]">{form.color}</span>
                   </div>
                   <div className="flex gap-2">
                     {['#FF0000', '#FF6600', '#FFCC00', '#00CC00', '#0066FF', '#9933FF', '#FF0099', '#666666'].map((color) => (
@@ -708,8 +712,8 @@ export default function GeofencesPage() {
                         onClick={() => setForm((prev) => ({ ...prev, color }))}
                         className={`h-7 w-7 rounded border-2 transition-all ${
                           form.color.toUpperCase() === color
-                            ? 'border-gray-800 shadow-md'
-                            : 'border-gray-300 hover:border-gray-500'
+                            ? 'border-[#F0F0F5] shadow-md'
+                            : 'border-[#1F1F2E] hover:border-[#2A2A3D]'
                         }`}
                         style={{ backgroundColor: color }}
                         title={color}
@@ -720,27 +724,27 @@ export default function GeofencesPage() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Paramètres d'alerte</label>
+                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Paramètres d'alerte</label>
                 <div className="flex flex-wrap gap-4">
-                  <label className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-sm text-[#F0F0F5]">
                     <input
                       type="checkbox"
                       checked={form.alertOnEntry}
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, alertOnEntry: e.target.checked }))
                       }
-                      className="rounded border-gray-300"
+                      className="rounded border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
                     />
                     Alerte à l'entrée
                   </label>
-                  <label className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-sm text-[#F0F0F5]">
                     <input
                       type="checkbox"
                       checked={form.alertOnExit}
                       onChange={(e) =>
                         setForm((prev) => ({ ...prev, alertOnExit: e.target.checked }))
                       }
-                      className="rounded border-gray-300"
+                      className="rounded border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
                     />
                     Alerte à la sortie
                   </label>
@@ -749,7 +753,7 @@ export default function GeofencesPage() {
 
               {/* Jours actifs */}
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Jours actifs</label>
+                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Jours actifs</label>
                 <div className="flex gap-2">
                   {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
                     <button
@@ -759,24 +763,24 @@ export default function GeofencesPage() {
                         newDays[idx] = !newDays[idx]
                         setForm((prev) => ({ ...prev, activeDays: newDays }))
                       }}
-                      className={`h-9 w-9 rounded-md border-2 text-xs font-medium transition-colors ${
+                      className={`h-9 w-9 rounded-[8px] border-2 text-xs font-medium transition-colors ${
                         form.activeDays[idx]
-                          ? 'border-blue-500 bg-blue-500 text-white'
-                          : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+                          ? 'border-[#00E5CC] bg-[#00E5CC] text-[#0A0A0F]'
+                          : 'border-[#1F1F2E] bg-[#0A0A0F] text-[#6B6B80] hover:border-[#2A2A3D]'
                       }`}
                     >
                       {day}
                     </button>
                   ))}
                 </div>
-                <p className="mt-1 text-xs text-gray-500">{getDayLabel(form.activeDays)}</p>
+                <p className="mt-1 text-xs text-[#6B6B80]">{getDayLabel(form.activeDays)}</p>
               </div>
 
               {/* Heures actives */}
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Heures actives</label>
+                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Heures actives</label>
                 <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-sm text-[#F0F0F5]">
                     <input
                       type="checkbox"
                       checked={!!form.activeHours}
@@ -790,7 +794,7 @@ export default function GeofencesPage() {
                           setForm((prev) => ({ ...prev, activeHours: null }))
                         }
                       }}
-                      className="rounded border-gray-300"
+                      className="rounded border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
                     />
                     Configurer une plage horaire
                   </label>
@@ -809,9 +813,9 @@ export default function GeofencesPage() {
                           },
                         }))
                       }}
-                      className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                      className="rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-2 py-1 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
                     />
-                    <span className="text-sm text-gray-600">à</span>
+                    <span className="text-sm text-[#6B6B80]">à</span>
                     <input
                       type="time"
                       value={form.activeHours.to}
@@ -824,7 +828,7 @@ export default function GeofencesPage() {
                           },
                         }))
                       }}
-                      className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                      className="rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-2 py-1 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
                     />
                   </div>
                 )}
@@ -832,37 +836,37 @@ export default function GeofencesPage() {
 
               {/* Temporaire vs Permanente */}
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Type de géoclôture</label>
+                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Type de géoclôture</label>
                 <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-sm text-[#F0F0F5]">
                     <input
                       type="radio"
                       checked={!form.isTemporary}
                       onChange={() =>
                         setForm((prev) => ({ ...prev, isTemporary: false, temporaryUntil: undefined }))
                       }
-                      className="rounded-full border-gray-300"
+                      className="rounded-full border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
                     />
                     Permanente
                   </label>
-                  <label className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2 text-sm text-[#F0F0F5]">
                     <input
                       type="radio"
                       checked={form.isTemporary}
                       onChange={() => setForm((prev) => ({ ...prev, isTemporary: true }))}
-                      className="rounded-full border-gray-300"
+                      className="rounded-full border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
                     />
                     Temporaire
                   </label>
                 </div>
                 {form.isTemporary && (
                   <div className="mt-2">
-                    <label className="mb-1 block text-xs font-medium text-gray-700">Valide jusqu'à</label>
+                    <label className="mb-1 block text-xs font-medium text-[#F0F0F5]">Valide jusqu'à</label>
                     <input
                       type="datetime-local"
                       value={form.temporaryUntil || ''}
                       onChange={(e) => setForm((prev) => ({ ...prev, temporaryUntil: e.target.value }))}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
                     />
                   </div>
                 )}
@@ -870,18 +874,18 @@ export default function GeofencesPage() {
 
               {/* Vehicle Assignment */}
               <div className="sm:col-span-2">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Assigner des véhicules</label>
+                <label className="mb-2 block text-sm font-medium text-[#F0F0F5]">Assigner des véhicules</label>
                 <div className="space-y-2">
                   {vehiclesLoading ? (
-                    <div className="text-sm text-gray-600">Chargement des véhicules...</div>
+                    <div className="text-sm text-[#6B6B80]">Chargement des véhicules...</div>
                   ) : vehicles.length === 0 ? (
-                    <div className="text-sm text-gray-600">Aucun véhicule disponible</div>
+                    <div className="text-sm text-[#6B6B80]">Aucun véhicule disponible</div>
                   ) : (
-                    <div className="max-h-40 overflow-y-auto rounded-md border border-gray-300 bg-white">
+                    <div className="max-h-40 overflow-y-auto rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F]">
                       {vehicles.map((vehicle) => (
                         <label
                           key={vehicle.id}
-                          className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 text-sm"
+                          className="flex items-center gap-2 px-3 py-2 hover:bg-[#1A1A25] cursor-pointer border-b border-[#1F1F2E] last:border-b-0 text-sm"
                         >
                           <input
                             type="checkbox"
@@ -901,11 +905,11 @@ export default function GeofencesPage() {
                                 }))
                               }
                             }}
-                            className="rounded border-gray-300"
+                            className="rounded border-[#1F1F2E] bg-[#0A0A0F] accent-[#00E5CC]"
                           />
                           <div className="flex-1">
-                            <p className="font-medium">{vehicle.name}</p>
-                            <p className="text-xs text-gray-500">{vehicle.registration}</p>
+                            <p className="font-medium text-[#F0F0F5]">{vehicle.name}</p>
+                            <p className="text-xs text-[#6B6B80]">{vehicle.registration}</p>
                           </div>
                         </label>
                       ))}
@@ -913,12 +917,12 @@ export default function GeofencesPage() {
                   )}
                   {form.assignedVehicleIds.length > 0 && (
                     <div className="mt-2 space-y-1">
-                      <p className="text-xs font-medium text-gray-700">Assignés ({form.assignedVehicleIds.length}):</p>
+                      <p className="text-xs font-medium text-[#F0F0F5]">Assignés ({form.assignedVehicleIds.length}):</p>
                       <div className="flex flex-wrap gap-1">
                         {form.assignedVehicleIds.map((vehicleId) => {
                           const vehicle = vehicles.find((v) => v.id === vehicleId)
                           return (
-                            <Badge key={vehicleId} variant="secondary" className="gap-1 text-xs">
+                            <Badge key={vehicleId} variant="secondary" className="gap-1 text-xs bg-[#1A1A25] text-[#F0F0F5]">
                               {vehicle?.name}
                               <button
                                 onClick={() => {
@@ -944,19 +948,20 @@ export default function GeofencesPage() {
             </div>
 
             {formError && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+              <div className="rounded-[12px] border border-[#FF4D6A]/30 bg-[#FF4D6A]/10 px-4 py-3 text-sm text-[#FF4D6A]">
                 {formError}
               </div>
             )}
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={closeModal}>
+            <Button variant="outline" onClick={closeModal} className="border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]">
               Annuler
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={createMutation.isPending}
+              className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D4BB]"
             >
               {createMutation.isPending
                 ? 'Enregistrement...'
@@ -970,22 +975,22 @@ export default function GeofencesPage() {
 
       {/* View Modal */}
       <Dialog open={modalMode === 'view'} onOpenChange={() => closeModal()}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#12121A] border-[#1F1F2E]">
           <DialogHeader>
-            <DialogTitle>{selectedGeofence?.name}</DialogTitle>
-            <DialogDescription>{selectedGeofence?.description || 'Pas de description'}</DialogDescription>
+            <DialogTitle className="text-[#F0F0F5]">{selectedGeofence?.name}</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">{selectedGeofence?.description || 'Pas de description'}</DialogDescription>
           </DialogHeader>
 
           {selectedGeofence && (
             <div className="space-y-4">
               {/* Tabs */}
-              <div className="flex gap-4 border-b border-gray-200">
+              <div className="flex gap-4 border-b border-[#1F1F2E]">
                 <button
                   onClick={() => setActiveTab('details')}
                   className={`pb-2 px-1 text-sm font-medium transition-colors ${
                     activeTab === 'details'
-                      ? 'border-b-2 border-blue-500 text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'border-b-2 border-[#00E5CC] text-[#00E5CC]'
+                      : 'text-[#6B6B80] hover:text-[#F0F0F5]'
                   }`}
                 >
                   Détails
@@ -994,8 +999,8 @@ export default function GeofencesPage() {
                   onClick={() => setActiveTab('history')}
                   className={`pb-2 px-1 text-sm font-medium transition-colors ${
                     activeTab === 'history'
-                      ? 'border-b-2 border-blue-500 text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'border-b-2 border-[#00E5CC] text-[#00E5CC]'
+                      : 'text-[#6B6B80] hover:text-[#F0F0F5]'
                   }`}
                 >
                   Historique
@@ -1013,35 +1018,35 @@ export default function GeofencesPage() {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-gray-500">Statut</p>
-                      <Badge variant={selectedGeofence.isActive ? 'default' : 'secondary'}>
+                      <p className="text-[#6B6B80]">Statut</p>
+                      <Badge variant={selectedGeofence.isActive ? 'default' : 'secondary'} className="bg-[#00E5CC] text-[#0A0A0F]">
                         {selectedGeofence.isActive ? 'Actif' : 'Inactif'}
                       </Badge>
                     </div>
                     <div>
-                      <p className="text-gray-500">Forme</p>
-                      <p className="font-medium">{getShapeLabel(selectedGeofence.shape)}</p>
+                      <p className="text-[#6B6B80]">Forme</p>
+                      <p className="font-medium text-[#F0F0F5]">{getShapeLabel(selectedGeofence.shape)}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Déclencheur</p>
-                      <p className="font-medium capitalize">{selectedGeofence.triggerEvent}</p>
+                      <p className="text-[#6B6B80]">Déclencheur</p>
+                      <p className="font-medium capitalize text-[#F0F0F5]">{selectedGeofence.triggerEvent}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Créé</p>
-                      <p className="font-medium">{formatDateTime(selectedGeofence.createdAt)}</p>
+                      <p className="text-[#6B6B80]">Créé</p>
+                      <p className="font-medium text-[#F0F0F5]">{formatDateTime(selectedGeofence.createdAt)}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Alerte à l'entrée</p>
-                      <p className="font-medium">{selectedGeofence.alertOnEntry ? 'Oui' : 'Non'}</p>
+                      <p className="text-[#6B6B80]">Alerte à l'entrée</p>
+                      <p className="font-medium text-[#F0F0F5]">{selectedGeofence.alertOnEntry ? 'Oui' : 'Non'}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Alerte à la sortie</p>
-                      <p className="font-medium">{selectedGeofence.alertOnExit ? 'Oui' : 'Non'}</p>
+                      <p className="text-[#6B6B80]">Alerte à la sortie</p>
+                      <p className="font-medium text-[#F0F0F5]">{selectedGeofence.alertOnExit ? 'Oui' : 'Non'}</p>
                     </div>
                     {getVehiclesInsideCount(selectedGeofence) > 0 && (
                       <div>
-                        <p className="text-gray-500">Véhicules à l'intérieur</p>
-                        <p className="font-medium text-green-600">{getVehiclesInsideCount(selectedGeofence)}</p>
+                        <p className="text-[#6B6B80]">Véhicules à l'intérieur</p>
+                        <p className="font-medium text-[#00E5CC]">{getVehiclesInsideCount(selectedGeofence)}</p>
                       </div>
                     )}
                   </div>
@@ -1053,12 +1058,12 @@ export default function GeofencesPage() {
                 <div className="space-y-3">
                   {violationsLoading ? (
                     <div className="flex justify-center py-8">
-                      <div className="text-gray-600">Chargement de l'historique...</div>
+                      <div className="text-[#6B6B80]">Chargement de l'historique...</div>
                     </div>
                   ) : violations.length === 0 ? (
-                    <div className="rounded-lg bg-gray-50 px-4 py-6 text-center">
-                      <Clock className="mx-auto mb-2 text-gray-400" size={24} />
-                      <p className="text-sm text-gray-600">Aucun événement enregistré</p>
+                    <div className="rounded-lg bg-[#1A1A25] px-4 py-6 text-center border border-[#1F1F2E]">
+                      <Clock className="mx-auto mb-2 text-[#44445A]" size={24} />
+                      <p className="text-sm text-[#6B6B80]">Aucun événement enregistré</p>
                     </div>
                   ) : (
                     <div className="max-h-96 overflow-y-auto space-y-2">
@@ -1067,8 +1072,8 @@ export default function GeofencesPage() {
                           key={violation.id}
                           className={`flex items-start justify-between rounded-lg px-3 py-2 ${
                             violation.type === 'entry'
-                              ? 'bg-green-50 border border-green-200'
-                              : 'bg-orange-50 border border-orange-200'
+                              ? 'bg-[#00E5CC]/10 border border-[#00E5CC]/30'
+                              : 'bg-[#FFB547]/10 border border-[#FFB547]/30'
                           }`}
                         >
                           <div className="flex-1">
@@ -1077,15 +1082,15 @@ export default function GeofencesPage() {
                                 variant={violation.type === 'entry' ? 'default' : 'secondary'}
                                 className={`text-xs ${
                                   violation.type === 'entry'
-                                    ? 'bg-green-600'
-                                    : 'bg-orange-600 text-white'
+                                    ? 'bg-[#00E5CC] text-[#0A0A0F]'
+                                    : 'bg-[#FFB547] text-[#0A0A0F]'
                                 }`}
                               >
                                 {violation.type === 'entry' ? 'Entrée' : 'Sortie'}
                               </Badge>
-                              <span className="font-medium text-sm">{violation.vehicleName}</span>
+                              <span className="font-medium text-sm text-[#F0F0F5]">{violation.vehicleName}</span>
                             </div>
-                            <p className="text-xs text-gray-600 mt-1">
+                            <p className="text-xs text-[#6B6B80] mt-1">
                               {formatDateTime(violation.timestamp)}
                             </p>
                           </div>
@@ -1099,7 +1104,7 @@ export default function GeofencesPage() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={closeModal}>
+            <Button variant="outline" onClick={closeModal} className="border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]">
               Fermer
             </Button>
             <Button
@@ -1109,6 +1114,7 @@ export default function GeofencesPage() {
                   setTimeout(() => openEditModal(selectedGeofence), 100)
                 }
               }}
+              className="bg-[#00E5CC] text-[#0A0A0F] hover:bg-[#00D4BB]"
             >
               Modifier la géoclôture
             </Button>
@@ -1118,20 +1124,20 @@ export default function GeofencesPage() {
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm bg-[#12121A] border-[#1F1F2E]">
           <DialogHeader>
-            <DialogTitle>Supprimer la géoclôture</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-[#F0F0F5]">Supprimer la géoclôture</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
               Êtes-vous sûr de vouloir supprimer cette géoclôture? Cette action ne peut pas être annulée.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)}>
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)} className="border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25] hover:border-[#2A2A3D]">
               Annuler
             </Button>
             <Button
               variant="destructive"
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-[#FF4D6A] hover:bg-[#E63A56] text-white"
               onClick={async () => {
                 if (deleteConfirmId) {
                   try {

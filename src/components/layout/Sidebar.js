@@ -1,125 +1,46 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUIStore } from '@/stores/uiStore';
-import { Menu, X, Map, Truck, AlertCircle, Settings, BarChart3, Zap, Shield, Home, Users, FolderTree, Cpu, HelpCircle, Lock, FileCode, Code, FlaskConical, } from 'lucide-react';
+import { Menu, X, Map, Truck, AlertCircle, Settings, BarChart3, Zap, Shield, Home, Users, FolderTree, Cpu, HelpCircle, Lock, FileCode, Code, FlaskConical, ChevronLeft, ChevronRight, } from 'lucide-react';
 import { UserRole } from '@/types/user';
 import { cn } from '@/lib/utils';
 export default function Sidebar() {
     const location = useLocation();
     const { sidebarOpen, setSidebarOpen } = useUIStore();
     const { user, hasRole } = useAuth();
+    const [collapsed, setCollapsed] = useState(false);
     const isActive = (path) => location.pathname === path;
     const menuItems = [
-        {
-            label: 'Dashboard',
-            icon: Home,
-            path: '/',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Carte',
-            icon: Map,
-            path: '/map',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DRIVER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Vehicules',
-            icon: Truck,
-            path: '/vehicles',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Groupes',
-            icon: FolderTree,
-            path: '/vehicle-groups',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Conducteurs',
-            icon: Users,
-            path: '/drivers',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Appareils',
-            icon: Cpu,
-            path: '/devices',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Geofences',
-            icon: Zap,
-            path: '/geofences',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Alertes',
-            icon: AlertCircle,
-            path: '/alerts',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Rapports',
-            icon: BarChart3,
-            path: '/reports',
-            roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN],
-        },
+        { label: 'Dashboard', icon: Home, path: '/', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN] },
+        { label: 'Carte', icon: Map, path: '/map', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.DRIVER, UserRole.OPERATOR, UserRole.SUPER_ADMIN] },
+        { label: 'Véhicules', icon: Truck, path: '/vehicles', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN] },
+        { label: 'Groupes', icon: FolderTree, path: '/vehicle-groups', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN] },
+        { label: 'Conducteurs', icon: Users, path: '/drivers', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN] },
+        { label: 'Appareils', icon: Cpu, path: '/devices', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN] },
+        { label: 'Géoclôtures', icon: Zap, path: '/geofences', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN] },
+        { label: 'Alertes', icon: AlertCircle, path: '/alerts', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN] },
+        { label: 'Rapports', icon: BarChart3, path: '/reports', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN] },
     ];
     const adminItems = [
-        {
-            label: 'API Docs',
-            icon: FileCode,
-            path: '/api-docs',
-            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'SDK',
-            icon: Code,
-            path: '/sdk-examples',
-            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Test',
-            icon: FlaskConical,
-            path: '/test-environment',
-            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Rôles',
-            icon: Lock,
-            path: '/roles',
-            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Journal d\'audit',
-            icon: Shield,
-            path: '/audit-log',
-            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
-        },
-        {
-            label: 'Administration',
-            icon: Shield,
-            path: '/admin',
-            roles: [UserRole.SUPER_ADMIN],
-        },
+        { label: 'API Docs', icon: FileCode, path: '/api-docs', roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN] },
+        { label: 'SDK', icon: Code, path: '/sdk-examples', roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN] },
+        { label: 'Test', icon: FlaskConical, path: '/test-environment', roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN] },
+        { label: 'Rôles', icon: Lock, path: '/roles', roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN] },
+        { label: 'Audit', icon: Shield, path: '/audit-log', roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN] },
+        { label: 'Admin', icon: Shield, path: '/admin', roles: [UserRole.SUPER_ADMIN] },
     ];
     const visibleMenuItems = menuItems.filter((item) => item.roles.some((role) => hasRole(role)));
     const visibleAdminItems = adminItems.filter((item) => item.roles.some((role) => hasRole(role)));
-    return (_jsxs(_Fragment, { children: [_jsx("button", { onClick: () => setSidebarOpen(!sidebarOpen), className: "fixed left-4 top-4 z-40 rounded-md bg-gray-900 p-2 text-white lg:hidden", children: sidebarOpen ? _jsx(X, { size: 24 }) : _jsx(Menu, { size: 24 }) }), _jsxs("aside", { className: cn('fixed inset-y-0 left-0 z-30 w-64 border-r border-slate-800 bg-gray-950 transition-transform duration-300 ease-in-out lg:translate-x-0', sidebarOpen ? 'translate-x-0' : '-translate-x-full'), children: [_jsxs("div", { className: "border-b border-slate-800 p-6", children: [_jsx("h1", { className: "text-2xl font-bold text-white", children: "TRACKZONE" }), _jsx("p", { className: "text-xs text-slate-400 mt-1", children: "MAT\u00C9RIEL TECH+" }), _jsx("p", { className: "text-xs text-slate-500 mt-1", children: "Fleet Management" })] }), _jsxs("nav", { className: "space-y-1 p-3 overflow-y-auto", style: { maxHeight: 'calc(100vh - 140px)' }, children: [visibleMenuItems.map((item) => {
-                                const Icon = item.icon;
-                                return (_jsxs(Link, { to: item.path, onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive(item.path)
-                                        ? 'border-l-2 border-white bg-white/10 text-white'
-                                        : 'text-slate-400 hover:bg-white/5 hover:text-white'), children: [_jsx(Icon, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: item.label })] }, item.path));
-                            }), visibleAdminItems.length > 0 && (_jsxs(_Fragment, { children: [_jsx("div", { className: "my-3 border-t border-slate-700/50" }), visibleAdminItems.map((item) => {
-                                        const Icon = item.icon;
-                                        return (_jsxs(Link, { to: item.path, onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive(item.path)
-                                                ? 'border-l-2 border-white bg-white/10 text-white'
-                                                : 'text-slate-400 hover:bg-white/5 hover:text-white'), children: [_jsx(Icon, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: item.label })] }, item.path));
-                                    })] }))] }), _jsxs("div", { className: "absolute bottom-0 w-full border-t border-slate-800 p-3 space-y-1", children: [_jsxs(Link, { to: "/help", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/help')
-                                    ? 'border-l-2 border-white bg-white/10 text-white'
-                                    : 'text-slate-400 hover:bg-white/5 hover:text-white'), children: [_jsx(HelpCircle, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Aide" })] }), _jsxs(Link, { to: "/settings", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/settings')
-                                    ? 'border-l-2 border-white bg-white/10 text-white'
-                                    : 'text-slate-400 hover:bg-white/5 hover:text-white'), children: [_jsx(Settings, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Param\u00E8tres" })] })] })] }), sidebarOpen && (_jsx("div", { className: "fixed inset-0 z-20 bg-black/50 lg:hidden", onClick: () => setSidebarOpen(false) }))] }));
+    const sidebarWidth = collapsed ? 'w-[72px]' : 'w-[260px]';
+    const NavLink = ({ item }) => {
+        const Icon = item.icon;
+        const active = isActive(item.path);
+        return (_jsxs(Link, { to: item.path, onClick: () => setSidebarOpen(false), className: cn('group relative flex items-center gap-3 rounded-[var(--tz-radius-sm)] px-3 py-2.5 transition-all duration-200', active
+                ? 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]'
+                : 'text-[#6B6B80] hover:bg-[#1A1A25] hover:text-[#F0F0F5]'), children: [active && (_jsx("div", { className: "absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[#00E5CC] shadow-[0_0_8px_rgba(0,229,204,0.5)]" })), _jsx(Icon, { size: 18, className: cn('shrink-0 transition-colors', active && 'drop-shadow-[0_0_6px_rgba(0,229,204,0.4)]') }), !collapsed && (_jsx("span", { className: "text-sm font-medium tracking-wide truncate", children: item.label })), collapsed && (_jsx("div", { className: "absolute left-full ml-2 px-2.5 py-1 rounded-md bg-[#1A1A25] border border-[#1F1F2E] text-xs text-[#F0F0F5] font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-[0_4px_24px_rgba(0,0,0,0.4)]", children: item.label }))] }));
+    };
+    return (_jsxs(_Fragment, { children: [_jsx("button", { onClick: () => setSidebarOpen(!sidebarOpen), className: "fixed left-4 top-4 z-40 rounded-[var(--tz-radius-sm)] bg-[#12121A] border border-[#1F1F2E] p-2 text-[#F0F0F5] lg:hidden hover:bg-[#1A1A25] transition-colors", children: sidebarOpen ? _jsx(X, { size: 20 }) : _jsx(Menu, { size: 20 }) }), _jsxs("aside", { className: cn('fixed inset-y-0 left-0 z-30 flex flex-col border-r border-[#1F1F2E] bg-[#0A0A0F] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] lg:translate-x-0', sidebarWidth, sidebarOpen ? 'translate-x-0' : '-translate-x-full'), children: [_jsxs("div", { className: "border-b border-[#1F1F2E] p-4 flex items-center gap-3", children: [_jsx("div", { className: "shrink-0 w-9 h-9 rounded-[var(--tz-radius-sm)] bg-gradient-to-br from-[#00E5CC] to-[#00C4B0] flex items-center justify-center shadow-[0_0_16px_rgba(0,229,204,0.2)]", children: _jsx("span", { className: "text-[#0A0A0F] font-extrabold text-sm tracking-tighter font-syne", children: "TZ" }) }), !collapsed && (_jsxs("div", { className: "animate-slide-in", children: [_jsx("h1", { className: "text-base font-bold tracking-[0.15em] text-[#F0F0F5] font-syne leading-none", children: "TRACKZONE" }), _jsx("p", { className: "text-[10px] font-medium tracking-[0.2em] text-[#44445A] mt-0.5 font-mono uppercase", children: "Mat\u00E9riel Tech+" })] }))] }), _jsxs("nav", { className: "flex-1 overflow-y-auto p-2.5 space-y-0.5 no-scrollbar", children: [visibleMenuItems.map((item) => (_jsx(NavLink, { item: item }, item.path))), visibleAdminItems.length > 0 && (_jsxs(_Fragment, { children: [_jsxs("div", { className: "my-3 mx-3", children: [_jsx("div", { className: "h-px bg-gradient-to-r from-transparent via-[#1F1F2E] to-transparent" }), !collapsed && (_jsx("p", { className: "text-[10px] font-semibold tracking-[0.2em] text-[#44445A] mt-3 mb-1 px-1 uppercase font-mono", children: "Admin" }))] }), visibleAdminItems.map((item) => (_jsx(NavLink, { item: item }, item.path)))] }))] }), _jsxs("div", { className: "border-t border-[#1F1F2E] p-2.5 space-y-0.5", children: [_jsx(NavLink, { item: { label: 'Aide', icon: HelpCircle, path: '/help', roles: [] } }), _jsx(NavLink, { item: { label: 'Paramètres', icon: Settings, path: '/settings', roles: [] } }), _jsxs("button", { onClick: () => setCollapsed(!collapsed), className: "hidden lg:flex w-full items-center gap-3 rounded-[var(--tz-radius-sm)] px-3 py-2 text-[#44445A] hover:text-[#6B6B80] hover:bg-[#1A1A25] transition-all duration-200", children: [collapsed ? _jsx(ChevronRight, { size: 18 }) : _jsx(ChevronLeft, { size: 18 }), !collapsed && _jsx("span", { className: "text-xs font-medium tracking-wide", children: "R\u00E9duire" })] })] })] }), sidebarOpen && (_jsx("div", { className: "fixed inset-0 z-20 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity", onClick: () => setSidebarOpen(false) }))] }));
 }
 //# sourceMappingURL=Sidebar.js.map

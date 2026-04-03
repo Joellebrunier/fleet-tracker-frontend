@@ -201,24 +201,24 @@ export default function VehiclesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#0A0A0F] min-h-screen p-6">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Catalogue Véhicules</h1>
-          <p className="text-sm text-gray-600 mt-1">Gestion de la flotte Matériel Tech+</p>
+          <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Catalogue Véhicules</h1>
+          <p className="text-sm text-[#6B6B80] mt-1">Gestion de la flotte Matériel Tech+</p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-[#1F1F2E]">
         <div className="flex gap-8">
           <button
             onClick={() => setActiveTab('vehicles')}
             className={`py-3 px-1 border-b-2 font-semibold text-sm transition-colors ${
               activeTab === 'vehicles'
-                ? 'border-gray-900 text-gray-900'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                ? 'border-[#00E5CC] text-[#00E5CC]'
+                : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
             }`}
           >
             VÉHICULES ({vehicles.length})
@@ -227,8 +227,8 @@ export default function VehiclesPage() {
             onClick={() => setActiveTab('groups')}
             className={`py-3 px-1 border-b-2 font-semibold text-sm transition-colors ${
               activeTab === 'groups'
-                ? 'border-gray-900 text-gray-900'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                ? 'border-[#00E5CC] text-[#00E5CC]'
+                : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
             }`}
           >
             GROUPES ({groups.length})
@@ -238,21 +238,21 @@ export default function VehiclesPage() {
 
       {/* Top Toolbar */}
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" className="gap-2 text-gray-900" onClick={exportToCSV}>
+        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]" onClick={exportToCSV}>
           <FileDown size={16} />
           VÉHICULES CSV
         </Button>
-        <Button variant="outline" size="sm" className="gap-2 text-gray-900" onClick={exportConducteursCSV}>
+        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]" onClick={exportConducteursCSV}>
           <FileDown size={16} />
           CONDUCTEURS CSV
         </Button>
-        <Button variant="outline" size="sm" className="gap-2 text-gray-900">
+        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">
           RÔLES
         </Button>
-        <Button variant="outline" size="sm" className="gap-2 text-gray-900">
+        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">
           AUDIT
         </Button>
-        <Button variant="outline" size="sm" className="gap-2 text-gray-900">
+        <Button variant="outline" size="sm" className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">
           ATTRIBUTION
         </Button>
       </div>
@@ -261,7 +261,7 @@ export default function VehiclesPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-3 text-gray-400" size={18} />
+            <Search className="absolute left-3 top-3 text-[#44445A]" size={18} />
             <Input
               type="search"
               placeholder="Rechercher par nom ou immatriculation..."
@@ -270,7 +270,7 @@ export default function VehiclesPage() {
                 setSearchTerm(e.target.value)
                 setPage(1)
               }}
-              className="pl-10 text-gray-900"
+              className="pl-10 bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]"
             />
           </div>
         </div>
@@ -280,7 +280,7 @@ export default function VehiclesPage() {
             setSelectedType(e.target.value)
             setPage(1)
           }}
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
+          className="rounded-[12px] border border-[#1F1F2E] bg-[#12121A] px-4 py-2 text-sm font-medium text-[#F0F0F5] hover:bg-[#1A1A25]"
         >
           <option value="">Tous types</option>
           <option value="voiture">Voiture</option>
@@ -297,7 +297,7 @@ export default function VehiclesPage() {
             setSelectedGroup(e.target.value)
             setPage(1)
           }}
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
+          className="rounded-[12px] border border-[#1F1F2E] bg-[#12121A] px-4 py-2 text-sm font-medium text-[#F0F0F5] hover:bg-[#1A1A25]"
         >
           <option value="">Filtrer par groupe</option>
           {groups.map(group => (
@@ -310,7 +310,7 @@ export default function VehiclesPage() {
             setSelectedSource(e.target.value)
             setPage(1)
           }}
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
+          className="rounded-[12px] border border-[#1F1F2E] bg-[#12121A] px-4 py-2 text-sm font-medium text-[#F0F0F5] hover:bg-[#1A1A25]"
         >
           <option value="">Toutes sources</option>
           <option value="echoes">ECHOES</option>
@@ -323,13 +323,13 @@ export default function VehiclesPage() {
             setSelectedStatus(e.target.value)
             setPage(1)
           }}
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50"
+          className="rounded-[12px] border border-[#1F1F2E] bg-[#12121A] px-4 py-2 text-sm font-medium text-[#F0F0F5] hover:bg-[#1A1A25]"
         >
           <option value="">Tous statuts</option>
           <option value="active">ACTIF</option>
           <option value="offline">HORS LIGNE</option>
         </select>
-        <div className="text-sm font-medium text-gray-900">
+        <div className="text-sm font-medium text-[#F0F0F5]">
           {vehicles.length} résultat{vehicles.length !== 1 ? 's' : ''}
         </div>
       </div>
@@ -340,7 +340,7 @@ export default function VehiclesPage() {
           <Button
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
-            className="gap-2"
+            className="gap-2 bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
             onClick={() => setViewMode('list')}
           >
             <List size={16} />
@@ -348,13 +348,13 @@ export default function VehiclesPage() {
           <Button
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
-            className="gap-2"
+            className="gap-2 bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
             onClick={() => setViewMode('grid')}
           >
             <LayoutGrid size={16} />
           </Button>
         </div>
-        <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white" onClick={openCreateModal}>
+        <Button className="gap-2 bg-[#00E5CC] hover:bg-[#00CCA6] text-[#0A0A0F] font-semibold" onClick={openCreateModal}>
           <Plus size={18} />
           AJOUTER UN TRACEUR
         </Button>
@@ -366,29 +366,29 @@ export default function VehiclesPage() {
           {isLoading ? (
             <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-2'}>
               {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className={viewMode === 'grid' ? 'h-48' : 'h-12'} />
+                <Skeleton key={i} className={`${viewMode === 'grid' ? 'h-48' : 'h-12'} bg-[#12121A]`} />
               ))}
             </div>
           ) : vehicles.length === 0 ? (
-            <Card className="text-center">
+            <Card className="bg-[#12121A] border-[#1F1F2E] text-center">
               <CardContent className="pt-12">
-                <p className="text-gray-900">Aucun véhicule trouvé</p>
+                <p className="text-[#F0F0F5]">Aucun véhicule trouvé</p>
               </CardContent>
             </Card>
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {vehicles.map((vehicle) => (
-                <Card key={vehicle.id} className="hover:shadow-lg transition-shadow">
+                <Card key={vehicle.id} className="bg-[#12121A] border-[#1F1F2E] hover:border-[#2A2A3D] transition-all">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle
-                          className="text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
+                          className="text-[#F0F0F5] cursor-pointer hover:text-[#00E5CC] transition-colors font-syne"
                           onClick={() => navigate(`/vehicles/${vehicle.id}`)}
                         >
                           {vehicle.name}
                         </CardTitle>
-                        <p className="text-sm text-gray-600 mt-1">{vehicle.plate || 'N/A'}</p>
+                        <p className="text-sm text-[#6B6B80] mt-1">{vehicle.plate || 'N/A'}</p>
                       </div>
                       <input
                         type="checkbox"
@@ -401,8 +401,8 @@ export default function VehiclesPage() {
                   <CardContent className="space-y-3">
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <p className="text-gray-600">Type</p>
-                        <p className="font-medium text-gray-900">
+                        <p className="text-[#6B6B80]">Type</p>
+                        <p className="font-medium text-[#F0F0F5] font-mono">
                           {vehicle.type === 'voiture' && 'Voiture'}
                           {vehicle.type === 'camion' && 'Camion'}
                           {vehicle.type === 'utilitaire' && 'Utilitaire'}
@@ -414,23 +414,23 @@ export default function VehiclesPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600">VIN</p>
-                        <p className="font-medium text-gray-900 truncate">
+                        <p className="text-[#6B6B80]">VIN</p>
+                        <p className="font-medium text-[#F0F0F5] truncate font-mono">
                           {vehicle.vin ? vehicle.vin.substring(0, 8) : 'N/A'}
                         </p>
                       </div>
                     </div>
                     <div className="flex gap-2 items-center">
-                      <Badge variant={vehicle.status === 'active' ? 'default' : 'destructive'}>
+                      <Badge variant={vehicle.status === 'active' ? 'default' : 'destructive'} className={vehicle.status === 'active' ? 'bg-[#00E5CC] bg-opacity-20 text-[#00E5CC]' : 'bg-[#FF4D6A] bg-opacity-20 text-[#FF4D6A]'}>
                         {vehicle.status === 'active' ? 'ACTIF' : 'HORS LIGNE'}
                       </Badge>
-                      <span className="text-xs text-gray-600">{(vehicle.metadata as any)?.source || 'ECHOES'}</span>
+                      <span className="text-xs text-[#44445A]">{(vehicle.metadata as any)?.source || 'ECHOES'}</span>
                     </div>
                     <div className="flex gap-2 pt-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 gap-2"
+                        className="flex-1 gap-2 bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
                         onClick={() => openEditModal(vehicle)}
                       >
                         <Edit2 size={14} />
@@ -439,7 +439,7 @@ export default function VehiclesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-red-600 hover:text-red-700"
+                        className="text-[#FF4D6A] hover:text-[#FF4D6A] hover:bg-[#FF4D6A] hover:bg-opacity-10 bg-[#1A1A25] border-[#1F1F2E]"
                         onClick={() => setDeleteConfirmId(vehicle.id)}
                       >
                         <Trash2 size={14} />
@@ -450,12 +450,12 @@ export default function VehiclesPage() {
               ))}
             </div>
           ) : (
-            <Card>
+            <Card className="bg-[#12121A] border-[#1F1F2E]">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200 bg-gray-900 text-white">
-                      <th className="px-4 py-3 text-left text-sm font-semibold w-12">
+                    <tr className="border-b border-[#1F1F2E] bg-[#0A0A0F]">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-[#F0F0F5] w-12">
                         <input
                           type="checkbox"
                           checked={selectedIds.size === vehicles.length && vehicles.length > 0}
@@ -463,23 +463,23 @@ export default function VehiclesPage() {
                           className="rounded"
                         />
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">NOM</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">VIN</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">PLAQUE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">CATÉGORIE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">ÉTAT</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">DISPONIBILITÉ</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">SOURCE</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">ACTIONS</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">NOM</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">VIN</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">PLAQUE</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">CATÉGORIE</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">ÉTAT</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">DISPONIBILITÉ</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">SOURCE</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">ACTIONS</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-[#1F1F2E]">
                     {vehicles.map((vehicle) => (
                       <tr
                         key={vehicle.id}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-[#1A1A25] transition-colors"
                       >
-                        <td className="px-4 py-4 text-sm font-medium text-gray-900 w-12">
+                        <td className="px-4 py-4 text-sm font-medium text-[#F0F0F5] w-12">
                           <input
                             type="checkbox"
                             checked={selectedIds.has(vehicle.id)}
@@ -487,21 +487,21 @@ export default function VehiclesPage() {
                             className="rounded"
                           />
                         </td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 text-sm font-medium text-[#F0F0F5]">
                           <button
                             onClick={() => navigate(`/vehicles/${vehicle.id}`)}
-                            className="hover:text-blue-600 hover:underline transition-colors"
+                            className="hover:text-[#00E5CC] hover:underline transition-colors"
                           >
                             {vehicle.name}
                           </button>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
+                        <td className="px-6 py-4 text-sm text-[#F0F0F5] font-mono">
                           {vehicle.vin ? (vehicle.vin.length > 8 ? vehicle.vin.substring(0, 8) + '...' : vehicle.vin) : '—'}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
+                        <td className="px-6 py-4 text-sm text-[#F0F0F5] font-mono">
                           {vehicle.plate || '—'}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 capitalize">
+                        <td className="px-6 py-4 text-sm text-[#F0F0F5] capitalize">
                           {vehicle.type ? (
                             <>
                               {vehicle.type === 'voiture' && 'Voiture'}
@@ -517,22 +517,22 @@ export default function VehiclesPage() {
                         </td>
                         <td className="px-6 py-4 text-sm">
                           {vehicle.status === 'active' ? (
-                            <span className="text-green-600 font-semibold">ACTIF</span>
+                            <span className="text-[#00E5CC] font-semibold">ACTIF</span>
                           ) : (
-                            <span className="text-gray-500 font-semibold">HORS LIGNE</span>
+                            <span className="text-[#6B6B80] font-semibold">HORS LIGNE</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm">
                           {vehicle.status === 'active' ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Disponible</span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#00E5CC] bg-opacity-20 text-[#00E5CC]">Disponible</span>
                           ) : vehicle.status === 'maintenance' ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">En maintenance</span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FFB547] bg-opacity-20 text-[#FFB547]">En maintenance</span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Indisponible</span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FF4D6A] bg-opacity-20 text-[#FF4D6A]">Indisponible</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm">
-                          <span className="text-blue-600 font-semibold">
+                          <span className="text-[#00E5CC] font-semibold">
                             {(vehicle.metadata as any)?.source || 'ECHOES'}
                           </span>
                         </td>
@@ -546,7 +546,7 @@ export default function VehiclesPage() {
                                 openEditModal(vehicle)
                               }}
                               title="Modifier"
-                              className="text-gray-900 hover:text-gray-700"
+                              className="text-[#F0F0F5] hover:text-[#00E5CC]"
                             >
                               <Edit2 size={16} />
                             </Button>
@@ -558,7 +558,7 @@ export default function VehiclesPage() {
                                 setDeleteConfirmId(vehicle.id)
                               }}
                               title="Supprimer"
-                              className="text-gray-900 hover:text-red-600"
+                              className="text-[#F0F0F5] hover:text-[#FF4D6A]"
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -575,7 +575,7 @@ export default function VehiclesPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-900">
+              <p className="text-sm text-[#F0F0F5]">
                 Page {page} sur {totalPages}
               </p>
               <div className="flex gap-2">
@@ -584,7 +584,7 @@ export default function VehiclesPage() {
                   size="sm"
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="text-gray-900"
+                  className="text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
                 >
                   Précédent
                 </Button>
@@ -593,7 +593,7 @@ export default function VehiclesPage() {
                   size="sm"
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  className="text-gray-900"
+                  className="text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
                 >
                   Suivant
                 </Button>
@@ -609,26 +609,26 @@ export default function VehiclesPage() {
           {groupsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-48" />
+                <Skeleton key={i} className="h-48 bg-[#12121A]" />
               ))}
             </div>
           ) : groups.length === 0 ? (
-            <Card className="text-center">
+            <Card className="bg-[#12121A] border-[#1F1F2E] text-center">
               <CardContent className="pt-12">
-                <p className="text-gray-900">Aucun groupe configuré</p>
+                <p className="text-[#F0F0F5]">Aucun groupe configuré</p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {groups.map((group) => (
-                <Card key={group.id} className="hover:shadow-lg transition-shadow">
+                <Card key={group.id} className="bg-[#12121A] border-[#1F1F2E] hover:border-[#2A2A3D] transition-all">
                   <CardHeader>
-                    <CardTitle className="text-gray-900">{group.name}</CardTitle>
-                    <p className="text-sm text-gray-600 mt-2">{group.description || 'Pas de description'}</p>
+                    <CardTitle className="text-[#F0F0F5] font-syne">{group.name}</CardTitle>
+                    <p className="text-sm text-[#6B6B80] mt-2">{group.description || 'Pas de description'}</p>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="bg-[#1A1A25] text-[#F0F0F5] border-[#1F1F2E]">
                         {group.vehicleCount || 0} véhicules
                       </Badge>
                     </div>
@@ -636,7 +636,7 @@ export default function VehiclesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 gap-2"
+                        className="flex-1 gap-2 bg-[#1A1A25] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1E1E2A]"
                       >
                         <Edit2 size={14} />
                         Éditer
@@ -644,7 +644,7 @@ export default function VehiclesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-red-600 hover:text-red-700"
+                        className="text-[#FF4D6A] hover:text-[#FF4D6A] hover:bg-[#FF4D6A] hover:bg-opacity-10 bg-[#1A1A25] border-[#1F1F2E]"
                       >
                         <Trash2 size={14} />
                       </Button>
@@ -659,15 +659,15 @@ export default function VehiclesPage() {
 
       {/* Floating Action Bar for Selection */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 flex items-center gap-4">
-          <span className="text-sm font-medium text-gray-900">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#12121A] border border-[#1F1F2E] rounded-[12px] shadow-lg p-4 flex items-center gap-4">
+          <span className="text-sm font-medium text-[#F0F0F5]">
             {selectedIds.size} véhicules sélectionnés
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={exportToCSV}
-            className="gap-2 text-gray-900"
+            className="gap-2 text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]"
           >
             <Download size={16} />
             Exporter
@@ -681,7 +681,7 @@ export default function VehiclesPage() {
                 setSelectedIds(new Set())
               }
             }}
-            className="gap-2 text-white"
+            className="gap-2 bg-[#FF4D6A] hover:bg-[#E63D5C] text-white"
           >
             <Trash2 size={16} />
             Supprimer
@@ -691,30 +691,30 @@ export default function VehiclesPage() {
 
       {/* Create/Edit Vehicle Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg bg-[#12121A] border-[#1F1F2E]">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">{editingVehicle ? 'Modifier le véhicule' : 'Nouveau véhicule'}</DialogTitle>
-            <DialogDescription className="text-gray-600">{editingVehicle ? 'Mettre à jour les informations du véhicule' : 'Ajouter un nouveau véhicule à votre flotte'}</DialogDescription>
+            <DialogTitle className="text-[#F0F0F5] font-syne">{editingVehicle ? 'Modifier le véhicule' : 'Nouveau véhicule'}</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">{editingVehicle ? 'Mettre à jour les informations du véhicule' : 'Ajouter un nouveau véhicule à votre flotte'}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">Nom *</label>
-                <Input value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} placeholder="Camion A1" className="text-gray-900" />
+                <label className="text-sm font-medium text-[#F0F0F5]">Nom *</label>
+                <Input value={formData.name} onChange={(e) => setFormData(p => ({...p, name: e.target.value}))} placeholder="Camion A1" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">Immatriculation *</label>
-                <Input value={formData.plate} onChange={(e) => setFormData(p => ({...p, plate: e.target.value}))} placeholder="AB-123-CD" className="text-gray-900" />
+                <label className="text-sm font-medium text-[#F0F0F5]">Immatriculation *</label>
+                <Input value={formData.plate} onChange={(e) => setFormData(p => ({...p, plate: e.target.value}))} placeholder="AB-123-CD" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-900">VIN</label>
-              <Input value={formData.vin} onChange={(e) => setFormData(p => ({...p, vin: e.target.value}))} placeholder="WDB1234567F123456" className="text-gray-900" />
+              <label className="text-sm font-medium text-[#F0F0F5]">VIN</label>
+              <Input value={formData.vin} onChange={(e) => setFormData(p => ({...p, vin: e.target.value}))} placeholder="WDB1234567F123456" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">Type</label>
-                <select value={formData.type} onChange={(e) => setFormData(p => ({...p, type: e.target.value}))} className="w-full rounded-md border border-gray-300 bg-white text-gray-900 px-3 py-2 text-sm">
+                <label className="text-sm font-medium text-[#F0F0F5]">Type</label>
+                <select value={formData.type} onChange={(e) => setFormData(p => ({...p, type: e.target.value}))} className="w-full rounded-[12px] border border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5] px-3 py-2 text-sm">
                   <option value="voiture">Voiture</option>
                   <option value="camion">Camion</option>
                   <option value="utilitaire">Véhicule utilitaire</option>
@@ -725,28 +725,28 @@ export default function VehiclesPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">Année</label>
-                <Input type="number" value={formData.year} onChange={(e) => setFormData(p => ({...p, year: parseInt(e.target.value) || 0}))} placeholder="2024" className="text-gray-900" />
+                <label className="text-sm font-medium text-[#F0F0F5]">Année</label>
+                <Input type="number" value={formData.year} onChange={(e) => setFormData(p => ({...p, year: parseInt(e.target.value) || 0}))} placeholder="2024" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">Marque</label>
-                <Input value={formData.brand} onChange={(e) => setFormData(p => ({...p, brand: e.target.value}))} placeholder="Renault" className="text-gray-900" />
+                <label className="text-sm font-medium text-[#F0F0F5]">Marque</label>
+                <Input value={formData.brand} onChange={(e) => setFormData(p => ({...p, brand: e.target.value}))} placeholder="Renault" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-900">Modèle</label>
-                <Input value={formData.model} onChange={(e) => setFormData(p => ({...p, model: e.target.value}))} placeholder="Master" className="text-gray-900" />
+                <label className="text-sm font-medium text-[#F0F0F5]">Modèle</label>
+                <Input value={formData.model} onChange={(e) => setFormData(p => ({...p, model: e.target.value}))} placeholder="Master" className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] placeholder:text-[#44445A] focus:border-[#00E5CC]" />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-900">Notes</label>
-              <textarea value={formData.notes} onChange={(e) => setFormData(p => ({...p, notes: e.target.value}))} placeholder="Informations supplémentaires..." className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" rows={3} />
+              <label className="text-sm font-medium text-[#F0F0F5]">Notes</label>
+              <textarea value={formData.notes} onChange={(e) => setFormData(p => ({...p, notes: e.target.value}))} placeholder="Informations supplémentaires..." className="w-full px-3 py-2 border border-[#1F1F2E] rounded-[12px] text-sm text-[#F0F0F5] bg-[#12121A] focus:outline-none focus:ring-2 focus:ring-[#00E5CC] placeholder:text-[#44445A]" rows={3} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)} className="text-gray-900">Annuler</Button>
-            <Button onClick={handleSubmitVehicle} disabled={createVehicle.isPending || updateVehicleMutation.isPending}>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)} className="text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">Annuler</Button>
+            <Button onClick={handleSubmitVehicle} disabled={createVehicle.isPending || updateVehicleMutation.isPending} className="bg-[#00E5CC] hover:bg-[#00CCA6] text-[#0A0A0F] font-semibold">
               {(createVehicle.isPending || updateVehicleMutation.isPending) ? 'Enregistrement...' : editingVehicle ? 'Mettre à jour' : 'Créer'}
             </Button>
           </DialogFooter>
@@ -755,14 +755,14 @@ export default function VehiclesPage() {
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
-        <DialogContent>
+        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Confirmer la suppression</DialogTitle>
-            <DialogDescription className="text-gray-600">Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible.</DialogDescription>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Confirmer la suppression</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">Êtes-vous sûr de vouloir supprimer ce véhicule ? Cette action est irréversible.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmId(null)} className="text-gray-900">Annuler</Button>
-            <Button variant="destructive" onClick={handleDeleteVehicle} disabled={deleteVehicleMutation.isPending}>
+            <Button variant="outline" onClick={() => setDeleteConfirmId(null)} className="text-[#F0F0F5] bg-[#1A1A25] border-[#1F1F2E] hover:bg-[#1E1E2A]">Annuler</Button>
+            <Button variant="destructive" onClick={handleDeleteVehicle} disabled={deleteVehicleMutation.isPending} className="bg-[#FF4D6A] hover:bg-[#E63D5C]">
               {deleteVehicleMutation.isPending ? 'Suppression...' : 'Supprimer'}
             </Button>
           </DialogFooter>

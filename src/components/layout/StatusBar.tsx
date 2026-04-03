@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useVehicles } from '@/hooks/useVehicles'
 import { useUnacknowledgedAlertsCount } from '@/hooks/useAlerts'
 import { useAuthStore } from '@/stores/authStore'
@@ -7,6 +8,40 @@ import { useNavigate } from 'react-router-dom'
 import { Bell, RefreshCw, Settings, Moon, Sun } from 'lucide-react'
 import { VehicleStatus } from '@/types/vehicle'
 
+function LiveClock() {
+  const [time, setTime] = useState(new Date())
+  useEffect(() => {
+    const id = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <span className="font-mono text-sm text-[#6B6B80] tabular-nums tracking-wider">
+      {time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+    </span>
+  )
+}
+
+function StatusPill({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="flex items-center gap-2 group">
+      <span className="text-[11px] font-semibold tracking-[0.15em] text-[#44445A] uppercase font-syne hidden xl:inline">
+        {label}
+      </span>
+      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all duration-200 group-hover:shadow-[0_0_12px_rgba(0,229,204,0.1)]"
+        style={{ borderColor: color + '40', background: color + '08' }}
+      >
+        <div
+          className="w-1.5 h-1.5 rounded-full animate-dot-pulse"
+          style={{ background: color, boxShadow: `0 0 6px ${color}60` }}
+        />
+        <span className="text-sm font-bold font-mono tabular-nums" style={{ color }}>
+          {value}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export default function StatusBar() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -15,7 +50,6 @@ export default function StatusBar() {
   const { data: vehiclesData } = useVehicles({ limit: 1000 })
   const alertsCount = useUnacknowledgedAlertsCount()
 
-  // Calculate vehicle statistics
   const vehicles = vehiclesData?.data || []
   const totalVehicles = vehicles.length
   const movingVehicles = vehicles.filter(
@@ -34,96 +68,52 @@ export default function StatusBar() {
   }
 
   return (
-    <div className="bg-black text-white">
-      <div className="px-6 py-3">
-        <div className="flex items-center justify-between gap-6">
-          {/* Left: Logo and Title */}
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <div className="flex items-baseline gap-2">
-                <h1 className="text-lg font-bold tracking-wider">TRACKZONE</h1>
-                <p className="text-xs text-slate-500 font-semibold">by MATÉRIEL TECH+</p>
-              </div>
-              <p className="text-xs text-slate-400 font-semibold">FLEET MANAGEMENT — GÉOLOCALISATION</p>
-            </div>
+    <div className="bg-[#0A0A0F] border-b border-[#1F1F2E]">
+      <div className="px-4 py-2">
+        <div className="flex items-center justify-between gap-4">
+          {/* Left: Vehicle Status Counters */}
+          <div className="flex items-center gap-4 stagger-children">
+            <StatusPill label="Total" value={totalVehicles} color="#F0F0F5" />
+            <StatusPill label="En route" value={movingVehicles} color="#00E5CC" />
+            <StatusPill label="Arrêt" value={stoppedVehicles} color="#FFB547" />
+            <StatusPill label="Hors ligne" value={notLocatedVehicles} color="#FF4D6A" />
           </div>
 
-          {/* Center: Vehicle Counters */}
-          <div className="flex items-center gap-6 flex-1 justify-center">
-            {/* Total Vehicles */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-slate-300">VÉHICULES</span>
-              <span className="border border-slate-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                {totalVehicles}
-              </span>
-            </div>
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            <LiveClock />
 
-            {/* Moving - Green */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-slate-300">EN MOUVEMENT</span>
-              <span className="border border-green-500 text-green-400 px-3 py-1 rounded-full text-sm font-semibold">
-                {movingVehicles}
-              </span>
-            </div>
+            <div className="w-px h-4 bg-[#1F1F2E] mx-1" />
 
-            {/* Stopped - Amber */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-slate-300">À L'ARRÊT</span>
-              <span className="border border-amber-500 text-amber-400 px-3 py-1 rounded-full text-sm font-semibold">
-                {stoppedVehicles}
-              </span>
-            </div>
-
-            {/* Not Located - Red */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-slate-300">NON LOCALISÉS</span>
-              <span className="border border-red-500 text-red-400 px-3 py-1 rounded-full text-sm font-semibold">
-                {notLocatedVehicles}
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Action Buttons */}
-          <div className="flex items-center gap-4">
-            {/* Alerts Button */}
+            {/* Alerts */}
             <button
               onClick={() => navigate('/alerts')}
-              className="relative inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-white/10 transition-colors"
+              className="relative flex items-center gap-1.5 rounded-[var(--tz-radius-sm)] px-2.5 py-1.5 text-[#6B6B80] hover:text-[#F0F0F5] hover:bg-[#1A1A25] transition-all duration-200"
             >
-              <Bell size={18} />
-              <span>Alertes</span>
+              <Bell size={16} />
               {alertsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 bg-[#FF4D6A] text-[#0A0A0F] text-[10px] font-bold font-mono rounded-full h-4 min-w-[16px] flex items-center justify-center px-1 animate-count-up shadow-[0_0_8px_rgba(255,77,106,0.4)]">
                   {alertsCount > 99 ? '99+' : alertsCount}
                 </span>
               )}
             </button>
 
-            {/* Refresh Button */}
+            {/* Refresh */}
             <button
               onClick={handleRefresh}
-              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-white/10 transition-colors"
-              title="Rafraîchir les données"
+              className="rounded-[var(--tz-radius-sm)] p-1.5 text-[#44445A] hover:text-[#00E5CC] hover:bg-[rgba(0,229,204,0.08)] transition-all duration-200 active:rotate-180"
+              title="Rafraîchir"
             >
-              <RefreshCw size={18} />
+              <RefreshCw size={15} />
             </button>
 
-            {/* Theme Toggle */}
-            <button
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-white/10 transition-colors"
-              title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
-            {/* Settings Icon */}
+            {/* Settings */}
             <button
               onClick={() => navigate('/settings')}
-              className="rounded-lg px-3 py-2 text-slate-300 hover:bg-white/10 transition-colors"
+              className="rounded-[var(--tz-radius-sm)] p-1.5 text-[#44445A] hover:text-[#F0F0F5] hover:bg-[#1A1A25] transition-all duration-200"
               title="Paramètres"
             >
-              <Settings size={18} />
+              <Settings size={15} />
             </button>
           </div>
         </div>

@@ -193,17 +193,17 @@ export default function ApiDocsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#0A0A0F] min-h-screen p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Documentation API</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Documentation API</h1>
+        <p className="mt-2 text-[#6B6B80]">
           Intégrez TrackZone dans votre application
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200 flex-wrap">
+      <div className="flex gap-2 border-b border-[#1F1F2E] flex-wrap">
         {[
           { id: 'endpoints', label: 'Endpoints' },
           { id: 'examples', label: 'Exemples' },
@@ -217,8 +217,8 @@ export default function ApiDocsPage() {
             className={cn(
               'px-4 py-3 font-medium text-sm border-b-2 transition-colors',
               activeTab === tab.id
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                ? 'border-[#00E5CC] text-[#00E5CC]'
+                : 'border-transparent text-[#6B6B80] hover:text-[#F0F0F5]'
             )}
           >
             {tab.label}
@@ -238,8 +238,8 @@ export default function ApiDocsPage() {
                   className={cn(
                     'px-4 py-2 rounded-lg font-medium transition-colors',
                     selectedCategory === null
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                      ? 'bg-[#00E5CC] text-[#0A0A0F]'
+                      : 'bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#2A2A3D]'
                   )}
                 >
                   Tous
@@ -251,8 +251,8 @@ export default function ApiDocsPage() {
                     className={cn(
                       'px-4 py-2 rounded-lg font-medium transition-colors',
                       selectedCategory === cat
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                        ? 'bg-[#00E5CC] text-[#0A0A0F]'
+                        : 'bg-[#1A1A25] text-[#F0F0F5] hover:bg-[#2A2A3D]'
                     )}
                   >
                     {cat}
@@ -272,11 +272,11 @@ export default function ApiDocsPage() {
                       <Badge variant={getMethodColor(endpoint.method)}>
                         {getMethodLabel(endpoint.method)}
                       </Badge>
-                      <code className="text-sm font-mono bg-gray-100 px-3 py-1 rounded text-gray-900">
+                      <code className="text-sm font-mono bg-[#0A0A0F] px-3 py-1 rounded text-[#F0F0F5]">
                         {endpoint.path}
                       </code>
                     </div>
-                    <p className="text-gray-600">{endpoint.description}</p>
+                    <p className="text-[#6B6B80]">{endpoint.description}</p>
                   </div>
                   <Button
                     variant="outline"
@@ -302,8 +302,8 @@ export default function ApiDocsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">cURL</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">cURL</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`curl -X GET "https://api.trackzone.com/api/vehicles" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}</code>
@@ -326,10 +326,10 @@ export default function ApiDocsPage() {
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">
                   JavaScript (fetch)
                 </h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`const response = await fetch('https://api.trackzone.com/api/vehicles', {
   method: 'GET',
   headers: {
@@ -362,8 +362,8 @@ const data = await response.json();`
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Python</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">Python</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`import requests
 
 headers = {
@@ -405,8 +405,8 @@ data = response.json()`
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">cURL</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">cURL</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`curl -X GET "https://api.trackzone.com/api/gps/history/vehicle-123" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}</code>
@@ -429,8 +429,8 @@ data = response.json()`
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">JavaScript (fetch)</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">JavaScript (fetch)</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`const vehicleId = 'vehicle-123';
 const response = await fetch(\`https://api.trackzone.com/api/gps/history/\${vehicleId}\`, {
   method: 'GET',
@@ -465,8 +465,8 @@ const history = await response.json();`
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Python</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">Python</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`import requests
 
 vehicle_id = 'vehicle-123'
@@ -512,8 +512,8 @@ history = response.json()`
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">cURL</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">cURL</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`curl -X POST "https://api.trackzone.com/api/geofences" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
@@ -556,10 +556,10 @@ history = response.json()`
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">
                   JavaScript (fetch)
                 </h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`const response = await fetch('https://api.trackzone.com/api/geofences', {
   method: 'POST',
   headers: {
@@ -612,8 +612,8 @@ const data = await response.json();`
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Python</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">Python</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`import requests
 import json
 
@@ -681,8 +681,8 @@ data = response.json()`
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">cURL</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">cURL</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`curl -X GET "https://api.trackzone.com/api/alerts" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}</code>
@@ -705,8 +705,8 @@ data = response.json()`
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">JavaScript (fetch)</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">JavaScript (fetch)</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`const response = await fetch('https://api.trackzone.com/api/alerts', {
   method: 'GET',
   headers: {
@@ -739,8 +739,8 @@ const alerts = await response.json();`
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Python</h3>
-                <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                <h3 className="font-semibold text-[#F0F0F5] mb-2">Python</h3>
+                <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                   <code>{`import requests
 
 headers = {
@@ -786,20 +786,20 @@ alerts = response.json()`
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">
+              <h3 className="font-semibold text-[#F0F0F5] mb-2">
                 Utiliser une clé API
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-[#6B6B80] mb-4">
                 Incluez votre clé API dans l'en-tête Authorization de chaque requête :
               </p>
-              <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+              <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                 <code>Authorization: Bearer sk_live_YOUR_KEY_HERE</code>
               </div>
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Exemple</h3>
-              <div className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+              <h3 className="font-semibold text-[#F0F0F5] mb-2">Exemple</h3>
+              <div className="bg-[#0A0A0F] text-[#00E5CC] p-4 rounded-lg font-mono text-sm overflow-x-auto">
                 <code>{`GET /api/vehicles HTTP/1.1
 Host: api.trackzone.com
 Authorization: Bearer sk_live_1a2b3c4d5e6f7g8h9i0j
@@ -807,8 +807,8 @@ Content-Type: application/json`}</code>
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-              <p className="text-blue-900">
+            <div className="bg-[#12121A] border border-[#1F1F2E] p-4 rounded-lg">
+              <p className="text-[#F0F0F5]">
                 <strong>Sécurité :</strong> Ne stockez pas vos clés API dans le code
                 source. Utilisez des variables d'environnement.
               </p>
@@ -827,31 +827,31 @@ Content-Type: application/json`}</code>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="border border-gray-200 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-900 mb-2">Plan Starter</h3>
-                    <p className="text-3xl font-bold text-blue-600 mb-2">100</p>
-                    <p className="text-gray-600 text-sm">requêtes par minute</p>
+                  <div className="border border-[#1F1F2E] p-4 rounded-lg">
+                    <h3 className="font-semibold text-[#F0F0F5] mb-2">Plan Starter</h3>
+                    <p className="text-3xl font-bold text-[#00E5CC] mb-2">100</p>
+                    <p className="text-[#6B6B80] text-sm">requêtes par minute</p>
                   </div>
-                  <div className="border border-gray-200 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <div className="border border-[#1F1F2E] p-4 rounded-lg">
+                    <h3 className="font-semibold text-[#F0F0F5] mb-2">
                       Plan Professionnel
                     </h3>
-                    <p className="text-3xl font-bold text-blue-600 mb-2">500</p>
-                    <p className="text-gray-600 text-sm">requêtes par minute</p>
+                    <p className="text-3xl font-bold text-[#00E5CC] mb-2">500</p>
+                    <p className="text-[#6B6B80] text-sm">requêtes par minute</p>
                   </div>
-                  <div className="border border-gray-200 p-4 rounded-lg">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                  <div className="border border-[#1F1F2E] p-4 rounded-lg">
+                    <h3 className="font-semibold text-[#F0F0F5] mb-2">
                       Plan Entreprise
                     </h3>
-                    <p className="text-3xl font-bold text-blue-600 mb-2">
+                    <p className="text-3xl font-bold text-[#00E5CC] mb-2">
                       Illimité
                     </p>
-                    <p className="text-gray-600 text-sm">Support prioritaire</p>
+                    <p className="text-[#6B6B80] text-sm">Support prioritaire</p>
                   </div>
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-                  <p className="text-amber-900">
+                <div className="bg-[#12121A] border border-[#FFB547] p-4 rounded-lg">
+                  <p className="text-[#FFB547]">
                     <strong>En cas de dépassement :</strong> Vous recevrez une réponse
                     429 Too Many Requests. Attendez avant de réessayer.
                   </p>
@@ -870,25 +870,25 @@ Content-Type: application/json`}</code>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Clés actives</h3>
-              <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+              <h3 className="font-semibold text-[#F0F0F5] mb-4">Clés actives</h3>
+              <div className="border border-[#1F1F2E] rounded-lg p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Production</p>
+                      <p className="text-sm font-medium text-[#F0F0F5]">Production</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <code className="text-xs font-mono bg-gray-100 px-2 py-1 rounded flex-1">
+                        <code className="text-xs font-mono bg-[#0A0A0F] px-2 py-1 rounded flex-1">
                           {showKey ? apiKey : apiKey.substring(0, 10) + '...'}
                         </code>
                         <button
                           onClick={() => setShowKey(!showKey)}
-                          className="p-1 hover:bg-gray-100 rounded"
+                          className="p-1 hover:bg-[#0A0A0F] rounded"
                         >
                           {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                         <button
                           onClick={() => copyToClipboard(apiKey)}
-                          className="p-1 hover:bg-gray-100 rounded"
+                          className="p-1 hover:bg-[#0A0A0F] rounded"
                         >
                           <Copy size={16} />
                         </button>
@@ -916,8 +916,8 @@ Content-Type: application/json`}</code>
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-              <p className="text-blue-900">
+            <div className="bg-[#12121A] border border-[#1F1F2E] p-4 rounded-lg">
+              <p className="text-[#F0F0F5]">
                 <strong>Conseil :</strong> Générez une nouvelle clé régulièrement pour
                 renforcer la sécurité. Les anciennes clés seront désactivées.
               </p>

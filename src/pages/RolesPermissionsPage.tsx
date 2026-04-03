@@ -155,13 +155,13 @@ export default function RolesPermissionsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Rôles et permissions</h1>
-          <p className="mt-1 text-sm text-gray-600">Gérez les rôles d'accès et les permissions de votre organisation</p>
+          <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Rôles et permissions</h1>
+          <p className="mt-1 text-sm text-[#6B6B80]">Gérez les rôles d'accès et les permissions de votre organisation</p>
         </div>
-        <Button onClick={handleCreateRole} className="gap-2">
+        <Button onClick={handleCreateRole} className="gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00D4B8]">
           <Plus size={16} />
           Créer un rôle
         </Button>
@@ -170,35 +170,35 @@ export default function RolesPermissionsPage() {
       {/* Roles Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {roles.map(role => (
-          <Card key={role.id} className="flex flex-col">
+          <Card key={role.id} className="flex flex-col bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Shield size={16} className={role.isSystem ? 'text-blue-600' : 'text-purple-600'} />
+                  <CardTitle className="flex items-center gap-2 text-base text-[#F0F0F5] font-syne">
+                    <Shield size={16} className={role.isSystem ? 'text-[#00E5CC]' : 'text-[#FFB547]'} />
                     {role.name}
                   </CardTitle>
-                  <CardDescription className="mt-1">{role.description}</CardDescription>
+                  <CardDescription className="mt-1 text-[#6B6B80]">{role.description}</CardDescription>
                 </div>
-                {role.isSystem && <Badge variant="secondary">Système</Badge>}
+                {role.isSystem && <Badge variant="secondary" className="bg-[#1A1A25] text-[#00E5CC] border border-[#00E5CC]">Système</Badge>}
               </div>
             </CardHeader>
             <CardContent className="flex-1 space-y-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-[#6B6B80]">
                 <Users size={14} />
                 <span>{role.userCount} utilisateur{role.userCount > 1 ? 's' : ''}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-2 text-sm text-[#6B6B80]">
                 <Lock size={14} />
                 <span>{role.permissions.includes('*') ? 'Toutes les permissions' : `${role.permissions.length} permission${role.permissions.length > 1 ? 's' : ''}`}</span>
               </div>
-              <div className="flex gap-2 pt-2 border-t border-gray-100">
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEditRole(role)}>
+              <div className="flex gap-2 pt-2 border-t border-[#1F1F2E]">
+                <Button variant="outline" size="sm" className="flex-1 bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25]" onClick={() => handleEditRole(role)}>
                   <Edit2 size={14} className="mr-1" />
                   Modifier
                 </Button>
                 {!role.isSystem && (
-                  <Button variant="outline" size="sm" className="text-red-600" onClick={() => handleDeleteRole(role.id)}>
+                  <Button variant="outline" size="sm" className="text-[#FF4D6A] border-[#1F1F2E] bg-[#12121A] hover:bg-[#1A1A25]" onClick={() => handleDeleteRole(role.id)}>
                     <Trash2 size={14} />
                   </Button>
                 )}
@@ -209,17 +209,17 @@ export default function RolesPermissionsPage() {
       </div>
 
       {/* Collaborators Section */}
-      <Card>
+      <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-[#F0F0F5] font-syne">
                 <Users size={18} />
                 Collaborateurs
               </CardTitle>
-              <CardDescription>Gérez les accès des membres de votre organisation</CardDescription>
+              <CardDescription className="text-[#6B6B80]">Gérez les accès des membres de votre organisation</CardDescription>
             </div>
-            <Button onClick={() => setIsInviteModalOpen(true)} className="gap-2">
+            <Button onClick={() => setIsInviteModalOpen(true)} className="gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00D4B8]">
               <UserPlus size={14} />
               Inviter
             </Button>
@@ -227,26 +227,26 @@ export default function RolesPermissionsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {collaborators.length === 0 ? (
-            <div className="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-200 rounded-lg">
+            <div className="text-sm text-[#6B6B80] text-center py-4 border border-dashed border-[#1F1F2E] rounded-lg bg-[#0A0A0F]">
               Aucun collaborateur pour le moment
             </div>
           ) : (
             <div className="space-y-2">
               {collaborators.map((collab: any) => (
-                <div key={collab.id} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                <div key={collab.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] bg-[#0A0A0F] rounded-lg hover:bg-[#1A1A25]">
                   <div>
-                    <p className="font-medium text-sm text-gray-900">{collab.email}</p>
-                    <p className="text-xs text-gray-500">{collab.role || 'Rôle non assigné'}</p>
+                    <p className="font-medium text-sm text-[#F0F0F5]">{collab.email}</p>
+                    <p className="text-xs text-[#6B6B80]">{collab.role || 'Rôle non assigné'}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5]">
                       {collab.status === 'pending' ? 'En attente' : 'Actif'}
                     </Badge>
                     {collab.status === 'pending' && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-600 hover:text-red-700"
+                        className="text-[#FF4D6A] hover:text-[#FF6B7F] hover:bg-[#1A1A25]"
                         onClick={() => revokeMutation.mutate(collab.id)}
                         disabled={revokeMutation.isPending}
                       >
@@ -263,70 +263,71 @@ export default function RolesPermissionsPage() {
       </Card>
 
       {/* Time Restrictions */}
-      <Card>
+      <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
         <CardHeader>
-          <CardTitle>Restrictions temporelles</CardTitle>
-          <CardDescription>Limitez l'accès à certaines heures pour des rôles spécifiques</CardDescription>
+          <CardTitle className="text-[#F0F0F5] font-syne">Restrictions temporelles</CardTitle>
+          <CardDescription className="text-[#6B6B80]">Limitez l'accès à certaines heures pour des rôles spécifiques</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+          <div className="flex items-center justify-between p-3 border border-[#1F1F2E] bg-[#0A0A0F] rounded-lg hover:bg-[#1A1A25]">
             <div>
-              <p className="font-medium text-sm text-gray-900">Opérateurs</p>
-              <p className="text-xs text-gray-500">Accès limité de 06:00 à 22:00</p>
+              <p className="font-medium text-sm text-[#F0F0F5]">Opérateurs</p>
+              <p className="text-xs text-[#6B6B80]">Accès limité de 06:00 à 22:00</p>
             </div>
-            <Badge variant="outline">Actif</Badge>
+            <Badge variant="outline" className="border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5]">Actif</Badge>
           </div>
-          <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+          <div className="flex items-center justify-between p-3 border border-[#1F1F2E] bg-[#0A0A0F] rounded-lg hover:bg-[#1A1A25]">
             <div>
-              <p className="font-medium text-sm text-gray-900">Conducteurs</p>
-              <p className="text-xs text-gray-500">Accès limité de 05:00 à 23:00</p>
+              <p className="font-medium text-sm text-[#F0F0F5]">Conducteurs</p>
+              <p className="text-xs text-[#6B6B80]">Accès limité de 05:00 à 23:00</p>
             </div>
-            <Badge variant="outline">Actif</Badge>
+            <Badge variant="outline" className="border-[#1F1F2E] bg-[#12121A] text-[#F0F0F5]">Actif</Badge>
           </div>
-          <div className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+          <div className="flex items-center justify-between p-3 border border-[#1F1F2E] bg-[#0A0A0F] rounded-lg hover:bg-[#1A1A25]">
             <div>
-              <p className="font-medium text-sm text-gray-900">Sous-traitants</p>
-              <p className="text-xs text-gray-500">Accès temporaire — expire le 30/04/2026</p>
+              <p className="font-medium text-sm text-[#F0F0F5]">Sous-traitants</p>
+              <p className="text-xs text-[#6B6B80]">Accès temporaire — expire le 30/04/2026</p>
             </div>
-            <Badge className="bg-orange-100 text-orange-700">Temporaire</Badge>
+            <Badge className="bg-[#FFB547] text-[#0A0A0F] font-bold">Temporaire</Badge>
           </div>
-          <Button variant="outline" className="w-full">Configurer les restrictions</Button>
+          <Button variant="outline" className="w-full bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25]">Configurer les restrictions</Button>
         </CardContent>
       </Card>
 
       {/* Invite Modal */}
       <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <DialogHeader>
-            <DialogTitle>Inviter un collaborateur</DialogTitle>
-            <DialogDescription>Envoyez une invitation à un nouveau membre de votre organisation</DialogDescription>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Inviter un collaborateur</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">Envoyez une invitation à un nouveau membre de votre organisation</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {inviteError && (
-              <div className="flex gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <AlertCircle size={16} className="text-red-600 flex-shrink-0" />
-                <p className="text-sm text-red-700">{inviteError}</p>
+              <div className="flex gap-2 p-3 bg-[#1A1A25] border border-[#FF4D6A] rounded-lg">
+                <AlertCircle size={16} className="text-[#FF4D6A] flex-shrink-0" />
+                <p className="text-sm text-[#FF4D6A]">{inviteError}</p>
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
+              <label className="text-sm font-medium text-[#F0F0F5]">Email</label>
               <Input
                 type="email"
                 placeholder="collaborateur@exemple.com"
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
+                className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] placeholder-[#44445A] focus:border-[#00E5CC]"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Rôle</label>
+              <label className="text-sm font-medium text-[#F0F0F5]">Rôle</label>
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                className="w-full rounded-[8px] border border-[#1F1F2E] bg-[#0A0A0F] px-3 py-2 text-sm text-[#F0F0F5] focus:border-[#00E5CC]"
               >
-                <option value="">Sélectionner un rôle</option>
+                <option value="" className="bg-[#12121A]">Sélectionner un rôle</option>
                 {roles.map((r) => (
-                  <option key={r.id} value={r.id}>
+                  <option key={r.id} value={r.id} className="bg-[#12121A]">
                     {r.name}
                   </option>
                 ))}
@@ -334,13 +335,13 @@ export default function RolesPermissionsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsInviteModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsInviteModalOpen(false)} className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25]">
               Annuler
             </Button>
             <Button
               onClick={handleSendInvite}
               disabled={inviteMutation.isPending}
-              className="gap-2"
+              className="gap-2 bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00D4B8]"
             >
               {inviteMutation.isPending && <Loader2 size={14} className="animate-spin" />}
               Inviter
@@ -351,27 +352,27 @@ export default function RolesPermissionsPage() {
 
       {/* Create/Edit Role Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <DialogHeader>
-            <DialogTitle>{editingRole ? 'Modifier le rôle' : 'Créer un rôle'}</DialogTitle>
-            <DialogDescription>Définissez les permissions pour ce rôle</DialogDescription>
+            <DialogTitle className="text-[#F0F0F5] font-syne">{editingRole ? 'Modifier le rôle' : 'Créer un rôle'}</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">Définissez les permissions pour ce rôle</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Nom du rôle</label>
-              <Input value={newRoleName} onChange={e => setNewRoleName(e.target.value)} placeholder="Ex: Superviseur terrain" />
+              <label className="text-sm font-medium text-[#F0F0F5]">Nom du rôle</label>
+              <Input value={newRoleName} onChange={e => setNewRoleName(e.target.value)} placeholder="Ex: Superviseur terrain" className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] placeholder-[#44445A] focus:border-[#00E5CC]" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Description</label>
-              <Input value={newRoleDesc} onChange={e => setNewRoleDesc(e.target.value)} placeholder="Décrivez ce rôle..." />
+              <label className="text-sm font-medium text-[#F0F0F5]">Description</label>
+              <Input value={newRoleDesc} onChange={e => setNewRoleDesc(e.target.value)} placeholder="Décrivez ce rôle..." className="bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] placeholder-[#44445A] focus:border-[#00E5CC]" />
             </div>
             <div className="space-y-3">
-              <label className="text-sm font-medium">Permissions</label>
+              <label className="text-sm font-medium text-[#F0F0F5]">Permissions</label>
               {PERMISSION_CATEGORIES.map(cat => (
-                <div key={cat.category} className="border border-gray-100 rounded-lg p-3">
+                <div key={cat.category} className="border border-[#1F1F2E] bg-[#0A0A0F] rounded-lg p-3 hover:bg-[#1A1A25]">
                   <div className="flex items-center gap-2 mb-2">
-                    <cat.icon size={14} className="text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">{cat.category}</span>
+                    <cat.icon size={14} className="text-[#6B6B80]" />
+                    <span className="text-sm font-medium text-[#F0F0F5]">{cat.category}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {cat.permissions.map((perm, idx) => (
@@ -380,8 +381,8 @@ export default function RolesPermissionsPage() {
                         onClick={() => togglePermission(perm)}
                         className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
                           selectedPermissions.has(perm)
-                            ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                            : 'bg-gray-50 text-gray-500 border border-gray-200'
+                            ? 'bg-[#00E5CC] text-[#0A0A0F] border border-[#00E5CC]'
+                            : 'bg-[#1A1A25] text-[#6B6B80] border border-[#1F1F2E]'
                         }`}
                       >
                         {cat.labels[idx]}
@@ -393,8 +394,8 @@ export default function RolesPermissionsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>Annuler</Button>
-            <Button onClick={handleSaveRole}>{editingRole ? 'Mettre à jour' : 'Créer'}</Button>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)} className="bg-[#12121A] border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#1A1A25]">Annuler</Button>
+            <Button onClick={handleSaveRole} className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00D4B8]">{editingRole ? 'Mettre à jour' : 'Créer'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

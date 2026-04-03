@@ -51,9 +51,9 @@ export default function AuditLogPage() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-700'
-      case 'warning': return 'bg-yellow-100 text-yellow-700'
-      default: return 'bg-blue-100 text-blue-700'
+      case 'critical': return 'bg-[rgba(255,77,106,0.12)] text-[#FF4D6A]'
+      case 'warning': return 'bg-[rgba(255,181,71,0.12)] text-[#FFB547]'
+      default: return 'bg-[rgba(0,229,204,0.12)] text-[#00E5CC]'
     }
   }
 
@@ -87,13 +87,13 @@ export default function AuditLogPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Journal d'audit</h1>
-          <p className="mt-1 text-sm text-gray-600">Suivez toutes les actions et modifications du système</p>
+          <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Journal d'audit</h1>
+          <p className="mt-1 text-sm text-[#6B6B80]">Suivez toutes les actions et modifications du système</p>
         </div>
-        <Button variant="outline" onClick={exportLogs} className="gap-2">
+        <Button variant="outline" onClick={exportLogs} className="gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]">
           <Download size={16} />
           Exporter CSV
         </Button>
@@ -102,10 +102,10 @@ export default function AuditLogPage() {
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-[#6B6B80]" />
           <Input
             placeholder="Rechercher par utilisateur, action..."
-            className="pl-10"
+            className="pl-10 bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -117,6 +117,11 @@ export default function AuditLogPage() {
               variant={severityFilter === sev ? 'default' : 'outline'}
               size="sm"
               onClick={() => setSeverityFilter(sev)}
+              className={`${
+                severityFilter === sev
+                  ? 'bg-[#00E5CC] text-[#0A0A0F] font-bold'
+                  : 'bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]'
+              }`}
             >
               {sev === 'all' ? 'Tous' : getSeverityLabel(sev)}
             </Button>
@@ -126,36 +131,36 @@ export default function AuditLogPage() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-4">
-        <Card>
+        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <CardContent className="pt-5 pb-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">{logs.length}</p>
-            <p className="text-xs text-gray-500">Total événements</p>
+            <p className="text-2xl font-bold text-[#F0F0F5] font-syne">{logs.length}</p>
+            <p className="text-xs text-[#6B6B80]">Total événements</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <CardContent className="pt-5 pb-4 text-center">
-            <p className="text-2xl font-bold text-blue-600">{logs.filter(l => l.severity === 'info').length}</p>
-            <p className="text-xs text-gray-500">Informations</p>
+            <p className="text-2xl font-bold text-[#00E5CC] font-syne">{logs.filter(l => l.severity === 'info').length}</p>
+            <p className="text-xs text-[#6B6B80]">Informations</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <CardContent className="pt-5 pb-4 text-center">
-            <p className="text-2xl font-bold text-yellow-600">{logs.filter(l => l.severity === 'warning').length}</p>
-            <p className="text-xs text-gray-500">Avertissements</p>
+            <p className="text-2xl font-bold text-[#FFB547] font-syne">{logs.filter(l => l.severity === 'warning').length}</p>
+            <p className="text-xs text-[#6B6B80]">Avertissements</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <CardContent className="pt-5 pb-4 text-center">
-            <p className="text-2xl font-bold text-red-600">{logs.filter(l => l.severity === 'critical').length}</p>
-            <p className="text-xs text-gray-500">Critiques</p>
+            <p className="text-2xl font-bold text-[#FF4D6A] font-syne">{logs.filter(l => l.severity === 'critical').length}</p>
+            <p className="text-xs text-[#6B6B80]">Critiques</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Logs List */}
-      <Card>
+      <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-[#F0F0F5] font-syne">
             <Shield size={18} />
             Événements ({filteredLogs.length})
           </CardTitle>
@@ -163,36 +168,36 @@ export default function AuditLogPage() {
         <CardContent>
           {isLoading ? (
             <div className="space-y-3">
-              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16" />)}
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 bg-[#1A1A25]" />)}
             </div>
           ) : filteredLogs.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <Shield size={48} className="mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-12 text-[#6B6B80]">
+              <Shield size={48} className="mx-auto mb-4 text-[#44445A]" />
               <p>Aucun événement d'audit trouvé</p>
             </div>
           ) : (
             <div className="space-y-2">
               {filteredLogs.map(log => (
-                <div key={log.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 hover:bg-gray-50">
+                <div key={log.id} className="flex items-center justify-between rounded-lg border border-[#1F1F2E] p-3 hover:bg-[#1A1A25] transition-colors">
                   <div className="flex items-start gap-3">
-                    <div className="mt-0.5 text-gray-400">{getActionIcon(log.action)}</div>
+                    <div className="mt-0.5 text-[#44445A]">{getActionIcon(log.action)}</div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900 text-sm">{log.userName}</span>
+                        <span className="font-medium text-[#F0F0F5] text-sm">{log.userName}</span>
                         <span className={`text-xs px-1.5 py-0.5 rounded ${getSeverityColor(log.severity)}`}>
                           {getSeverityLabel(log.severity)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600">{log.action} — {log.resource}</p>
-                      {log.details && <p className="text-xs text-gray-400 mt-0.5">{log.details}</p>}
+                      <p className="text-sm text-[#6B6B80]">{log.action} — {log.resource}</p>
+                      {log.details && <p className="text-xs text-[#44445A] mt-0.5">{log.details}</p>}
                     </div>
                   </div>
-                  <div className="text-right text-xs text-gray-400">
+                  <div className="text-right text-xs text-[#44445A]">
                     <div className="flex items-center gap-1">
                       <Clock size={12} />
                       {log.timestamp ? formatTimeAgo(new Date(log.timestamp)) : '—'}
                     </div>
-                    {log.ipAddress && <p className="mt-0.5">{log.ipAddress}</p>}
+                    {log.ipAddress && <p className="mt-0.5 font-mono">{log.ipAddress}</p>}
                   </div>
                 </div>
               ))}

@@ -116,10 +116,10 @@ export default function DevicesPage() {
   }
 
   const getBatteryColor = (level?: number): string => {
-    if (!level) return 'bg-gray-200'
-    if (level > 50) return 'bg-green-500'
-    if (level > 20) return 'bg-yellow-500'
-    return 'bg-red-500'
+    if (!level) return 'bg-[#1A1A25]'
+    if (level > 50) return 'bg-[#00E5CC]'
+    if (level > 20) return 'bg-[#FFB547]'
+    return 'bg-[#FF4D6A]'
   }
 
   const getSignalBars = (strength?: number): number => {
@@ -252,18 +252,18 @@ export default function DevicesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 bg-[#0A0A0F] min-h-screen">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Appareils GPS</h1>
-          <p className="mt-2 text-gray-600">Gérez vos trackers et appareils GPS</p>
+          <h1 className="text-3xl font-bold text-[#F0F0F5] font-syne">Appareils GPS</h1>
+          <p className="mt-2 text-[#6B6B80]">Gérez vos trackers et appareils GPS</p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={() => setImportDialog(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
           >
             <Upload size={16} />
             Importateur
@@ -271,7 +271,7 @@ export default function DevicesPage() {
           <Button
             variant="outline"
             onClick={handleExportDevices}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
           >
             <Download size={16} />
             Exportateur CSV
@@ -280,16 +280,16 @@ export default function DevicesPage() {
       </div>
 
       {/* Search */}
-      <Card>
+      <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
         <CardContent className="pt-6">
           <div className="relative">
-            <Search className="absolute left-3 top-3 text-gray-400" size={18} />
+            <Search className="absolute left-3 top-3 text-[#6B6B80]" size={18} />
             <Input
               type="search"
               placeholder="Rechercher par IMEI ou modèle..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-[#0A0A0F] border-[#1F1F2E] text-[#F0F0F5] rounded-[8px] focus:border-[#00E5CC] placeholder-[#44445A]"
             />
           </div>
         </CardContent>
@@ -299,19 +299,19 @@ export default function DevicesPage() {
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="h-16" />
+            <Skeleton key={i} className="h-16 bg-[#1A1A25]" />
           ))}
         </div>
       ) : error ? (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-[#FF4D6A] bg-rgba(255, 77, 106, 0.1)">
           <CardContent className="pt-6">
-            <p className="text-red-800">Erreur de chargement des appareils</p>
+            <p className="text-[#FF4D6A]">Erreur de chargement des appareils</p>
           </CardContent>
         </Card>
       ) : filteredDevices.length === 0 ? (
-        <Card className="text-center">
+        <Card className="text-center bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <CardContent className="pt-12">
-            <p className="text-gray-500">
+            <p className="text-[#6B6B80]">
               {searchTerm
                 ? 'Aucun appareil ne correspond à votre recherche'
                 : 'Aucun appareil trouvé. Connectez vos trackers GPS pour commencer.'}
@@ -319,28 +319,28 @@ export default function DevicesPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="bg-[#12121A] border border-[#1F1F2E] rounded-[12px]">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">IMEI</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Modèle</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Firmware</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Statut</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Batterie</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Signal</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Véhicule</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Dernière pos.</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
+                <tr className="border-b border-[#1F1F2E]">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">IMEI</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Modèle</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Firmware</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Statut</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Batterie</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Signal</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Véhicule</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Dernière pos.</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-[#6B6B80]">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-[#1F1F2E]">
                 {filteredDevices.map((device) => (
-                  <tr key={device.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{device.imei}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{device.model}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                  <tr key={device.id} className="hover:bg-[#1A1A25] transition-colors">
+                    <td className="px-6 py-4 text-sm font-medium text-[#F0F0F5] font-mono">{device.imei}</td>
+                    <td className="px-6 py-4 text-sm text-[#6B6B80]">{device.model}</td>
+                    <td className="px-6 py-4 text-sm text-[#6B6B80]">
                       {device.firmwareVersion || '-'}
                     </td>
                     <td className="px-6 py-4">
@@ -350,13 +350,13 @@ export default function DevicesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-16 bg-gray-200 rounded overflow-hidden">
+                        <div className="h-6 w-16 bg-[#1A1A25] rounded overflow-hidden">
                           <div
                             className={`h-full ${getBatteryColor(device.batteryLevel)}`}
                             style={{ width: `${device.batteryLevel || 0}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-600 w-8">
+                        <span className="text-xs text-[#6B6B80] w-8 font-mono">
                           {device.batteryLevel || 0}%
                         </span>
                       </div>
@@ -368,49 +368,49 @@ export default function DevicesPage() {
                             key={i}
                             className={`h-3 w-1 rounded-sm ${
                               i < getSignalBars(device.signalStrength)
-                                ? 'bg-green-500'
-                                : 'bg-gray-200'
+                                ? 'bg-[#00E5CC]'
+                                : 'bg-[#1A1A25]'
                             }`}
                           />
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-[#6B6B80]">
                       {device.vehicleName ? (
-                        <Badge variant="secondary">{device.vehicleName}</Badge>
+                        <Badge variant="secondary" className="bg-[rgba(0,229,204,0.12)] text-[#00E5CC]">{device.vehicleName}</Badge>
                       ) : (
-                        <span className="text-gray-400">Non assigné</span>
+                        <span className="text-[#44445A]">Non assigné</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-[#6B6B80]">
                       {formatTimeAgo(device.lastSeen)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2 flex-wrap">
                         <button
                           onClick={() => openAssignmentDialog(device)}
-                          className="p-1.5 hover:bg-blue-100 rounded text-blue-600"
+                          className="p-1.5 hover:bg-[rgba(0,229,204,0.12)] rounded text-[#00E5CC]"
                           title="Assigner à un véhicule"
                         >
                           <LinkIcon size={16} />
                         </button>
                         <button
                           onClick={() => sendDeviceCommand(device.id, 'locate')}
-                          className="p-1.5 hover:bg-green-100 rounded text-green-600"
+                          className="p-1.5 hover:bg-[rgba(0,229,204,0.12)] rounded text-[#00E5CC]"
                           title="Localiser"
                         >
                           <Locate size={16} />
                         </button>
                         <button
                           onClick={() => sendDeviceCommand(device.id, 'restart')}
-                          className="p-1.5 hover:bg-amber-100 rounded text-amber-600"
+                          className="p-1.5 hover:bg-[rgba(255,181,71,0.12)] rounded text-[#FFB547]"
                           title="Redémarrer"
                         >
                           <RotateCw size={16} />
                         </button>
                         <button
                           onClick={() => sendDeviceCommand(device.id, 'diagnostic')}
-                          className="p-1.5 hover:bg-purple-100 rounded text-purple-600"
+                          className="p-1.5 hover:bg-[rgba(255,181,71,0.12)] rounded text-[#FFB547]"
                           title="Diagnostic"
                         >
                           <AlertCircle size={16} />
@@ -419,14 +419,14 @@ export default function DevicesPage() {
                           <>
                             <button
                               onClick={() => sendDeviceCommand(device.id, 'echoes_sync')}
-                              className="p-1.5 hover:bg-indigo-100 rounded text-indigo-600"
+                              className="p-1.5 hover:bg-[rgba(0,229,204,0.12)] rounded text-[#00E5CC]"
                               title="Synchroniser Echoes"
                             >
                               <Wifi size={16} />
                             </button>
                             <button
                               onClick={() => sendDeviceCommand(device.id, 'echoes_update')}
-                              className="p-1.5 hover:bg-teal-100 rounded text-teal-600"
+                              className="p-1.5 hover:bg-[rgba(0,229,204,0.12)] rounded text-[#00E5CC]"
                               title="Mettre à jour Echoes"
                             >
                               <Zap size={16} />
@@ -445,18 +445,18 @@ export default function DevicesPage() {
 
       {/* Assignment Dialog */}
       <Dialog open={assignmentDialog} onOpenChange={setAssignmentDialog}>
-        <DialogContent>
+        <DialogContent className="bg-[#12121A] border-[#1F1F2E]">
           <DialogHeader>
-            <DialogTitle>Assigner un véhicule</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Assigner un véhicule</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
               Sélectionnez un véhicule pour assigner le tracker IMEI:{' '}
-              <strong>{selectedDevice?.imei}</strong>
+              <strong className="text-[#00E5CC]">{selectedDevice?.imei}</strong>
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             {vehicles.length === 0 ? (
-              <p className="text-gray-600 text-sm">
+              <p className="text-[#6B6B80] text-sm">
                 Aucun véhicule disponible. Créez d'abord un véhicule.
               </p>
             ) : (
@@ -464,7 +464,7 @@ export default function DevicesPage() {
                 {vehicles.map((vehicle) => (
                   <label
                     key={vehicle.id}
-                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center gap-3 p-3 border border-[#1F1F2E] rounded-lg hover:bg-[#1A1A25] cursor-pointer transition-colors"
                   >
                     <input
                       type="radio"
@@ -474,8 +474,8 @@ export default function DevicesPage() {
                       onChange={(e) => setSelectedVehicleId(e.target.value)}
                     />
                     <div>
-                      <p className="font-medium text-gray-900">{vehicle.name}</p>
-                      <p className="text-sm text-gray-600">{vehicle.licensePlate}</p>
+                      <p className="font-medium text-[#F0F0F5]">{vehicle.name}</p>
+                      <p className="text-sm text-[#6B6B80]">{vehicle.licensePlate}</p>
                     </div>
                   </label>
                 ))}
@@ -487,12 +487,14 @@ export default function DevicesPage() {
             <Button
               variant="outline"
               onClick={() => setAssignmentDialog(false)}
+              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
             >
               Annuler
             </Button>
             <Button
               onClick={handleAssignVehicle}
               disabled={!selectedVehicleId}
+              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
             >
               Assigner
             </Button>
@@ -502,16 +504,16 @@ export default function DevicesPage() {
 
       {/* Import Dialog */}
       <Dialog open={importDialog} onOpenChange={setImportDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-[#12121A] border-[#1F1F2E]">
           <DialogHeader>
-            <DialogTitle>Importer des appareils</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-[#F0F0F5] font-syne">Importer des appareils</DialogTitle>
+            <DialogDescription className="text-[#6B6B80]">
               Téléchargez un fichier CSV avec le format: IMEI, Modèle, Fournisseur, Numéro SIM
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+            <div className="border-2 border-dashed border-[#1F1F2E] rounded-lg p-8 text-center hover:border-[#2A2A3D] transition-colors">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -521,17 +523,17 @@ export default function DevicesPage() {
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-[#6B6B80] hover:text-[#F0F0F5]"
               >
                 <Upload className="mx-auto mb-2" size={32} />
                 <p className="font-medium">Cliquez pour sélectionner un fichier CSV</p>
-                <p className="text-sm text-gray-500 mt-1">ou glissez-déposez</p>
+                <p className="text-sm text-[#6B6B80] mt-1">ou glissez-déposez</p>
               </button>
             </div>
 
             {importFile && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm font-medium text-gray-900">
+              <div className="bg-[#1A1A25] p-4 rounded-lg border border-[#1F1F2E]">
+                <p className="text-sm font-medium text-[#F0F0F5]">
                   Fichier sélectionné: {importFile.name}
                 </p>
               </div>
@@ -539,26 +541,26 @@ export default function DevicesPage() {
 
             {parsedData.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-[#F0F0F5]">
                   Aperçu ({parsedData.length} appareils)
                 </p>
-                <div className="border border-gray-200 rounded-lg overflow-x-auto max-h-64 overflow-y-auto">
+                <div className="border border-[#1F1F2E] rounded-lg overflow-x-auto max-h-64 overflow-y-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-100 border-b border-gray-200">
+                    <thead className="bg-[#0A0A0F] border-b border-[#1F1F2E]">
                       <tr>
-                        <th className="px-4 py-2 text-left">IMEI</th>
-                        <th className="px-4 py-2 text-left">Modèle</th>
-                        <th className="px-4 py-2 text-left">Fournisseur</th>
-                        <th className="px-4 py-2 text-left">Numéro SIM</th>
+                        <th className="px-4 py-2 text-left text-[#6B6B80]">IMEI</th>
+                        <th className="px-4 py-2 text-left text-[#6B6B80]">Modèle</th>
+                        <th className="px-4 py-2 text-left text-[#6B6B80]">Fournisseur</th>
+                        <th className="px-4 py-2 text-left text-[#6B6B80]">Numéro SIM</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-[#1F1F2E]">
                       {parsedData.map((row, idx) => (
-                        <tr key={idx}>
-                          <td className="px-4 py-2">{row.imei}</td>
-                          <td className="px-4 py-2">{row.model}</td>
-                          <td className="px-4 py-2">{row.provider}</td>
-                          <td className="px-4 py-2">{row.simNumber}</td>
+                        <tr key={idx} className="hover:bg-[#1A1A25]">
+                          <td className="px-4 py-2 text-[#F0F0F5] font-mono">{row.imei}</td>
+                          <td className="px-4 py-2 text-[#6B6B80]">{row.model}</td>
+                          <td className="px-4 py-2 text-[#6B6B80]">{row.provider}</td>
+                          <td className="px-4 py-2 text-[#6B6B80]">{row.simNumber}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -576,12 +578,14 @@ export default function DevicesPage() {
                 setImportFile(null)
                 setParsedData([])
               }}
+              className="bg-[#1A1A25] border border-[#1F1F2E] text-[#F0F0F5] hover:bg-[#2A2A3D]"
             >
               Annuler
             </Button>
             <Button
               onClick={handleImportDevices}
               disabled={parsedData.length === 0}
+              className="bg-[#00E5CC] text-[#0A0A0F] font-bold hover:bg-[#00d4bb]"
             >
               Importer
             </Button>

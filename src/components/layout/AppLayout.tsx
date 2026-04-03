@@ -5,27 +5,24 @@ import StatusBar from './StatusBar'
 
 export default function AppLayout() {
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Status Bar at the very top */}
-      <StatusBar />
+    <div className="flex h-screen bg-[#0A0A0F] overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar />
 
-      {/* Main layout with sidebar and content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar />
+      {/* Main content area */}
+      <div className="flex flex-1 flex-col overflow-hidden lg:ml-[260px] transition-all duration-300">
+        {/* Status Bar */}
+        <StatusBar />
 
-        {/* Main content */}
-        <div className="flex flex-1 flex-col overflow-hidden lg:ml-64">
-          {/* Header */}
-          <Header />
+        {/* Header */}
+        <Header />
 
-          {/* Page content */}
-          <main className="flex-1 overflow-auto">
-            <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-              <Outlet />
-            </div>
-          </main>
-        </div>
+        {/* Page content */}
+        <main className="flex-1 overflow-auto">
+          <div className="mx-auto p-4 sm:p-5 lg:p-6 max-w-[1600px]">
+            <Outlet />
+          </div>
+        </main>
       </div>
     </div>
   )
