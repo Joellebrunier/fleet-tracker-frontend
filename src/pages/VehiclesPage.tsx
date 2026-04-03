@@ -76,7 +76,7 @@ export default function VehiclesPage() {
 
   const { data: vehiclesData, isLoading } = useVehicles({
     page,
-    limit: 50,
+    limit: 500,
     status: selectedStatus as any,
     search: searchTerm,
     type: selectedType || undefined,
@@ -842,7 +842,7 @@ export default function VehiclesPage() {
                         />
                       </th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">NOM</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">VIN</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">VIN / IMEI</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">PLAQUE</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">CATÉGORIE</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-[#F0F0F5]">ÉTAT</th>
@@ -874,7 +874,7 @@ export default function VehiclesPage() {
                           </button>
                         </td>
                         <td className="px-6 py-4 text-sm text-[#F0F0F5] font-mono">
-                          {vehicle.vin ? (vehicle.vin.length > 8 ? vehicle.vin.substring(0, 8) + '...' : vehicle.vin) : '—'}
+                          {(vehicle.vin || (vehicle.metadata as any)?.imei || (vehicle.metadata as any)?.deviceId || '—')}
                         </td>
                         <td className="px-6 py-4 text-sm text-[#F0F0F5] font-mono">
                           {vehicle.plate || '—'}
@@ -882,14 +882,17 @@ export default function VehiclesPage() {
                         <td className="px-6 py-4 text-sm text-[#F0F0F5] capitalize">
                           {vehicle.type ? (
                             <>
-                              {vehicle.type === 'voiture' && 'Voiture'}
-                              {vehicle.type === 'camion' && 'Camion'}
-                              {vehicle.type === 'utilitaire' && 'Véhicule utilitaire'}
-                              {vehicle.type === 'engin' && 'Engin de chantier'}
-                              {vehicle.type === 'moto' && 'Moto'}
-                              {vehicle.type === 'bateau' && 'Bateau'}
-                              {vehicle.type === 'divers' && 'Divers'}
-                              {!['voiture', 'camion', 'utilitaire', 'engin', 'moto', 'bateau', 'divers'].includes(vehicle.type) && vehicle.type}
+                              {(() => {
+                                const t = vehicle.type.toLowerCase()
+                                if (t === 'voiture' || t === 'car') return 'Voiture'
+                                if (t === 'camion' || t === 'truck') return 'Camion'
+                                if (t === 'utilitaire' || t === 'van' || t === 'utility') return 'Utilitaire'
+                                if (t === 'engin' || t === 'machinery' || t === 'equipment') return 'Engin'
+                                if (t === 'moto' || t === 'motorcycle') return 'Moto'
+                                if (t === 'bateau' || t === 'boat') return 'Bateau'
+                                if (t === 'divers' || t === 'other') return 'Divers'
+                                return vehicle.type
+                              })()}
                             </>
                           ) : '—'}
                         </td>
