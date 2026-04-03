@@ -56,7 +56,8 @@ export default function RolesPermissionsPage() {
       if (!organizationId) return []
       try {
         const response = await apiClient.get(`/api/organizations/${organizationId}/users`)
-        return response.data || []
+        const d = response.data
+        return Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : []
       } catch {
         return []
       }
@@ -232,7 +233,7 @@ export default function RolesPermissionsPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {collaborators.map((collab: any) => (
+              {(Array.isArray(collaborators) ? collaborators : []).map((collab: any) => (
                 <div key={collab.id} className="flex items-center justify-between p-3 border border-[#1F1F2E] bg-[#0A0A0F] rounded-lg hover:bg-[#1A1A25]">
                   <div>
                     <p className="font-medium text-sm text-[#F0F0F5]">{collab.email}</p>
