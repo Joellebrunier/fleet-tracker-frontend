@@ -7,11 +7,11 @@ export declare function useAuth(): {
     error: string | null;
     login: import("@tanstack/react-query").UseMutateAsyncFunction<{
         user: User;
-        token: string;
+        token: any;
     }, Error, LoginRequest, unknown>;
     register: import("@tanstack/react-query").UseMutateAsyncFunction<{
         user: User;
-        token: string;
+        token: any;
     }, Error, RegisterRequest, unknown>;
     logout: import("@tanstack/react-query").UseMutateAsyncFunction<void, Error, void, unknown>;
     initAuth: () => void;
@@ -19,11 +19,11 @@ export declare function useAuth(): {
     canAccess: (requiredRoles: UserRole[]) => boolean;
     loginMutation: import("@tanstack/react-query").UseMutationResult<{
         user: User;
-        token: string;
+        token: any;
     }, Error, LoginRequest, unknown>;
     registerMutation: import("@tanstack/react-query").UseMutationResult<{
         user: User;
-        token: string;
+        token: any;
     }, Error, RegisterRequest, unknown>;
     logoutMutation: import("@tanstack/react-query").UseMutationResult<void, Error, void, unknown>;
 };

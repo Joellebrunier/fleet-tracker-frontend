@@ -36,6 +36,22 @@ export const API_ROUTES = {
     // Users (org-scoped)
     USERS: (orgId) => `${org(orgId)}/users`,
     USER_DETAIL: (orgId, id) => `${org(orgId)}/users/${id}`,
+    // Drivers (org-scoped)
+    DRIVERS: (orgId) => `${org(orgId)}/drivers`,
+    DRIVER_DETAIL: (orgId, id) => `${org(orgId)}/drivers/${id}`,
+    DRIVER_STATS: (orgId, id) => `${org(orgId)}/drivers/${id}/stats`,
+    // Departments (org-scoped)
+    DEPARTMENTS: (orgId) => `${org(orgId)}/departments`,
+    DEPARTMENT_DETAIL: (orgId, id) => `${org(orgId)}/departments/${id}`,
+    // Vehicle Groups (org-scoped)
+    VEHICLE_GROUPS: (orgId) => `${org(orgId)}/vehicle-groups`,
+    VEHICLE_GROUP_DETAIL: (orgId, id) => `${org(orgId)}/vehicle-groups/${id}`,
+    // GPS Providers (org-scoped)
+    GPS_PROVIDERS: (orgId) => `${org(orgId)}/gps-providers`,
+    GPS_PROVIDER_DETAIL: (orgId, provider) => `${org(orgId)}/gps-providers/${provider}`,
+    // Sessions
+    AUTH_SESSIONS: '/api/auth/sessions',
+    AUTH_SESSION_DETAIL: (id) => `/api/auth/sessions/${id}`,
     // Super Admin
     SUPER_ADMIN_HEALTH: '/api/super-admin/health',
     SUPER_ADMIN_STATS: '/api/super-admin/stats',

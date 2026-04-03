@@ -9,7 +9,7 @@ import { useVehicles } from '@/hooks/useVehicles';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useAuthStore } from '@/stores/authStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend, } from 'recharts';
-import { Truck, Activity, Navigation, WifiOff, Clock, MapPin, ChevronRight, AlertCircle, FileText, Zap, Plus, Route, Settings, GripHorizontal, Building2, } from 'lucide-react';
+import { Truck, Activity, Navigation, WifiOff, Clock, MapPin, ChevronRight, AlertCircle, FileText, Zap, Plus, Route, Settings, GripHorizontal, Building2, ChevronUp, ChevronDown, RotateCcw, TrendingUp, TrendingDown, LogOut, LogIn, AlertTriangle, Shield, } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, } from '@/components/ui/dialog';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import { MAPBOX_TILE_URL } from '@/lib/constants';
@@ -35,9 +35,28 @@ export default function DashboardPage() {
     const { data: alertsData } = useAlerts({ limit: 5, status: 'unacknowledged' });
     const orgId = useAuthStore((s) => s.user?.organizationId) || '';
     // Widget Configuration State
+    const defaultWidgetOrder = [
+        'daily-summary',
+        'activity-feed',
+        'hourly-activity',
+        'fleet-status',
+        'alert-distribution',
+        'quick-actions',
+        'alerts-feed',
+        'status-summary',
+        'speed-distribution',
+        'weekly-comparison',
+        'heatmap',
+        'fleet-activity',
+        'providers',
+        'recent-updates',
+        'departments',
+    ];
     const [widgetConfig, setWidgetConfig] = useState(() => {
         const saved = localStorage.getItem('dashboard_widgets');
         const defaultConfig = {
+            'daily-summary': { visible: true, size: 'normal' },
+            'activity-feed': { visible: true, size: 'normal' },
             'hourly-activity': { visible: true, size: 'normal' },
             'fleet-status': { visible: true, size: 'normal' },
             'alert-distribution': { visible: true, size: 'normal' },
@@ -59,6 +78,15 @@ export default function DashboardPage() {
             return defaultConfig;
         }
     });
+    const [widgetOrder, setWidgetOrder] = useState(() => {
+        const saved = localStorage.getItem('dashboard_widget_order');
+        try {
+            return saved ? JSON.parse(saved) : defaultWidgetOrder;
+        }
+        catch {
+            return defaultWidgetOrder;
+        }
+    });
     const [showWidgetConfig, setShowWidgetConfig] = useState(false);
     const [departments, setDepartments] = useState([
         { id: '1', name: 'Logistique', vehicleCount: 24, driverCount: 8, performanceScore: 92 },
@@ -72,6 +100,27 @@ export default function DashboardPage() {
     useEffect(() => {
         localStorage.setItem('dashboard_widgets', JSON.stringify(widgetConfig));
     }, [widgetConfig]);
+    // Save widget order to localStorage
+    useEffect(() => {
+        localStorage.setItem('dashboard_widget_order', JSON.stringify(widgetOrder));
+    }, [widgetOrder]);
+    const widgetLabels = {
+        'daily-summary': 'Résumé du jour',
+        'activity-feed': 'Fil d\'activité récente',
+        'hourly-activity': 'Activité horaire',
+        'fleet-status': 'État de la flotte',
+        'alert-distribution': 'Distribution des alertes',
+        'quick-actions': 'Actions rapides',
+        'alerts-feed': 'Flux d\'alertes',
+        'status-summary': 'Résumé du statut',
+        'speed-distribution': 'Distribution des vitesses',
+        'weekly-comparison': 'Comparaison hebdomadaire',
+        heatmap: 'Carte thermique',
+        'fleet-activity': 'Activité de la flotte',
+        providers: 'Fournisseurs GPS',
+        'recent-updates': 'Mises à jour récentes',
+        departments: 'Départements',
+    };
     const toggleWidgetVisibility = (id) => {
         setWidgetConfig((prev) => ({
             ...prev,
@@ -83,6 +132,47 @@ export default function DashboardPage() {
             ...prev,
             [id]: { ...prev[id], size },
         }));
+    };
+    const moveWidgetUp = (id) => {
+        const currentIndex = widgetOrder.indexOf(id);
+        if (currentIndex > 0) {
+            const reordered = [...widgetOrder];
+            const temp = reordered[currentIndex - 1];
+            reordered[currentIndex - 1] = reordered[currentIndex];
+            reordered[currentIndex] = temp;
+            setWidgetOrder(reordered);
+        }
+    };
+    const moveWidgetDown = (id) => {
+        const currentIndex = widgetOrder.indexOf(id);
+        if (currentIndex < widgetOrder.length - 1) {
+            const reordered = [...widgetOrder];
+            const temp = reordered[currentIndex + 1];
+            reordered[currentIndex + 1] = reordered[currentIndex];
+            reordered[currentIndex] = temp;
+            setWidgetOrder(reordered);
+        }
+    };
+    const resetWidgetConfig = () => {
+        const defaultConfig = {
+            'daily-summary': { visible: true, size: 'normal' },
+            'activity-feed': { visible: true, size: 'normal' },
+            'hourly-activity': { visible: true, size: 'normal' },
+            'fleet-status': { visible: true, size: 'normal' },
+            'alert-distribution': { visible: true, size: 'normal' },
+            'quick-actions': { visible: true, size: 'normal' },
+            'alerts-feed': { visible: true, size: 'normal' },
+            'status-summary': { visible: true, size: 'normal' },
+            'speed-distribution': { visible: true, size: 'normal' },
+            'weekly-comparison': { visible: true, size: 'normal' },
+            heatmap: { visible: true, size: 'expanded' },
+            'fleet-activity': { visible: true, size: 'normal' },
+            providers: { visible: true, size: 'normal' },
+            'recent-updates': { visible: true, size: 'normal' },
+            departments: { visible: true, size: 'normal' },
+        };
+        setWidgetConfig(defaultConfig);
+        setWidgetOrder(defaultWidgetOrder);
     };
     const addDepartment = () => {
         if (newDeptName.trim()) {
@@ -208,12 +298,133 @@ export default function DashboardPage() {
             { position: [43.65, 7.2], density: 'faible' },
         ];
     }, []);
+    // Daily summary metrics
+    const dailySummary = useMemo(() => {
+        const totalKm = Math.round(stats.total * 45 + Math.random() * 100);
+        const trips = Math.round(stats.moving * 3 + Math.random() * 20);
+        const avgDriveTime = 280 + Math.floor(Math.random() * 60);
+        const todayAlerts = alertsList.length;
+        const geofenceViolations = 3;
+        // Calculate day-over-day comparison
+        const yesterdayKm = totalKm - Math.floor(totalKm * 0.08);
+        const yesterdayTrips = trips - Math.floor(trips * 0.12);
+        const yesterdayAlerts = todayAlerts - 1;
+        const kmDiff = ((totalKm - yesterdayKm) / yesterdayKm) * 100;
+        const tripsDiff = ((trips - yesterdayTrips) / yesterdayTrips) * 100;
+        const alertsDiff = ((todayAlerts - yesterdayAlerts) / Math.max(yesterdayAlerts, 1)) * 100;
+        return {
+            totalKm,
+            trips,
+            avgDriveTime,
+            todayAlerts,
+            geofenceViolations,
+            comparisons: {
+                km: kmDiff,
+                trips: tripsDiff,
+                alerts: alertsDiff,
+            },
+        };
+    }, [stats.total, stats.moving, alertsList.length]);
+    // Activity feed events
+    const activityFeedEvents = useMemo(() => {
+        const events = [];
+        // Generate mock events from the last hour
+        const now = new Date();
+        const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+        // Vehicle online/offline events
+        for (let i = 0; i < 3; i++) {
+            events.push({
+                id: `evt-online-${i}`,
+                type: 'online',
+                title: `${vehicles[i % vehicles.length]?.name || 'Véhicule'} connecté`,
+                description: 'Le véhicule s\'est connecté au serveur',
+                vehicleName: vehicles[i % vehicles.length]?.name || 'Véhicule',
+                timestamp: new Date(oneHourAgo.getTime() + i * 12 * 60 * 1000),
+                icon: LogIn,
+            });
+        }
+        // Offline events
+        for (let i = 0; i < 2; i++) {
+            events.push({
+                id: `evt-offline-${i}`,
+                type: 'offline',
+                title: `${vehicles[(i + 4) % vehicles.length]?.name || 'Véhicule'} déconnecté`,
+                description: 'Le véhicule s\'est déconnecté',
+                vehicleName: vehicles[(i + 4) % vehicles.length]?.name || 'Véhicule',
+                timestamp: new Date(oneHourAgo.getTime() + (3 + i * 8) * 10 * 60 * 1000),
+                icon: LogOut,
+            });
+        }
+        // Speed violations
+        for (let i = 0; i < 2; i++) {
+            events.push({
+                id: `evt-speed-${i}`,
+                type: 'speed',
+                title: `Vitesse excessive - ${vehicles[(i + 7) % vehicles.length]?.name || 'Véhicule'}`,
+                description: `${88 + i * 5} km/h dans une zone limitée à 90 km/h`,
+                vehicleName: vehicles[(i + 7) % vehicles.length]?.name || 'Véhicule',
+                timestamp: new Date(oneHourAgo.getTime() + (14 + i * 15) * 4 * 60 * 1000),
+                icon: AlertTriangle,
+            });
+        }
+        // Geofence events
+        for (let i = 0; i < 2; i++) {
+            events.push({
+                id: `evt-geo-${i}`,
+                type: 'geofence',
+                title: `Géobarrière ${i === 0 ? 'entrée' : 'sortie'} - ${vehicles[(i + 10) % vehicles.length]?.name || 'Véhicule'}`,
+                description: `Le véhicule a ${i === 0 ? 'quitté' : 'approché'} la zone Zone Commercial`,
+                vehicleName: vehicles[(i + 10) % vehicles.length]?.name || 'Véhicule',
+                timestamp: new Date(oneHourAgo.getTime() + (22 + i * 10) * 3 * 60 * 1000),
+                icon: Shield,
+            });
+        }
+        // Alert triggered events
+        for (let i = 0; i < 2; i++) {
+            events.push({
+                id: `evt-alert-${i}`,
+                type: 'alert',
+                title: `Alerte - ${vehicles[(i + 13) % vehicles.length]?.name || 'Véhicule'}`,
+                description: i === 0 ? 'Batterie faible détectée' : 'Maintenance préventive due',
+                vehicleName: vehicles[(i + 13) % vehicles.length]?.name || 'Véhicule',
+                timestamp: new Date(oneHourAgo.getTime() + (32 + i * 12) * 2 * 60 * 1000),
+                icon: AlertCircle,
+            });
+        }
+        // Sort by timestamp descending (most recent first)
+        return events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    }, [vehicles]);
     if (isLoading) {
         return (_jsxs("div", { className: "space-y-6", children: [_jsx(Skeleton, { className: "h-10 w-64" }), _jsx("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-4", children: [...Array(4)].map((_, i) => (_jsx(Skeleton, { className: "h-28" }, i))) }), _jsxs("div", { className: "grid gap-6 lg:grid-cols-3", children: [_jsx(Skeleton, { className: "h-80 lg:col-span-2" }), _jsx(Skeleton, { className: "h-80" })] })] }));
     }
-    return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-2xl font-bold text-gray-900", children: "Tableau de bord" }), _jsxs("p", { className: "mt-1 text-sm text-gray-600", children: ["Vue d'ensemble de votre flotte \u2014 ", stats.total, " v\u00E9hicules, ", stats.withGps, " avec GPS actif"] })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: () => setShowWidgetConfig(!showWidgetConfig), className: "gap-2", children: [_jsx(Settings, { size: 16 }), _jsx("span", { children: "Widgets" })] })] }), showWidgetConfig && (_jsxs(Card, { className: "bg-blue-50 border-blue-200", children: [_jsxs(CardHeader, { className: "pb-3", children: [_jsx(CardTitle, { className: "text-sm", children: "Configuration des widgets" }), _jsx(CardDescription, { className: "text-xs", children: "Activez/d\u00E9sactivez les widgets et ajustez leur taille" })] }), _jsx(CardContent, { children: _jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4", children: Object.keys(widgetConfig).map((id) => (_jsxs("div", { className: "flex flex-col gap-2 p-3 bg-white rounded-lg border", children: [_jsxs("label", { className: "flex items-center gap-2 cursor-pointer", children: [_jsx("input", { type: "checkbox", checked: widgetConfig[id].visible, onChange: () => toggleWidgetVisibility(id), className: "w-4 h-4" }), _jsx("span", { className: "text-sm font-medium text-gray-700", children: id.replace(/-/g, ' ').charAt(0).toUpperCase() + id.replace(/-/g, ' ').slice(1) })] }), _jsx("div", { className: "flex gap-1", children: ['compact', 'normal', 'expanded'].map((size) => (_jsx("button", { onClick: () => setWidgetSize(id, size), className: `flex-1 px-2 py-1 text-xs rounded border transition-colors ${widgetConfig[id].size === size
-                                                ? 'bg-blue-500 text-white border-blue-500'
-                                                : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'}`, children: size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large' }, size))) })] }, id))) }) })] })), _jsxs("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-4", children: [_jsx(Card, { className: "border-l-4 border-l-blue-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "Total v\u00E9hicules" }), _jsx("p", { className: "text-3xl font-bold text-gray-900 mt-1", children: stats.total }), _jsxs("p", { className: "text-xs text-gray-500 mt-1", children: [stats.withGps, " GPS actif"] })] }), _jsx("div", { className: "rounded-xl bg-blue-50 p-3", children: _jsx(Truck, { className: "text-blue-600", size: 24 }) })] }) }) }), _jsx(Card, { className: "border-l-4 border-l-green-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "En mouvement" }), _jsx("p", { className: "text-3xl font-bold text-green-600 mt-1", children: stats.moving }), _jsxs("p", { className: "text-xs text-gray-500 mt-1", children: [stats.stopped, " \u00E0 l'arr\u00EAt"] })] }), _jsx("div", { className: "rounded-xl bg-green-50 p-3", children: _jsx(Navigation, { className: "text-green-600", size: 24 }) })] }) }) }), _jsx(Card, { className: "border-l-4 border-l-amber-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "Actifs r\u00E9cents" }), _jsx("p", { className: "text-3xl font-bold text-amber-600 mt-1", children: stats.recentlyActive }), _jsx("p", { className: "text-xs text-gray-500 mt-1", children: "derni\u00E8res 10 min" })] }), _jsx("div", { className: "rounded-xl bg-amber-50 p-3", children: _jsx(Activity, { className: "text-amber-600", size: 24 }) })] }) }) }), _jsx(Card, { className: "border-l-4 border-l-red-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "Hors ligne" }), _jsx("p", { className: "text-3xl font-bold text-red-600 mt-1", children: stats.noGps }), _jsx("p", { className: "text-xs text-gray-500 mt-1", children: "sans position GPS" })] }), _jsx("div", { className: "rounded-xl bg-red-50 p-3", children: _jsx(WifiOff, { className: "text-red-600", size: 24 }) })] }) }) }), _jsx(Card, { className: "border-l-4 border-l-indigo-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "Km du jour" }), _jsx("p", { className: "text-3xl font-bold text-indigo-600 mt-1", children: "1,247" }), _jsx("p", { className: "text-xs text-gray-500 mt-1", children: "distance totale" })] }), _jsx("div", { className: "rounded-xl bg-indigo-50 p-3", children: _jsx(Route, { className: "text-indigo-600", size: 24 }) })] }) }) })] }), _jsxs("div", { className: "grid gap-6 auto-rows-max md:grid-cols-2 lg:grid-cols-4", children: [widgetConfig['hourly-activity'].visible && (_jsx("div", { className: `${widgetConfig['hourly-activity'].size === 'expanded'
+    return (_jsxs("div", { className: "space-y-6", children: [_jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("h1", { className: "text-2xl font-bold text-gray-900", children: "Tableau de bord" }), _jsxs("p", { className: "mt-1 text-sm text-gray-600", children: ["Vue d'ensemble de votre flotte \u2014 ", stats.total, " v\u00E9hicules, ", stats.withGps, " avec GPS actif"] })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: () => setShowWidgetConfig(!showWidgetConfig), className: "gap-2", children: [_jsx(Settings, { size: 16 }), _jsx("span", { children: "Personnaliser" })] })] }), showWidgetConfig && (_jsxs(Card, { className: "bg-blue-50 border-blue-200", children: [_jsx(CardHeader, { className: "pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx(CardTitle, { className: "text-base", children: "Personnaliser les widgets" }), _jsx(CardDescription, { className: "text-sm mt-1", children: "G\u00E9rez la visibilit\u00E9, la taille et l'ordre des widgets de votre tableau de bord" })] }), _jsxs(Button, { variant: "outline", size: "sm", onClick: resetWidgetConfig, className: "gap-2 text-amber-600 border-amber-200 hover:bg-amber-50", children: [_jsx(RotateCcw, { size: 14 }), _jsx("span", { children: "R\u00E9initialiser" })] })] }) }), _jsx(CardContent, { children: _jsx("div", { className: "space-y-3", children: widgetOrder.map((id) => (_jsxs("div", { className: "flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors", children: [_jsx("label", { className: "flex items-center gap-2 cursor-pointer", children: _jsx("input", { type: "checkbox", checked: widgetConfig[id].visible, onChange: () => toggleWidgetVisibility(id), className: "w-4 h-4 rounded cursor-pointer" }) }), _jsx("div", { className: "flex-1", children: _jsx("span", { className: `text-sm font-medium ${widgetConfig[id].visible ? 'text-gray-900' : 'text-gray-500'}`, children: widgetLabels[id] }) }), _jsx("div", { className: "flex gap-1 bg-gray-100 rounded-lg p-1", children: ['compact', 'normal', 'expanded'].map((size) => (_jsx("button", { onClick: () => setWidgetSize(id, size), title: size === 'compact' ? 'Compact' : size === 'normal' ? 'Normal' : 'Large', className: `px-2 py-1 text-xs rounded transition-colors ${widgetConfig[id].size === size
+                                                ? 'bg-blue-500 text-white'
+                                                : 'text-gray-600 hover:text-gray-900'}`, children: size === 'compact' ? 'C' : size === 'normal' ? 'N' : 'L' }, size))) }), _jsxs("div", { className: "flex gap-1 border-l border-gray-200 pl-3", children: [_jsx("button", { onClick: () => moveWidgetUp(id), disabled: widgetOrder.indexOf(id) === 0, className: "p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors", title: "Monter", children: _jsx(ChevronUp, { size: 16 }) }), _jsx("button", { onClick: () => moveWidgetDown(id), disabled: widgetOrder.indexOf(id) === widgetOrder.length - 1, className: "p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors", title: "Descendre", children: _jsx(ChevronDown, { size: 16 }) })] })] }, id))) }) })] })), _jsxs("div", { className: "grid gap-4 sm:grid-cols-2 lg:grid-cols-5", children: [_jsx(Card, { className: "border-l-4 border-l-blue-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "Total v\u00E9hicules" }), _jsx("p", { className: "text-3xl font-bold text-gray-900 mt-1", children: stats.total }), _jsxs("p", { className: "text-xs text-gray-500 mt-1", children: [stats.withGps, " GPS actif"] })] }), _jsx("div", { className: "rounded-xl bg-blue-50 p-3", children: _jsx(Truck, { className: "text-blue-600", size: 24 }) })] }) }) }), _jsx(Card, { className: "border-l-4 border-l-green-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "En mouvement" }), _jsx("p", { className: "text-3xl font-bold text-green-600 mt-1", children: stats.moving }), _jsxs("p", { className: "text-xs text-gray-500 mt-1", children: [stats.stopped, " \u00E0 l'arr\u00EAt"] })] }), _jsx("div", { className: "rounded-xl bg-green-50 p-3", children: _jsx(Navigation, { className: "text-green-600", size: 24 }) })] }) }) }), _jsx(Card, { className: "border-l-4 border-l-amber-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "Actifs r\u00E9cents" }), _jsx("p", { className: "text-3xl font-bold text-amber-600 mt-1", children: stats.recentlyActive }), _jsx("p", { className: "text-xs text-gray-500 mt-1", children: "derni\u00E8res 10 min" })] }), _jsx("div", { className: "rounded-xl bg-amber-50 p-3", children: _jsx(Activity, { className: "text-amber-600", size: 24 }) })] }) }) }), _jsx(Card, { className: "border-l-4 border-l-red-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "Hors ligne" }), _jsx("p", { className: "text-3xl font-bold text-red-600 mt-1", children: stats.noGps }), _jsx("p", { className: "text-xs text-gray-500 mt-1", children: "sans position GPS" })] }), _jsx("div", { className: "rounded-xl bg-red-50 p-3", children: _jsx(WifiOff, { className: "text-red-600", size: 24 }) })] }) }) }), _jsx(Card, { className: "border-l-4 border-l-indigo-500", children: _jsx(CardContent, { className: "pt-5 pb-4", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-500 uppercase tracking-wide", children: "Km du jour" }), _jsxs("p", { className: "text-3xl font-bold text-indigo-600 mt-1", children: [(dailySummary.totalKm / 1000).toFixed(1), "K"] }), _jsxs("div", { className: "flex items-center gap-1 mt-1", children: [_jsxs("span", { className: `text-xs font-medium ${dailySummary.comparisons.km >= 0 ? 'text-green-600' : 'text-red-600'}`, children: [dailySummary.comparisons.km >= 0 ? '+' : '', dailySummary.comparisons.km.toFixed(1), "%"] }), _jsx("span", { className: "text-xs text-gray-500", children: "vs hier" })] })] }), _jsx("div", { className: "rounded-xl bg-indigo-50 p-3", children: _jsx(Route, { className: "text-indigo-600", size: 24 }) })] }) }) })] }), widgetConfig['daily-summary'].visible && (_jsx("div", { className: `${widgetConfig['daily-summary'].size === 'expanded'
+                    ? 'md:col-span-2 lg:col-span-4'
+                    : widgetConfig['daily-summary'].size === 'normal'
+                        ? 'md:col-span-2 lg:col-span-2'
+                        : 'md:col-span-1 lg:col-span-1'}`, children: _jsxs("div", { className: "relative group", children: [_jsx("div", { className: "absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity", children: _jsx(GripHorizontal, { size: 16, className: "text-gray-400" }) }), _jsxs(Card, { children: [_jsxs(CardHeader, { className: "pb-3", children: [_jsx(CardTitle, { className: "text-base", children: "R\u00E9sum\u00E9 du jour" }), _jsx(CardDescription, { className: "text-xs", children: "M\u00E9triques cl\u00E9s d'aujourd'hui" })] }), _jsx(CardContent, { children: _jsxs("div", { className: "space-y-4", children: [_jsxs("div", { className: "flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-100", children: [_jsxs("div", { className: "flex items-center gap-3", children: [_jsx(Route, { className: "text-blue-600", size: 20 }), _jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-600", children: "Kilom\u00E8tres parcourus" }), _jsxs("p", { className: "text-lg font-bold text-gray-900 mt-0.5", children: [dailySummary.totalKm.toLocaleString(), " km"] })] })] }), _jsxs("div", { className: `flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${dailySummary.comparisons.km >= 0
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-red-100 text-red-700'}`, children: [dailySummary.comparisons.km >= 0 ? (_jsx(TrendingUp, { size: 14 })) : (_jsx(TrendingDown, { size: 14 })), dailySummary.comparisons.km >= 0 ? '+' : '', dailySummary.comparisons.km.toFixed(1), "%"] })] }), _jsxs("div", { className: "flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-100", children: [_jsxs("div", { className: "flex items-center gap-3", children: [_jsx(Navigation, { className: "text-purple-600", size: 20 }), _jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-600", children: "Nombre de trajets" }), _jsx("p", { className: "text-lg font-bold text-gray-900 mt-0.5", children: dailySummary.trips })] })] }), _jsxs("div", { className: `flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${dailySummary.comparisons.trips >= 0
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-red-100 text-red-700'}`, children: [dailySummary.comparisons.trips >= 0 ? (_jsx(TrendingUp, { size: 14 })) : (_jsx(TrendingDown, { size: 14 })), dailySummary.comparisons.trips >= 0 ? '+' : '', dailySummary.comparisons.trips.toFixed(1), "%"] })] }), _jsx("div", { className: "flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100", children: _jsxs("div", { className: "flex items-center gap-3", children: [_jsx(Clock, { className: "text-amber-600", size: 20 }), _jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-600", children: "Temps de conduite moyen" }), _jsxs("p", { className: "text-lg font-bold text-gray-900 mt-0.5", children: [Math.floor(dailySummary.avgDriveTime / 60), "h ", dailySummary.avgDriveTime % 60, "m"] })] })] }) }), _jsxs("div", { className: "flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100", children: [_jsxs("div", { className: "flex items-center gap-3", children: [_jsx(AlertCircle, { className: "text-red-600", size: 20 }), _jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-600", children: "Alertes du jour" }), _jsx("p", { className: "text-lg font-bold text-gray-900 mt-0.5", children: dailySummary.todayAlerts })] })] }), _jsxs("div", { className: `flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${dailySummary.comparisons.alerts <= 0
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-red-100 text-red-700'}`, children: [dailySummary.comparisons.alerts <= 0 ? (_jsx(TrendingDown, { size: 14 })) : (_jsx(TrendingUp, { size: 14 })), dailySummary.comparisons.alerts >= 0 ? '+' : '', dailySummary.comparisons.alerts.toFixed(1), "%"] })] }), _jsx("div", { className: "flex items-center justify-between p-3 rounded-lg bg-orange-50 border border-orange-100", children: _jsxs("div", { className: "flex items-center gap-3", children: [_jsx(Shield, { className: "text-orange-600", size: 20 }), _jsxs("div", { children: [_jsx("p", { className: "text-xs font-medium text-gray-600", children: "G\u00E9ocl\u00F4tures viol\u00E9es" }), _jsx("p", { className: "text-lg font-bold text-gray-900 mt-0.5", children: dailySummary.geofenceViolations })] })] }) })] }) })] })] }) })), widgetConfig['activity-feed'].visible && (_jsx("div", { className: `${widgetConfig['activity-feed'].size === 'expanded'
+                    ? 'md:col-span-2 lg:col-span-4'
+                    : widgetConfig['activity-feed'].size === 'normal'
+                        ? 'md:col-span-2 lg:col-span-2'
+                        : 'md:col-span-1 lg:col-span-1'}`, children: _jsxs("div", { className: "relative group", children: [_jsx("div", { className: "absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity", children: _jsx(GripHorizontal, { size: 16, className: "text-gray-400" }) }), _jsxs(Card, { children: [_jsx(CardHeader, { className: "pb-3", children: _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { children: [_jsx(CardTitle, { className: "text-base", children: "Fil d'activit\u00E9 r\u00E9cente" }), _jsx(CardDescription, { className: "text-xs", children: "\u00C9v\u00E9nements de la derni\u00E8re heure" })] }), _jsx(Button, { variant: "ghost", size: "sm", className: "text-xs", onClick: () => navigate('/activity'), children: "Tout voir" })] }) }), _jsx(CardContent, { children: _jsx("div", { className: "space-y-3 max-h-96 overflow-y-auto", children: activityFeedEvents.slice(0, 12).map((event) => {
+                                            const IconComponent = event.icon;
+                                            const timeAgo = formatTimeAgo(event.timestamp);
+                                            const iconColorMap = {
+                                                online: 'text-green-600 bg-green-50',
+                                                offline: 'text-red-600 bg-red-50',
+                                                alert: 'text-red-600 bg-red-50',
+                                                geofence: 'text-purple-600 bg-purple-50',
+                                                speed: 'text-amber-600 bg-amber-50',
+                                            };
+                                            return (_jsxs("div", { className: "flex gap-3 p-2.5 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors", children: [_jsx("div", { className: `rounded-lg p-2 flex-shrink-0 ${iconColorMap[event.type]}`, children: _jsx(IconComponent, { size: 16 }) }), _jsxs("div", { className: "flex-1 min-w-0", children: [_jsx("p", { className: "text-sm font-medium text-gray-900", children: event.title }), _jsx("p", { className: "text-xs text-gray-500 mt-0.5", children: event.description }), _jsxs("div", { className: "flex items-center gap-2 mt-1", children: [_jsx("span", { className: "text-xs font-medium text-gray-700", children: event.vehicleName }), _jsx("span", { className: "text-xs text-gray-400", children: "\u00B7" }), _jsx("span", { className: "text-xs text-gray-400", children: timeAgo })] })] })] }, event.id));
+                                        }) }) })] })] }) })), _jsxs("div", { className: "grid gap-6 auto-rows-max md:grid-cols-2 lg:grid-cols-4", children: [widgetConfig['hourly-activity'].visible && (_jsx("div", { className: `${widgetConfig['hourly-activity'].size === 'expanded'
                             ? 'md:col-span-2 lg:col-span-4'
                             : widgetConfig['hourly-activity'].size === 'normal'
                                 ? 'md:col-span-2 lg:col-span-2'

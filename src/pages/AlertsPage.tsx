@@ -51,7 +51,7 @@ import {
   TrendingUp,
   Save,
 } from 'lucide-react'
-import { formatDateTime, getSeverityColor } from '@/lib/utils'
+import { formatDateTime, getSeverityColor, formatTimeAgo } from '@/lib/utils'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 // Alert type configuration for the rule builder
@@ -60,63 +60,63 @@ const alertTypeConfig: Record<
   { label: string; icon: React.ReactNode; description: string; fields: string[] }
 > = {
   [AlertType.OVERSPEED]: {
-    label: 'Overspeed',
+    label: 'Excès de vitesse',
     icon: <Gauge size={18} />,
-    description: 'Alert when vehicle exceeds speed limit',
+    description: 'Alerte quand le véhicule dépasse la limite de vitesse',
     fields: ['speedLimit'],
   },
   [AlertType.GEOFENCE_ENTRY]: {
-    label: 'Geofence Entry',
+    label: 'Entrée géoclôture',
     icon: <MapPin size={18} />,
-    description: 'Alert when vehicle enters a geofence zone',
+    description: 'Alerte quand le véhicule entre dans une zone géoclôture',
     fields: ['geofenceId'],
   },
   [AlertType.GEOFENCE_EXIT]: {
-    label: 'Geofence Exit',
+    label: 'Sortie géoclôture',
     icon: <MapPin size={18} />,
-    description: 'Alert when vehicle exits a geofence zone',
+    description: 'Alerte quand le véhicule quitte une zone géoclôture',
     fields: ['geofenceId'],
   },
   [AlertType.IDLE_TIMEOUT]: {
-    label: 'Idle Timeout',
+    label: 'Inactivité prolongée',
     icon: <Clock size={18} />,
-    description: 'Alert when vehicle is idle for too long',
+    description: 'Alerte quand le véhicule est inactif trop longtemps',
     fields: ['idleMinutes'],
   },
   [AlertType.OFFLINE]: {
-    label: 'Offline',
+    label: 'Hors ligne',
     icon: <BellOff size={18} />,
-    description: 'Alert when vehicle goes offline',
+    description: 'Alerte quand le véhicule se déconnecte',
     fields: ['offlineMinutes'],
   },
   [AlertType.LOW_BATTERY]: {
-    label: 'Low Battery',
+    label: 'Batterie faible',
     icon: <Battery size={18} />,
-    description: 'Alert when tracker battery is low',
+    description: 'Alerte quand la batterie du tracker est faible',
     fields: ['batteryPercent'],
   },
   [AlertType.MAINTENANCE_DUE]: {
-    label: 'Maintenance Due',
+    label: 'Entretien prévu',
     icon: <Wrench size={18} />,
-    description: 'Alert for scheduled maintenance',
+    description: 'Alerte pour l\'entretien prévu',
     fields: ['kmThreshold'],
   },
   [AlertType.FUEL_ALERT]: {
-    label: 'Fuel Alert',
+    label: 'Alerte carburant',
     icon: <Fuel size={18} />,
-    description: 'Alert on sudden fuel level changes',
+    description: 'Alerte en cas de variation soudaine du carburant',
     fields: ['fuelDropPercent'],
   },
   [AlertType.HARSH_ACCELERATION]: {
-    label: 'Harsh Acceleration',
+    label: 'Accélération brusque',
     icon: <Activity size={18} />,
-    description: 'Alert on sudden acceleration events',
+    description: 'Alerte lors d\'événements d\'accélération soudaine',
     fields: ['gForce'],
   },
   [AlertType.HARSH_BRAKING]: {
-    label: 'Harsh Braking',
+    label: 'Freinage brusque',
     icon: <Activity size={18} />,
-    description: 'Alert on sudden braking events',
+    description: 'Alerte lors d\'événements de freinage soudain',
     fields: ['gForce'],
   },
 }
@@ -206,6 +206,9 @@ export default function AlertsPage() {
   const [globalSilentHoursTo, setGlobalSilentHoursTo] = useState('06:00')
   const [savingNotes, setSavingNotes] = useState<Record<string, boolean>>({})
   const [savingAssignment, setSavingAssignment] = useState<Record<string, boolean>>({})
+  const [groupBy, setGroupBy] = useState<'none' | 'type' | 'vehicle' | 'severity'>('none')
+  const [quickFilterSeverity, setQuickFilterSeverity] = useState<AlertSeverity | 'all'>('all')
+  const [quickFilterTime, setQuickFilterTime] = useState<'all' | 'today' | 'week'>('all')
 
   const organizationId = useAuthStore((s: any) => s.user?.organizationId) || ''
 
@@ -219,9 +222,14 @@ export default function AlertsPage() {
   const totalPages = alertsData?.totalPages || 1
 
   const filteredAlerts = alerts.filter((a) => {
-    // Keyword search filter
-    if (search && !a.title.toLowerCase().includes(search.toLowerCase()) && !a.message.toLowerCase().includes(search.toLowerCase())) {
-      return false
+    // Keyword search filter - search by vehicle name, alert type, and message
+    if (search) {
+      const searchLower = search.toLowerCase()
+      const matchesSearch =
+        a.title.toLowerCase().includes(searchLower) ||
+        a.message.toLowerCase().includes(searchLower) ||
+        ((a as any).vehicleName && (a as any).vehicleName.toLowerCase().includes(searchLower))
+      if (!matchesSearch) return false
     }
     // Date range filter
     if (dateFrom || dateTo) {
@@ -233,8 +241,57 @@ export default function AlertsPage() {
         if (alertDate > endOfDay) return false
       }
     }
+    // Quick filter: severity (Critical only)
+    if (quickFilterSeverity !== 'all' && a.severity !== quickFilterSeverity) {
+      return false
+    }
+    // Quick filter: time period
+    if (quickFilterTime !== 'all') {
+      const alertDate = new Date(a.createdAt)
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+      if (quickFilterTime === 'today' && alertDate < today) {
+        return false
+      } else if (quickFilterTime === 'week') {
+        const weekAgo = new Date(now)
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        if (alertDate < weekAgo) return false
+      }
+    }
     return true
   })
+
+  // Group alerts based on selected grouping option
+  const groupedAlerts = (() => {
+    if (groupBy === 'none') {
+      return { 'Toutes les alertes': filteredAlerts }
+    }
+
+    const groups: Record<string, any[]> = {}
+
+    if (groupBy === 'type') {
+      filteredAlerts.forEach((alert) => {
+        const typeLabel = alertTypeConfig[alert.type]?.label || alert.type
+        if (!groups[typeLabel]) groups[typeLabel] = []
+        groups[typeLabel].push(alert)
+      })
+    } else if (groupBy === 'vehicle') {
+      filteredAlerts.forEach((alert) => {
+        const vehicleLabel = (alert as any).vehicleName || 'Non attribué'
+        if (!groups[vehicleLabel]) groups[vehicleLabel] = []
+        groups[vehicleLabel].push(alert)
+      })
+    } else if (groupBy === 'severity') {
+      filteredAlerts.forEach((alert) => {
+        const severityLabel = alert.severity
+        if (!groups[severityLabel]) groups[severityLabel] = []
+        groups[severityLabel].push(alert)
+      })
+    }
+
+    return groups
+  })()
 
   const handleSelectAlert = (id: string) => {
     setSelectedAlerts((prev) =>
@@ -670,6 +727,93 @@ export default function AlertsPage() {
                 </Button>
               )}
             </div>
+
+            {/* Quick Filters */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => {
+                    setQuickFilterTime('all')
+                    setQuickFilterSeverity('all')
+                    setPage(1)
+                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    quickFilterTime === 'all' && quickFilterSeverity === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Réinitialiser filtres
+                </button>
+                <button
+                  onClick={() => {
+                    setQuickFilterTime('today')
+                    setPage(1)
+                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    quickFilterTime === 'today'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Aujourd'hui
+                </button>
+                <button
+                  onClick={() => {
+                    setQuickFilterTime('week')
+                    setPage(1)
+                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    quickFilterTime === 'week'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Cette semaine
+                </button>
+                <button
+                  onClick={() => {
+                    setQuickFilterSeverity(quickFilterSeverity === AlertSeverity.CRITICAL ? 'all' : AlertSeverity.CRITICAL)
+                    setPage(1)
+                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    quickFilterSeverity === AlertSeverity.CRITICAL
+                      ? 'bg-red-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Critique uniquement
+                </button>
+                <button
+                  onClick={() => {
+                    setStatus('unacknowledged')
+                    setPage(1)
+                  }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    status === 'unacknowledged'
+                      ? 'bg-amber-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Non acquittées
+                </button>
+              </div>
+
+              {/* Grouping Dropdown */}
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-medium text-gray-700">Grouper par:</label>
+                <select
+                  value={groupBy}
+                  onChange={(e) => setGroupBy(e.target.value as 'none' | 'type' | 'vehicle' | 'severity')}
+                  className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-900 hover:border-gray-400 transition-colors"
+                >
+                  <option value="none">Aucun</option>
+                  <option value="type">Type</option>
+                  <option value="vehicle">Véhicule</option>
+                  <option value="severity">Sévérité</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           {/* Alert List */}
@@ -690,159 +834,168 @@ export default function AlertsPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-2">
-              {filteredAlerts.map((alert) => (
-                <Card
-                  key={alert.id}
-                  className={`transition-all cursor-pointer ${
-                    selectedAlerts.includes(alert.id) ? 'ring-2 ring-blue-400' : ''
-                  } ${selectedAlertId === alert.id ? 'ring-2 ring-green-400' : ''}`}
-                  onClick={() => {
-                    setSelectedAlertId(selectedAlertId === alert.id ? null : alert.id)
-                    setShowNoteForm(false)
-                    setShowAssignDropdown(false)
-                  }}
-                >
-                  <CardContent className="py-4">
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedAlerts.includes(alert.id)}
-                        onChange={() => handleSelectAlert(alert.id)}
-                        className="mt-1 rounded border-gray-300"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div
-                        className={`rounded-lg p-2 ${getSeverityBadgeClass(alert.severity)}`}
+            <div className="space-y-4">
+              {Object.entries(groupedAlerts).map(([groupTitle, groupAlerts]) => (
+                <div key={groupTitle}>
+                  {groupBy !== 'none' && (
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2 px-1">{groupTitle} ({groupAlerts.length})</h4>
+                  )}
+                  <div className="space-y-2">
+                    {groupAlerts.map((alert) => (
+                      <Card
+                        key={alert.id}
+                        className={`transition-all cursor-pointer ${
+                          selectedAlerts.includes(alert.id) ? 'ring-2 ring-blue-400' : ''
+                        } ${selectedAlertId === alert.id ? 'ring-2 ring-green-400' : ''}`}
+                        onClick={() => {
+                          setSelectedAlertId(selectedAlertId === alert.id ? null : alert.id)
+                          setShowNoteForm(false)
+                          setShowAssignDropdown(false)
+                        }}
                       >
-                        {getPriorityDot(alert.type)}
-                        <AlertCircle size={16} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            <h3 className="font-medium text-gray-900">{alert.title}</h3>
-                            <p className="mt-0.5 text-sm text-gray-600 line-clamp-1">{alert.message}</p>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                            <span
-                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${getSeverityBadgeClass(
-                                alert.severity
-                              )}`}
+                        <CardContent className="py-4">
+                          <div className="flex items-start gap-3">
+                            <input
+                              type="checkbox"
+                              checked={selectedAlerts.includes(alert.id)}
+                              onChange={() => handleSelectAlert(alert.id)}
+                              className="mt-1 rounded border-gray-300"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <div
+                              className={`rounded-lg p-2 ${getSeverityBadgeClass(alert.severity)}`}
                             >
-                              {alert.severity}
-                            </span>
-                            {alert.isAcknowledged ? (
-                              <Badge variant="secondary" className="text-xs">
-                                <Check size={12} className="mr-1" />
-                                Reconnu
-                              </Badge>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 gap-1 text-xs"
-                                onClick={() => bulkAcknowledge([alert.id])}
-                              >
-                                <Check size={12} />
-                                Reconnaître
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        <p className="mt-1 text-xs text-gray-400">{formatDateTime(alert.createdAt)}</p>
-
-                        {selectedAlertId === alert.id && (
-                          <div className="mt-3 space-y-3 border-t border-gray-100 pt-3">
-                            {alertAssignments[alert.id] && (
-                              <div className="text-xs">
-                                <span className="text-gray-600">Assigné à: </span>
-                                <Badge variant="outline" className="ml-1">
-                                  {alertAssignments[alert.id]}
-                                </Badge>
-                              </div>
-                            )}
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="gap-1 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setShowAssignDropdown(!showAssignDropdown)
-                                }}
-                              >
-                                Assigner
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="gap-1 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setShowNoteForm(!showNoteForm)
-                                  setNoteInput(alertNotes[alert.id] || '')
-                                }}
-                              >
-                                Notes
-                              </Button>
+                              {getPriorityDot(alert.type)}
+                              <AlertCircle size={16} />
                             </div>
-
-                            {showAssignDropdown && (
-                              <div className="flex gap-1 flex-wrap">
-                                {assignmentOptions.map((opt) => (
-                                  <Badge
-                                    key={opt}
-                                    variant="secondary"
-                                    className="cursor-pointer opacity-70 hover:opacity-100"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleSaveAlertAssignment(alert.id, opt)
-                                    }}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <h3 className="font-medium text-gray-900">{alert.title}</h3>
+                                  <p className="mt-0.5 text-sm text-gray-600 line-clamp-1">{alert.message}</p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                  <span
+                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${getSeverityBadgeClass(
+                                      alert.severity
+                                    )}`}
                                   >
-                                    {savingAssignment[alert.id] ? '...' : opt}
-                                  </Badge>
-                                ))}
+                                    {alert.severity}
+                                  </span>
+                                  {alert.isAcknowledged ? (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <Check size={12} className="mr-1" />
+                                      Reconnu
+                                    </Badge>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 gap-1 text-xs"
+                                      onClick={() => bulkAcknowledge([alert.id])}
+                                    >
+                                      <Check size={12} />
+                                      Reconnaître
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
-                            )}
+                              <p className="mt-1 text-xs text-gray-400">{formatTimeAgo(alert.createdAt)}</p>
 
-                            {showNoteForm && (
-                              <div className="space-y-2">
-                                <textarea
-                                  placeholder="Ajouter une note..."
-                                  value={noteInput}
-                                  onChange={(e) => setNoteInput(e.target.value)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="w-full text-xs p-2 border border-gray-300 rounded resize-none"
-                                  rows={2}
-                                />
-                                <Button
-                                  size="sm"
-                                  className="gap-1 text-xs w-full"
-                                  disabled={savingNotes[alert.id]}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleSaveAlertNote(alert.id, noteInput)
-                                  }}
-                                >
-                                  <Save size={12} />
-                                  {savingNotes[alert.id] ? 'Enregistrement...' : 'Enregistrer'}
-                                </Button>
-                              </div>
-                            )}
+                              {selectedAlertId === alert.id && (
+                                <div className="mt-3 space-y-3 border-t border-gray-100 pt-3">
+                                  {alertAssignments[alert.id] && (
+                                    <div className="text-xs">
+                                      <span className="text-gray-600">Assigné à: </span>
+                                      <Badge variant="outline" className="ml-1">
+                                        {alertAssignments[alert.id]}
+                                      </Badge>
+                                    </div>
+                                  )}
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="gap-1 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setShowAssignDropdown(!showAssignDropdown)
+                                      }}
+                                    >
+                                      Assigner
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="gap-1 text-xs"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setShowNoteForm(!showNoteForm)
+                                        setNoteInput(alertNotes[alert.id] || '')
+                                      }}
+                                    >
+                                      Notes
+                                    </Button>
+                                  </div>
 
-                            {alertNotes[alert.id] && (
-                              <div className="text-xs bg-gray-50 p-2 rounded border border-gray-200">
-                                <p className="font-medium text-gray-700">Note:</p>
-                                <p className="text-gray-600 mt-1">{alertNotes[alert.id]}</p>
-                              </div>
-                            )}
+                                  {showAssignDropdown && (
+                                    <div className="flex gap-1 flex-wrap">
+                                      {assignmentOptions.map((opt) => (
+                                        <Badge
+                                          key={opt}
+                                          variant="secondary"
+                                          className="cursor-pointer opacity-70 hover:opacity-100"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleSaveAlertAssignment(alert.id, opt)
+                                          }}
+                                        >
+                                          {savingAssignment[alert.id] ? '...' : opt}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                  {showNoteForm && (
+                                    <div className="space-y-2">
+                                      <textarea
+                                        placeholder="Ajouter une note..."
+                                        value={noteInput}
+                                        onChange={(e) => setNoteInput(e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full text-xs p-2 border border-gray-300 rounded resize-none"
+                                        rows={2}
+                                      />
+                                      <Button
+                                        size="sm"
+                                        className="gap-1 text-xs w-full"
+                                        disabled={savingNotes[alert.id]}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handleSaveAlertNote(alert.id, noteInput)
+                                        }}
+                                      >
+                                        <Save size={12} />
+                                        {savingNotes[alert.id] ? 'Enregistrement...' : 'Enregistrer'}
+                                      </Button>
+                                    </div>
+                                  )}
+
+                                  {alertNotes[alert.id] && (
+                                    <div className="text-xs bg-gray-50 p-2 rounded border border-gray-200">
+                                      <p className="font-medium text-gray-700">Note:</p>
+                                      <p className="text-gray-600 mt-1">{alertNotes[alert.id]}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           )}

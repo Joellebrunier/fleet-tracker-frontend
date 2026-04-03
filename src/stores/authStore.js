@@ -7,7 +7,13 @@ function getInitialAuthState() {
         const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
         const userStr = localStorage.getItem(STORAGE_KEYS.USER);
         if (token && userStr) {
-            const user = JSON.parse(userStr);
+            const raw = JSON.parse(userStr);
+            // Normalize: backend may return snake_case (organization_id) or camelCase (organizationId)
+            const user = {
+                ...raw,
+                organizationId: raw.organizationId || raw.organization_id || '',
+                role: raw.role ? raw.role.toUpperCase() : raw.role,
+            };
             return { user, token, isAuthenticated: true };
         }
     }
@@ -40,10 +46,16 @@ export const useAuthStore = create((set, get) => ({
     setIsLoading: (isLoading) => set({ isLoading }),
     setError: (error) => set({ error }),
     login: (user, token) => {
+        // Normalize snake_case fields from backend
+        const normalizedUser = {
+            ...user,
+            organizationId: user.organizationId || user.organization_id || '',
+            role: user.role ? user.role.toUpperCase() : user.role,
+        };
         localStorage.setItem(STORAGE_KEYS.TOKEN, token);
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(normalizedUser));
         set({
-            user,
+            user: normalizedUser,
             token,
             isAuthenticated: true,
             error: null,
@@ -66,7 +78,12 @@ export const useAuthStore = create((set, get) => ({
         const userStr = localStorage.getItem(STORAGE_KEYS.USER);
         if (token && userStr) {
             try {
-                const user = JSON.parse(userStr);
+                const raw = JSON.parse(userStr);
+                const user = {
+                    ...raw,
+                    organizationId: raw.organizationId || raw.organization_id || '',
+                    role: raw.role ? raw.role.toUpperCase() : raw.role,
+                };
                 set({
                     user,
                     token,

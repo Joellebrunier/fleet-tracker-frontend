@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUIStore } from '@/stores/uiStore';
-import { Menu, X, Map, Truck, AlertCircle, Settings, BarChart3, Zap, Shield, Home, Users, FolderTree, Cpu, HelpCircle, Lock, } from 'lucide-react';
+import { Menu, X, Map, Truck, AlertCircle, Settings, BarChart3, Zap, Shield, Home, Users, FolderTree, Cpu, HelpCircle, Lock, FileCode, Code, FlaskConical, } from 'lucide-react';
 import { UserRole } from '@/types/user';
 import { cn } from '@/lib/utils';
 export default function Sidebar() {
@@ -68,6 +68,24 @@ export default function Sidebar() {
     ];
     const adminItems = [
         {
+            label: 'API Docs',
+            icon: FileCode,
+            path: '/api-docs',
+            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+        },
+        {
+            label: 'SDK',
+            icon: Code,
+            path: '/sdk-examples',
+            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+        },
+        {
+            label: 'Test',
+            icon: FlaskConical,
+            path: '/test-environment',
+            roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
+        },
+        {
             label: 'Rôles',
             icon: Lock,
             path: '/roles',
@@ -88,20 +106,20 @@ export default function Sidebar() {
     ];
     const visibleMenuItems = menuItems.filter((item) => item.roles.some((role) => hasRole(role)));
     const visibleAdminItems = adminItems.filter((item) => item.roles.some((role) => hasRole(role)));
-    return (_jsxs(_Fragment, { children: [_jsx("button", { onClick: () => setSidebarOpen(!sidebarOpen), className: "fixed left-4 top-4 z-40 rounded-md bg-blue-600 p-2 text-white lg:hidden", children: sidebarOpen ? _jsx(X, { size: 24 }) : _jsx(Menu, { size: 24 }) }), _jsxs("aside", { className: cn('fixed inset-y-0 left-0 z-30 w-64 border-r border-gray-200 bg-white transition-transform duration-300 ease-in-out lg:translate-x-0', sidebarOpen ? 'translate-x-0' : '-translate-x-full'), children: [_jsxs("div", { className: "border-b border-gray-200 p-6", children: [_jsx("h1", { className: "text-2xl font-bold text-blue-600", children: "TrackZone" }), _jsx("p", { className: "text-xs text-gray-500", children: "Fleet Management System" })] }), _jsxs("nav", { className: "space-y-1 p-3 overflow-y-auto", style: { maxHeight: 'calc(100vh - 140px)' }, children: [visibleMenuItems.map((item) => {
+    return (_jsxs(_Fragment, { children: [_jsx("button", { onClick: () => setSidebarOpen(!sidebarOpen), className: "fixed left-4 top-4 z-40 rounded-md bg-gray-900 p-2 text-white lg:hidden", children: sidebarOpen ? _jsx(X, { size: 24 }) : _jsx(Menu, { size: 24 }) }), _jsxs("aside", { className: cn('fixed inset-y-0 left-0 z-30 w-64 border-r border-slate-800 bg-gray-950 transition-transform duration-300 ease-in-out lg:translate-x-0', sidebarOpen ? 'translate-x-0' : '-translate-x-full'), children: [_jsxs("div", { className: "border-b border-slate-800 p-6", children: [_jsx("h1", { className: "text-2xl font-bold text-white", children: "TRACKZONE" }), _jsx("p", { className: "text-xs text-slate-400 mt-1", children: "MAT\u00C9RIEL TECH+" }), _jsx("p", { className: "text-xs text-slate-500 mt-1", children: "Fleet Management" })] }), _jsxs("nav", { className: "space-y-1 p-3 overflow-y-auto", style: { maxHeight: 'calc(100vh - 140px)' }, children: [visibleMenuItems.map((item) => {
                                 const Icon = item.icon;
                                 return (_jsxs(Link, { to: item.path, onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive(item.path)
-                                        ? 'bg-blue-50 text-blue-600'
-                                        : 'text-gray-700 hover:bg-gray-100'), children: [_jsx(Icon, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: item.label })] }, item.path));
-                            }), visibleAdminItems.length > 0 && (_jsxs(_Fragment, { children: [_jsx("div", { className: "my-3 border-t border-gray-200" }), visibleAdminItems.map((item) => {
+                                        ? 'border-l-2 border-white bg-white/10 text-white'
+                                        : 'text-slate-400 hover:bg-white/5 hover:text-white'), children: [_jsx(Icon, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: item.label })] }, item.path));
+                            }), visibleAdminItems.length > 0 && (_jsxs(_Fragment, { children: [_jsx("div", { className: "my-3 border-t border-slate-700/50" }), visibleAdminItems.map((item) => {
                                         const Icon = item.icon;
                                         return (_jsxs(Link, { to: item.path, onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive(item.path)
-                                                ? 'bg-red-50 text-red-600'
-                                                : 'text-gray-700 hover:bg-gray-100'), children: [_jsx(Icon, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: item.label })] }, item.path));
-                                    })] }))] }), _jsxs("div", { className: "absolute bottom-0 w-full border-t border-gray-200 p-3 space-y-1", children: [_jsxs(Link, { to: "/help", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/help')
-                                    ? 'bg-blue-50 text-blue-600'
-                                    : 'text-gray-700 hover:bg-gray-100'), children: [_jsx(HelpCircle, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Aide" })] }), _jsxs(Link, { to: "/settings", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/settings')
-                                    ? 'bg-blue-50 text-blue-600'
-                                    : 'text-gray-700 hover:bg-gray-100'), children: [_jsx(Settings, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Param\u00E8tres" })] })] })] }), sidebarOpen && (_jsx("div", { className: "fixed inset-0 z-20 bg-black/50 lg:hidden", onClick: () => setSidebarOpen(false) }))] }));
+                                                ? 'border-l-2 border-white bg-white/10 text-white'
+                                                : 'text-slate-400 hover:bg-white/5 hover:text-white'), children: [_jsx(Icon, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: item.label })] }, item.path));
+                                    })] }))] }), _jsxs("div", { className: "absolute bottom-0 w-full border-t border-slate-800 p-3 space-y-1", children: [_jsxs(Link, { to: "/help", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/help')
+                                    ? 'border-l-2 border-white bg-white/10 text-white'
+                                    : 'text-slate-400 hover:bg-white/5 hover:text-white'), children: [_jsx(HelpCircle, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Aide" })] }), _jsxs(Link, { to: "/settings", onClick: () => setSidebarOpen(false), className: cn('flex items-center space-x-3 rounded-lg px-4 py-2.5 transition-colors', isActive('/settings')
+                                    ? 'border-l-2 border-white bg-white/10 text-white'
+                                    : 'text-slate-400 hover:bg-white/5 hover:text-white'), children: [_jsx(Settings, { size: 18 }), _jsx("span", { className: "text-sm font-medium", children: "Param\u00E8tres" })] })] })] }), sidebarOpen && (_jsx("div", { className: "fixed inset-0 z-20 bg-black/50 lg:hidden", onClick: () => setSidebarOpen(false) }))] }));
 }
 //# sourceMappingURL=Sidebar.js.map

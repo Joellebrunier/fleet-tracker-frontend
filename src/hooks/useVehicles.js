@@ -16,19 +16,64 @@ const vehicleKeys = {
 };
 // Get vehicles list
 export function useVehicles(filters = {}) {
-    const orgId = useAuthStore.getState().user?.organizationId || '';
+    const orgId = useAuthStore.getState().user?.organizationId
+        || useAuthStore.getState().user?.organization_id
+        || '';
     const { page = PAGINATION_DEFAULTS.DEFAULT_PAGE, limit = PAGINATION_DEFAULTS.DEFAULT_PAGE_SIZE, ...otherFilters } = filters;
     return useQuery({
-        queryKey: vehicleKeys.list(filters),
+        queryKey: vehicleKeys.list({ ...filters, _orgId: orgId }),
         queryFn: async () => {
-            const params = new URLSearchParams({
+            if (!orgId)
+                return { data: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+            // Filter out undefined, null, and empty string values to avoid sending invalid params
+            const rawParams = {
                 page: page.toString(),
                 limit: limit.toString(),
-                ...otherFilters,
-            });
-            const response = await apiClient.get(`${API_ROUTES.VEHICLES(orgId)}?${params}`);
-            return response.data;
+            };
+            for (const [key, value] of Object.entries(otherFilters)) {
+                if (value !== undefined && value !== null && value !== '') {
+                    rawParams[key] = String(value);
+                }
+            }
+            const params = new URLSearchParams(rawParams);
+            try {
+                const response = await apiClient.get(`${API_ROUTES.VEHICLES(orgId)}?${params}`);
+                const raw = response.data;
+                // Handle different response formats:
+                // 1. Already a PaginatedResponse: { data: [...], total, page, totalPages }
+                if (raw && typeof raw === 'object' && !Array.isArray(raw) && Array.isArray(raw.data)) {
+                    return raw;
+                }
+                // 2. Flat array of vehicles (backend returned array directly)
+                if (Array.isArray(raw)) {
+                    return {
+                        data: raw,
+                        total: raw.length,
+                        page: page,
+                        limit: limit,
+                        totalPages: Math.ceil(raw.length / limit) || 1,
+                    };
+                }
+                // 3. Nested: { vehicles: [...] } or { items: [...] }
+                if (raw && typeof raw === 'object') {
+                    const arr = raw.vehicles || raw.items || raw.results || [];
+                    return {
+                        data: Array.isArray(arr) ? arr : [],
+                        total: raw.total || raw.count || (Array.isArray(arr) ? arr.length : 0),
+                        page: raw.page || page,
+                        limit: raw.limit || limit,
+                        totalPages: raw.totalPages || Math.ceil((raw.total || 0) / limit) || 1,
+                    };
+                }
+                // 4. Fallback
+                return { data: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+            }
+            catch (err) {
+                console.error('useVehicles fetch error:', err);
+                return { data: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+            }
         },
+        enabled: !!orgId,
         staleTime: 1000 * 30, // 30 seconds
     });
 }
@@ -91,15 +136,29 @@ export function useVehicleStats(id) {
     });
 }
 // Get vehicle groups
-// NOTE: VEHICLE_GROUPS route has been removed from the backend
-// This functionality has been deprecated
 export function useVehicleGroups() {
+    const orgId = useAuthStore.getState().user?.organizationId || '';
     return useQuery({
         queryKey: vehicleKeys.groups,
         queryFn: async () => {
-            // Placeholder - returns empty array until endpoint is restored
-            return [];
+            if (!orgId)
+                return [];
+            try {
+                const response = await apiClient.get(API_ROUTES.VEHICLE_GROUPS(orgId));
+                const raw = response.data;
+                if (Array.isArray(raw))
+                    return raw;
+                if (raw && Array.isArray(raw.data))
+                    return raw.data;
+                if (raw && Array.isArray(raw.groups))
+                    return raw.groups;
+                return [];
+            }
+            catch {
+                return [];
+            }
         },
+        enabled: !!orgId,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
 }

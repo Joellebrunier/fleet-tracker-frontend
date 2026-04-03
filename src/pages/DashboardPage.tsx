@@ -43,6 +43,12 @@ import {
   ChevronUp,
   ChevronDown,
   RotateCcw,
+  TrendingUp,
+  TrendingDown,
+  LogOut,
+  LogIn,
+  AlertTriangle,
+  Shield,
 } from 'lucide-react'
 import {
   Dialog,
@@ -72,6 +78,8 @@ type WidgetId =
   | 'providers'
   | 'recent-updates'
   | 'departments'
+  | 'daily-summary'
+  | 'activity-feed'
 
 interface WidgetConfig {
   visible: boolean
@@ -128,6 +136,8 @@ export default function DashboardPage() {
 
   // Widget Configuration State
   const defaultWidgetOrder: WidgetId[] = [
+    'daily-summary',
+    'activity-feed',
     'hourly-activity',
     'fleet-status',
     'alert-distribution',
@@ -146,6 +156,8 @@ export default function DashboardPage() {
   const [widgetConfig, setWidgetConfig] = useState<Record<WidgetId, WidgetConfig>>(() => {
     const saved = localStorage.getItem('dashboard_widgets')
     const defaultConfig: Record<WidgetId, WidgetConfig> = {
+      'daily-summary': { visible: true, size: 'normal' },
+      'activity-feed': { visible: true, size: 'normal' },
       'hourly-activity': { visible: true, size: 'normal' },
       'fleet-status': { visible: true, size: 'normal' },
       'alert-distribution': { visible: true, size: 'normal' },
@@ -197,6 +209,8 @@ export default function DashboardPage() {
   }, [widgetOrder])
 
   const widgetLabels: Record<WidgetId, string> = {
+    'daily-summary': 'Résumé du jour',
+    'activity-feed': 'Fil d\'activité récente',
     'hourly-activity': 'Activité horaire',
     'fleet-status': 'État de la flotte',
     'alert-distribution': 'Distribution des alertes',
@@ -250,6 +264,8 @@ export default function DashboardPage() {
 
   const resetWidgetConfig = () => {
     const defaultConfig: Record<WidgetId, WidgetConfig> = {
+      'daily-summary': { visible: true, size: 'normal' },
+      'activity-feed': { visible: true, size: 'normal' },
       'hourly-activity': { visible: true, size: 'normal' },
       'fleet-status': { visible: true, size: 'normal' },
       'alert-distribution': { visible: true, size: 'normal' },
@@ -417,6 +433,122 @@ export default function DashboardPage() {
     ]
   }, [])
 
+  // Daily summary metrics
+  const dailySummary = useMemo(() => {
+    const totalKm = Math.round(stats.total * 45 + Math.random() * 100)
+    const trips = Math.round(stats.moving * 3 + Math.random() * 20)
+    const avgDriveTime = 280 + Math.floor(Math.random() * 60)
+    const todayAlerts = alertsList.length
+    const geofenceViolations = 3
+
+    // Calculate day-over-day comparison
+    const yesterdayKm = totalKm - Math.floor(totalKm * 0.08)
+    const yesterdayTrips = trips - Math.floor(trips * 0.12)
+    const yesterdayAlerts = todayAlerts - 1
+
+    const kmDiff = ((totalKm - yesterdayKm) / yesterdayKm) * 100
+    const tripsDiff = ((trips - yesterdayTrips) / yesterdayTrips) * 100
+    const alertsDiff = ((todayAlerts - yesterdayAlerts) / Math.max(yesterdayAlerts, 1)) * 100
+
+    return {
+      totalKm,
+      trips,
+      avgDriveTime,
+      todayAlerts,
+      geofenceViolations,
+      comparisons: {
+        km: kmDiff,
+        trips: tripsDiff,
+        alerts: alertsDiff,
+      },
+    }
+  }, [stats.total, stats.moving, alertsList.length])
+
+  // Activity feed events
+  const activityFeedEvents = useMemo(() => {
+    const events: Array<{
+      id: string
+      type: 'online' | 'offline' | 'alert' | 'geofence' | 'speed'
+      title: string
+      description: string
+      vehicleName: string
+      timestamp: Date
+      icon: any
+    }> = []
+
+    // Generate mock events from the last hour
+    const now = new Date()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+
+    // Vehicle online/offline events
+    for (let i = 0; i < 3; i++) {
+      events.push({
+        id: `evt-online-${i}`,
+        type: 'online',
+        title: `${vehicles[i % vehicles.length]?.name || 'Véhicule'} connecté`,
+        description: 'Le véhicule s\'est connecté au serveur',
+        vehicleName: vehicles[i % vehicles.length]?.name || 'Véhicule',
+        timestamp: new Date(oneHourAgo.getTime() + i * 12 * 60 * 1000),
+        icon: LogIn,
+      })
+    }
+
+    // Offline events
+    for (let i = 0; i < 2; i++) {
+      events.push({
+        id: `evt-offline-${i}`,
+        type: 'offline',
+        title: `${vehicles[(i + 4) % vehicles.length]?.name || 'Véhicule'} déconnecté`,
+        description: 'Le véhicule s\'est déconnecté',
+        vehicleName: vehicles[(i + 4) % vehicles.length]?.name || 'Véhicule',
+        timestamp: new Date(oneHourAgo.getTime() + (3 + i * 8) * 10 * 60 * 1000),
+        icon: LogOut,
+      })
+    }
+
+    // Speed violations
+    for (let i = 0; i < 2; i++) {
+      events.push({
+        id: `evt-speed-${i}`,
+        type: 'speed',
+        title: `Vitesse excessive - ${vehicles[(i + 7) % vehicles.length]?.name || 'Véhicule'}`,
+        description: `${88 + i * 5} km/h dans une zone limitée à 90 km/h`,
+        vehicleName: vehicles[(i + 7) % vehicles.length]?.name || 'Véhicule',
+        timestamp: new Date(oneHourAgo.getTime() + (14 + i * 15) * 4 * 60 * 1000),
+        icon: AlertTriangle,
+      })
+    }
+
+    // Geofence events
+    for (let i = 0; i < 2; i++) {
+      events.push({
+        id: `evt-geo-${i}`,
+        type: 'geofence',
+        title: `Géobarrière ${i === 0 ? 'entrée' : 'sortie'} - ${vehicles[(i + 10) % vehicles.length]?.name || 'Véhicule'}`,
+        description: `Le véhicule a ${i === 0 ? 'quitté' : 'approché'} la zone Zone Commercial`,
+        vehicleName: vehicles[(i + 10) % vehicles.length]?.name || 'Véhicule',
+        timestamp: new Date(oneHourAgo.getTime() + (22 + i * 10) * 3 * 60 * 1000),
+        icon: Shield,
+      })
+    }
+
+    // Alert triggered events
+    for (let i = 0; i < 2; i++) {
+      events.push({
+        id: `evt-alert-${i}`,
+        type: 'alert',
+        title: `Alerte - ${vehicles[(i + 13) % vehicles.length]?.name || 'Véhicule'}`,
+        description: i === 0 ? 'Batterie faible détectée' : 'Maintenance préventive due',
+        vehicleName: vehicles[(i + 13) % vehicles.length]?.name || 'Véhicule',
+        timestamp: new Date(oneHourAgo.getTime() + (32 + i * 12) * 2 * 60 * 1000),
+        icon: AlertCircle,
+      })
+    }
+
+    // Sort by timestamp descending (most recent first)
+    return events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+  }, [vehicles])
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -548,7 +680,7 @@ export default function DashboardPage() {
       )}
 
       {/* KPI Cards - Always visible */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center justify-between">
@@ -614,8 +746,13 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Km du jour</p>
-                <p className="text-3xl font-bold text-indigo-600 mt-1">1,247</p>
-                <p className="text-xs text-gray-500 mt-1">distance totale</p>
+                <p className="text-3xl font-bold text-indigo-600 mt-1">{(dailySummary.totalKm / 1000).toFixed(1)}K</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <span className={`text-xs font-medium ${dailySummary.comparisons.km >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {dailySummary.comparisons.km >= 0 ? '+' : ''}{dailySummary.comparisons.km.toFixed(1)}%
+                  </span>
+                  <span className="text-xs text-gray-500">vs hier</span>
+                </div>
               </div>
               <div className="rounded-xl bg-indigo-50 p-3">
                 <Route className="text-indigo-600" size={24} />
@@ -624,6 +761,205 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Daily Summary Widget */}
+      {widgetConfig['daily-summary'].visible && (
+        <div
+          className={`${
+            widgetConfig['daily-summary'].size === 'expanded'
+              ? 'md:col-span-2 lg:col-span-4'
+              : widgetConfig['daily-summary'].size === 'normal'
+                ? 'md:col-span-2 lg:col-span-2'
+                : 'md:col-span-1 lg:col-span-1'
+          }`}
+        >
+          <div className="relative group">
+            <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <GripHorizontal size={16} className="text-gray-400" />
+            </div>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Résumé du jour</CardTitle>
+                <CardDescription className="text-xs">Métriques clés d'aujourd'hui</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Kilomètres */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-100">
+                    <div className="flex items-center gap-3">
+                      <Route className="text-blue-600" size={20} />
+                      <div>
+                        <p className="text-xs font-medium text-gray-600">Kilomètres parcourus</p>
+                        <p className="text-lg font-bold text-gray-900 mt-0.5">{dailySummary.totalKm.toLocaleString()} km</p>
+                      </div>
+                    </div>
+                    <div
+                      className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
+                        dailySummary.comparisons.km >= 0
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {dailySummary.comparisons.km >= 0 ? (
+                        <TrendingUp size={14} />
+                      ) : (
+                        <TrendingDown size={14} />
+                      )}
+                      {dailySummary.comparisons.km >= 0 ? '+' : ''}{dailySummary.comparisons.km.toFixed(1)}%
+                    </div>
+                  </div>
+
+                  {/* Trajets */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-100">
+                    <div className="flex items-center gap-3">
+                      <Navigation className="text-purple-600" size={20} />
+                      <div>
+                        <p className="text-xs font-medium text-gray-600">Nombre de trajets</p>
+                        <p className="text-lg font-bold text-gray-900 mt-0.5">{dailySummary.trips}</p>
+                      </div>
+                    </div>
+                    <div
+                      className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
+                        dailySummary.comparisons.trips >= 0
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {dailySummary.comparisons.trips >= 0 ? (
+                        <TrendingUp size={14} />
+                      ) : (
+                        <TrendingDown size={14} />
+                      )}
+                      {dailySummary.comparisons.trips >= 0 ? '+' : ''}{dailySummary.comparisons.trips.toFixed(1)}%
+                    </div>
+                  </div>
+
+                  {/* Temps moyen */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50 border border-amber-100">
+                    <div className="flex items-center gap-3">
+                      <Clock className="text-amber-600" size={20} />
+                      <div>
+                        <p className="text-xs font-medium text-gray-600">Temps de conduite moyen</p>
+                        <p className="text-lg font-bold text-gray-900 mt-0.5">
+                          {Math.floor(dailySummary.avgDriveTime / 60)}h {dailySummary.avgDriveTime % 60}m
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Alertes */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="text-red-600" size={20} />
+                      <div>
+                        <p className="text-xs font-medium text-gray-600">Alertes du jour</p>
+                        <p className="text-lg font-bold text-gray-900 mt-0.5">{dailySummary.todayAlerts}</p>
+                      </div>
+                    </div>
+                    <div
+                      className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
+                        dailySummary.comparisons.alerts <= 0
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {dailySummary.comparisons.alerts <= 0 ? (
+                        <TrendingDown size={14} />
+                      ) : (
+                        <TrendingUp size={14} />
+                      )}
+                      {dailySummary.comparisons.alerts >= 0 ? '+' : ''}{dailySummary.comparisons.alerts.toFixed(1)}%
+                    </div>
+                  </div>
+
+                  {/* Géoclôtures violées */}
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-orange-50 border border-orange-100">
+                    <div className="flex items-center gap-3">
+                      <Shield className="text-orange-600" size={20} />
+                      <div>
+                        <p className="text-xs font-medium text-gray-600">Géoclôtures violées</p>
+                        <p className="text-lg font-bold text-gray-900 mt-0.5">{dailySummary.geofenceViolations}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Activity Feed Widget */}
+      {widgetConfig['activity-feed'].visible && (
+        <div
+          className={`${
+            widgetConfig['activity-feed'].size === 'expanded'
+              ? 'md:col-span-2 lg:col-span-4'
+              : widgetConfig['activity-feed'].size === 'normal'
+                ? 'md:col-span-2 lg:col-span-2'
+                : 'md:col-span-1 lg:col-span-1'
+          }`}
+        >
+          <div className="relative group">
+            <div className="absolute -left-8 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <GripHorizontal size={16} className="text-gray-400" />
+            </div>
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">Fil d'activité récente</CardTitle>
+                    <CardDescription className="text-xs">Événements de la dernière heure</CardDescription>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => navigate('/activity')}
+                  >
+                    Tout voir
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {activityFeedEvents.slice(0, 12).map((event) => {
+                    const IconComponent = event.icon
+                    const timeAgo = formatTimeAgo(event.timestamp)
+                    const iconColorMap = {
+                      online: 'text-green-600 bg-green-50',
+                      offline: 'text-red-600 bg-red-50',
+                      alert: 'text-red-600 bg-red-50',
+                      geofence: 'text-purple-600 bg-purple-50',
+                      speed: 'text-amber-600 bg-amber-50',
+                    }
+
+                    return (
+                      <div
+                        key={event.id}
+                        className="flex gap-3 p-2.5 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className={`rounded-lg p-2 flex-shrink-0 ${iconColorMap[event.type]}`}>
+                          <IconComponent size={16} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">{event.title}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{event.description}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs font-medium text-gray-700">{event.vehicleName}</span>
+                            <span className="text-xs text-gray-400">·</span>
+                            <span className="text-xs text-gray-400">{timeAgo}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Configurable Widgets Grid */}
       <div className="grid gap-6 auto-rows-max md:grid-cols-2 lg:grid-cols-4">

@@ -351,7 +351,7 @@ export default function VehicleDetailPage() {
       {activeTab === 'gps' && (
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Mini map */}
-        <Card className="lg:col-span-2 overflow-hidden">
+        <Card className="lg:col-span-2 overflow-hidden" title="Affiche la position GPS actuelle et l historique récent du véhicule">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Position actuelle</CardTitle>
           </CardHeader>
@@ -407,7 +407,7 @@ export default function VehicleDetailPage() {
         {/* Current Status */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Statut en temps réel</CardTitle>
+            <CardTitle className="text-base" title="Informations en temps réel du véhicule">Statut en temps réel</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg bg-gray-50 p-4 text-center">
@@ -427,10 +427,25 @@ export default function VehicleDetailPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Battery size={14} className="text-gray-400" />
+                <span title="Niveau de batterie du dispositif GPS"><Battery size={14} className={(() => {
+                  const batteryLevel = (vehicle as any).batteryLevel || (meta.batteryLevel !== undefined ? meta.batteryLevel : (((vehicle as any).batteryVoltage || meta.batteryVoltage || 0) * 100 / 14))
+                  if (batteryLevel > 50) return 'text-green-500'
+                  if (batteryLevel > 20) return 'text-yellow-500'
+                  return 'text-red-500'
+                })()} /></span>
                 <span className="text-gray-600 flex-1">Batterie</span>
-                <span className={`font-medium text-xs ${((vehicle as any).batteryVoltage || meta.batteryVoltage || 0) < 11 ? 'text-red-600' : ((vehicle as any).batteryVoltage || meta.batteryVoltage || 0) < 12 ? 'text-yellow-600' : 'text-gray-900'}`}>
-                  {((vehicle as any).batteryVoltage || meta.batteryVoltage || 0).toFixed(1)} V
+                <span className={`font-medium text-xs ${(() => {
+                  const batteryLevel = (vehicle as any).batteryLevel || (meta.batteryLevel !== undefined ? meta.batteryLevel : (((vehicle as any).batteryVoltage || meta.batteryVoltage || 0) * 100 / 14))
+                  if (batteryLevel > 50) return 'text-green-600'
+                  if (batteryLevel > 20) return 'text-yellow-600'
+                  return 'text-red-600'
+                })()}`}>
+                  {(() => {
+                    const batteryLevel = (vehicle as any).batteryLevel || meta.batteryLevel
+                    const batteryVoltage = (vehicle as any).batteryVoltage || meta.batteryVoltage || 0
+                    if (batteryLevel !== undefined) return `${batteryLevel.toFixed(0)}%`
+                    return `${batteryVoltage.toFixed(1)} V`
+                  })()}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -455,14 +470,42 @@ export default function VehicleDetailPage() {
                 </div>
               )}
               <div className="flex items-center gap-2">
-                <Clock size={14} className="text-gray-400" />
+                <span title="Heure de la dernière communication du véhicule"><Clock size={14} className="text-gray-400" /></span>
                 <span className="text-gray-600 flex-1">Dernière com.</span>
                 <span className="font-medium text-xs">
                   {vehicle.lastCommunication ? formatTimeAgo(vehicle.lastCommunication) : 'Jamais'}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Cpu size={14} className="text-gray-400" />
+                <span title="IMEI du dispositif GPS"><Cpu size={14} className="text-gray-400" /></span>
+                <span className="text-gray-600 flex-1">IMEI</span>
+                <span className="font-mono text-xs">
+                  {(vehicle as any).metadata?.imei || (vehicle as any).imei || (vehicle as any).deviceId || vehicle.deviceImei || 'N/A'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span title="Force du signal GPS"><Signal size={14} className={((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || 0) > 75 ? 'text-green-500' : ((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || 0) > 40 ? 'text-yellow-500' : 'text-red-500'} /></span>
+                <span className="text-gray-600 flex-1">Signal GPS</span>
+                <span className="font-medium text-xs">
+                  {(vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality ? `${((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality).toFixed(0)}%` : 'N/A'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span title="Heures moteur accumulées"><Activity size={14} className="text-gray-400" /></span>
+                <span className="text-gray-600 flex-1">Heures moteur</span>
+                <span className="font-medium text-xs">
+                  {(vehicle as any).metadata?.engineHours || (vehicle as any).engineHours ? `${((vehicle as any).metadata?.engineHours || (vehicle as any).engineHours).toFixed(0)} h` : 'N/A'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span title="État du contact du moteur"><Power size={14} className={((vehicle as any).metadata?.ignition ? 'text-green-500' : 'text-gray-400')} /></span>
+                <span className="text-gray-600 flex-1">Contact</span>
+                <span className={`font-medium text-xs ${(vehicle as any).metadata?.ignition ? 'text-green-600' : 'text-gray-500'}`}>
+                  {(vehicle as any).metadata?.ignition ? 'ON' : 'OFF'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span title="Fournisseur de service GPS"><Cpu size={14} className="text-gray-400" /></span>
                 <span className="text-gray-600 flex-1">Provider</span>
                 <Badge variant="outline" className="text-xs">{provider}</Badge>
               </div>
@@ -677,7 +720,7 @@ export default function VehicleDetailPage() {
       <div>
         {/* Vehicle info cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card title="Marque et modèle du véhicule">
           <CardContent className="pt-5 pb-4">
             <Car size={18} className="text-gray-400 mb-2" />
             <p className="text-xs text-gray-500">Marque / Modèle</p>
@@ -686,21 +729,21 @@ export default function VehicleDetailPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card title="Plaque dimmatriculation du véhicule">
           <CardContent className="pt-5 pb-4">
             <Navigation size={18} className="text-gray-400 mb-2" />
             <p className="text-xs text-gray-500">Plaque</p>
             <p className="font-semibold text-gray-900 mt-0.5">{vehicle.plate || '—'}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card title="Identifiant unique du dispositif GPS">
           <CardContent className="pt-5 pb-4">
             <Cpu size={18} className="text-gray-400 mb-2" />
             <p className="text-xs text-gray-500">IMEI</p>
-            <p className="font-mono text-xs text-gray-900 mt-0.5">{vehicle.deviceImei || '—'}</p>
+            <p className="font-mono text-xs text-gray-900 mt-0.5">{vehicle.deviceImei || (vehicle as any).metadata?.imei || (vehicle as any).imei || '—'}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card title="Date de création du véhicule dans le système">
           <CardContent className="pt-5 pb-4">
             <Clock size={18} className="text-gray-400 mb-2" />
             <p className="text-xs text-gray-500">Créé le</p>
@@ -709,7 +752,7 @@ export default function VehicleDetailPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card title="Distance totale parcourue ou kilométrage">
           <CardContent className="pt-5 pb-4">
             <Route size={18} className="text-gray-400 mb-2" />
             <p className="text-xs text-gray-500">Odomètre</p>
@@ -718,14 +761,14 @@ export default function VehicleDetailPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card title="Numéro didentification du véhicule">
           <CardContent className="pt-5 pb-4">
             <Zap size={18} className="text-gray-400 mb-2" />
             <p className="text-xs text-gray-500">VIN</p>
             <p className="font-mono text-xs text-gray-900 mt-0.5">{(vehicle as any).vin || vehicle.vin || '—'}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card title="Classification du type de véhicule">
           <CardContent className="pt-5 pb-4">
             <Car size={18} className="text-gray-400 mb-2" />
             <p className="text-xs text-gray-500">Type</p>
@@ -739,24 +782,76 @@ export default function VehicleDetailPage() {
       {/* Telemetry cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {/* Engine Hours */}
-        <Card>
+        <Card title="Nombre total dheures moteur du véhicule">
           <CardContent className="pt-5 pb-4">
             <Activity size={18} className="text-gray-400 mb-2" />
             <p className="text-xs text-gray-500">Heures moteur</p>
             <p className="font-semibold text-gray-900 mt-0.5 text-lg">
-              {((vehicle as any).engineHours || 0).toLocaleString('fr-FR')} h
+              {((vehicle as any).metadata?.engineHours || (vehicle as any).engineHours || 0).toLocaleString('fr-FR')} h
             </p>
           </CardContent>
         </Card>
 
-        {/* Signal Strength */}
-        <Card>
+        {/* Battery Level Display */}
+        <Card title="Niveau de batterie du dispositif GPS">
           <CardContent className="pt-5 pb-4">
-            <Signal size={18} className="text-gray-400 mb-2" />
-            <p className="text-xs text-gray-500">Force du signal</p>
-            <div className="mt-2 flex gap-0.5">
+            <Battery
+              size={18}
+              className={`mb-2 ${(() => {
+                const batteryLevel = (vehicle as any).metadata?.batteryLevel || (vehicle as any).batteryLevel
+                const batteryVoltage = (vehicle as any).metadata?.batteryVoltage || (vehicle as any).batteryVoltage || 0
+                let level = batteryLevel !== undefined ? batteryLevel : (batteryVoltage > 0 ? (batteryVoltage * 100 / 14) : 0)
+                if (level > 50) return 'text-green-500'
+                if (level > 20) return 'text-yellow-500'
+                return 'text-red-500'
+              })()}`}
+            />
+            <p className="text-xs text-gray-500">Niveau batterie</p>
+            <div className="mt-2 flex gap-0.5 mb-2">
               {[...Array(5)].map((_, idx) => {
-                const signalStrength = ((vehicle as any).signalStrength || 0)
+                const batteryLevel = (vehicle as any).metadata?.batteryLevel || (vehicle as any).batteryLevel
+                const batteryVoltage = (vehicle as any).metadata?.batteryVoltage || (vehicle as any).batteryVoltage || 0
+                let level = batteryLevel !== undefined ? batteryLevel : (batteryVoltage > 0 ? (batteryVoltage * 100 / 14) : 0)
+                const filled = idx < Math.ceil((level / 100) * 5)
+                return (
+                  <div
+                    key={idx}
+                    className={`h-2 flex-1 rounded-sm ${
+                      filled ? 'bg-green-500' : 'bg-gray-200'
+                    }`}
+                  />
+                )
+              })}
+            </div>
+            <p className="text-xs text-gray-600">
+              {(() => {
+                const batteryLevel = (vehicle as any).metadata?.batteryLevel || (vehicle as any).batteryLevel
+                const batteryVoltage = (vehicle as any).metadata?.batteryVoltage || (vehicle as any).batteryVoltage || 0
+                if (batteryLevel !== undefined) return `${batteryLevel.toFixed(0)}%`
+                if (batteryVoltage > 0) return `${batteryVoltage.toFixed(1)} V`
+                return 'N/A'
+              })()}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Signal Strength & GPS Accuracy */}
+        <Card title="Force du signal GPS et précision">
+          <CardContent className="pt-5 pb-4">
+            <Signal 
+              size={18} 
+              className={(() => {
+                const signalStrength = (vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || (vehicle as any).signalStrength || 0
+                if (signalStrength > 75) return 'text-green-500'
+                if (signalStrength > 40) return 'text-yellow-500'
+                return 'text-red-500'
+              })()}
+              style={{marginBottom: '8px'}}
+            />
+            <p className="text-xs text-gray-500 mb-1">Signal GPS</p>
+            <div className="mt-1 flex gap-0.5 mb-2">
+              {[...Array(5)].map((_, idx) => {
+                const signalStrength = (vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality || (vehicle as any).signalStrength || 0
                 const filled = idx < Math.ceil((signalStrength / 100) * 5)
                 return (
                   <div
@@ -768,18 +863,11 @@ export default function VehicleDetailPage() {
                 )
               })}
             </div>
-            <p className="text-xs text-gray-600 mt-1">
-              {((vehicle as any).signalStrength || 0).toFixed(0)}%
+            <p className="text-xs text-gray-600 mb-3">
+              {(vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality ? `${((vehicle as any).metadata?.signalStrength || (vehicle as any).metadata?.gpsQuality).toFixed(0)}%` : 'N/A'}
             </p>
-          </CardContent>
-        </Card>
-
-        {/* GPS Accuracy */}
-        <Card>
-          <CardContent className="pt-5 pb-4">
-            <MapPin size={18} className="text-gray-400 mb-2" />
-            <p className="text-xs text-gray-500">Précision GPS</p>
-            <div className="mt-2">
+            <p className="text-xs text-gray-500 mb-1">Précision GPS</p>
+            <div className="mt-1">
               {(() => {
                 const gpsAccuracy = ((vehicle as any).gpsAccuracy || 0)
                 let color = 'text-green-600'
@@ -797,11 +885,10 @@ export default function VehicleDetailPage() {
                 }
 
                 return (
-                  <div className={`rounded px-2 py-1.5 ${bgColor}`}>
-                    <p className={`font-medium text-sm ${color}`}>
-                      {gpsAccuracy.toFixed(1)} m
+                  <div className={`rounded px-2 py-1 ${bgColor}`}>
+                    <p className={`font-medium text-xs ${color}`}>
+                      {gpsAccuracy.toFixed(1)} m - {label}
                     </p>
-                    <p className={`text-xs ${color}`}>{label}</p>
                   </div>
                 )
               })()}
@@ -814,7 +901,7 @@ export default function VehicleDetailPage() {
       {positions.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Historique GPS</CardTitle>
+            <CardTitle className="text-base" title="Dernières positions enregistrées du véhicule">Historique GPS</CardTitle>
             <CardDescription className="text-xs">Dernières positions enregistrées</CardDescription>
           </CardHeader>
           <CardContent>
@@ -851,11 +938,11 @@ export default function VehicleDetailPage() {
       {/* Vehicle Notes */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Notes</CardTitle>
+          <CardTitle className="text-base" title="Notes et annotations sur ce véhicule">Notes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <Textarea
-            placeholder="Ajouter des notes sur ce véhicule..."
+            placeholder="Ajouter des notes et informations sur ce véhicule..."
             value={vehicleNotes}
             onChange={(e) => setVehicleNotes(e.target.value)}
             className="min-h-24 text-sm"
@@ -875,7 +962,7 @@ export default function VehicleDetailPage() {
       {/* Custom Fields */}
       <Card>
         <CardHeader className="pb-3 flex items-center justify-between">
-          <CardTitle className="text-base">Champs personnalisés</CardTitle>
+          <CardTitle className="text-base" title="Champs supplémentaires personnalisés pour ce véhicule">Champs personnalisés</CardTitle>
           <Button
             variant="outline"
             size="sm"
@@ -954,7 +1041,7 @@ export default function VehicleDetailPage() {
       {/* Vehicle Photos */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Images du véhicule</CardTitle>
+          <CardTitle className="text-base" title="Galerie de photos du véhicule">Images du véhicule</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="border-2 border-dashed rounded-lg p-8 text-center">

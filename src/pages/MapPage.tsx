@@ -169,6 +169,24 @@ function FitBounds({ vehicles }: { vehicles: any[] }) {
   return null
 }
 
+// Component to track zoom level changes
+function MapEvents({ onZoomChange }: { onZoomChange: (zoom: number) => void }) {
+  const map = useMap()
+
+  useEffect(() => {
+    const handleZoom = () => {
+      onZoomChange(map.getZoom())
+    }
+
+    map.on('zoom', handleZoom)
+    return () => {
+      map.off('zoom', handleZoom)
+    }
+  }, [map, onZoomChange])
+
+  return null
+}
+
 type MapStyle = 'plan' | 'satellite' | 'relief' | 'sombre' | 'clair'
 
 type DetailPanelTab = 'temps-reel' | 'historique'
@@ -194,6 +212,7 @@ export default function MapPage() {
     ubiwan: { status: 'connected' as 'connected' | 'failed', failoverActive: false },
   })
   const [isSubmittingGps, setIsSubmittingGps] = useState(false)
+  const [currentZoom, setCurrentZoom] = useState(6)
 
   // Filter states
   const [sourceFilter, setSourceFilter] = useState<'TOUS' | 'ECHOES' | 'UBIWAN' | 'KEEPTRACE'>('TOUS')
@@ -276,6 +295,37 @@ export default function MapPage() {
     () => vehicles.filter((v: any) => v.currentLat && v.currentLng),
     [vehicles]
   )
+
+  // Simple clustering for low zoom levels (< 10)
+  // Groups nearby vehicles and shows count badges instead of individual markers
+  const clusteringEnabled = currentZoom < 10
+  const displayedVehicles = useMemo(() => {
+    if (!clusteringEnabled || vehiclesWithGps.length <= 20) {
+      return vehiclesWithGps
+    }
+
+    // Simple grid-based clustering when too many vehicles at low zoom
+    const gridSize = 0.5 // degrees
+    const clusters = new Map<string, any[]>()
+
+    vehiclesWithGps.forEach((v: any) => {
+      const gridX = Math.floor(v.currentLat / gridSize) * gridSize
+      const gridY = Math.floor(v.currentLng / gridSize) * gridSize
+      const key = `${gridX},${gridY}`
+
+      if (!clusters.has(key)) {
+        clusters.set(key, [])
+      }
+      clusters.get(key)!.push(v)
+    })
+
+    // Return cluster representatives (first vehicle from each cluster)
+    return Array.from(clusters.values()).map((cluster) => ({
+      ...cluster[0],
+      _clusterCount: cluster.length,
+      _clusterVehicles: cluster,
+    }))
+  }, [vehiclesWithGps, clusteringEnabled])
 
   const selectedVehicle = vehicles.find((v: any) => v.id === selectedVehicleId)
 
@@ -372,12 +422,13 @@ export default function MapPage() {
 
           <FitBounds vehicles={vehicles} />
           <KeyboardShortcuts onShortcut={handleShortcut} />
+          <MapEvents onZoomChange={setCurrentZoom} />
 
           {selectedVehicle?.currentLat && selectedVehicle?.currentLng && (
             <FlyToVehicle lat={selectedVehicle.currentLat} lng={selectedVehicle.currentLng} />
           )}
 
-          {vehiclesWithGps.map((vehicle: any) => (
+          {displayedVehicles.map((vehicle: any) => (
             <Marker
               key={vehicle.id}
               position={[vehicle.currentLat, vehicle.currentLng]}
@@ -417,6 +468,11 @@ export default function MapPage() {
                       <div className="flex justify-between">
                         <span className="text-gray-500">Fournisseur:</span>
                         <span className="font-medium text-xs">{vehicle.gpsProvider}</span>
+                      </div>
+                    )}
+                    {vehicle._clusterCount && vehicle._clusterCount > 1 && (
+                      <div className="mt-2 pt-2 border-t border-gray-200">
+                        <p className="text-gray-600 font-medium">{vehicle._clusterCount} véhicules dans cette zone</p>
                       </div>
                     )}
                   </div>
@@ -459,8 +515,18 @@ export default function MapPage() {
           ))}
         </MapContainer>
 
+        {/* Zoom level display */}
+        <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 items-end">
+          <div className="bg-white rounded-lg shadow-md px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200">
+            Zoom: {currentZoom}
+            {currentZoom < 10 && (
+              <span className="ml-1 text-gray-500 text-xs">(groupage actif)</span>
+            )}
+          </div>
+        </div>
+
         {/* Map overlay controls */}
-        <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+        <div className="absolute top-14 right-4 z-[1000] flex flex-col gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -513,31 +579,66 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* Fleet stats overlay */}
-        <div className="absolute bottom-4 left-4 z-[1000] flex flex-wrap gap-2 max-w-xs">
-          <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-green-500 inline-block"></span>
-            {movingCount} en mouvement
+        {/* Fleet stats overlay - Vehicle count by status */}
+        <div className="absolute bottom-4 left-4 z-[1000] bg-white rounded-lg shadow-md p-3 text-xs font-medium">
+          <p className="text-gray-700 font-semibold mb-1.5">Statut des véhicules</p>
+          <div className="flex gap-4 text-gray-600">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500 inline-block"></span>
+              <span>En mouvement: <span className="font-bold text-gray-900">{movingCount}</span></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-gray-400 inline-block"></span>
+              <span>À l'arrêt: <span className="font-bold text-gray-900">{stoppedCount}</span></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-red-400 inline-block"></span>
+              <span>Hors ligne: <span className="font-bold text-gray-900">{offlineCount}</span></span>
+            </div>
           </div>
-          <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-gray-400 inline-block"></span>
-            {stoppedCount} à l'arrêt
+          <div className="mt-1.5 pt-1.5 border-t border-gray-200 flex gap-4 text-gray-600">
+            <span>Vitesse moy.: <span className="font-bold text-gray-900">{getFormattedSpeed(avgFleetSpeed, useImperialUnits).value} {getFormattedSpeed(avgFleetSpeed, useImperialUnits).unit}</span></span>
+            <span>{vehiclesWithGps.length}/{vehicles.length} GPS actif</span>
+            <div className={`flex items-center gap-1.5 ${isConnected ? 'text-green-600' : 'text-gray-500'}`}>
+              {isConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
+              {isConnected ? 'Live' : 'Polling'}
+            </div>
           </div>
-          <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-400 inline-block"></span>
-            {offlineCount} hors ligne
-          </div>
-          <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium">
-            Vitesse moyenne: {getFormattedSpeed(avgFleetSpeed, useImperialUnits).value} {getFormattedSpeed(avgFleetSpeed, useImperialUnits).unit}
-          </div>
-          <div className="rounded-full bg-white px-3 py-1 shadow-md text-xs font-medium">
-            {vehiclesWithGps.length} / {vehicles.length} GPS actif
-          </div>
-          <div className={`rounded-full px-3 py-1 shadow-md text-xs font-medium flex items-center gap-1.5 ${
-            isConnected ? 'bg-green-50 text-green-700' : 'bg-white text-gray-500'
-          }`}>
-            {isConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
-            {isConnected ? 'Live' : 'Polling'}
+        </div>
+
+        {/* Speed Legend - Marker color meanings */}
+        <div className="absolute bottom-4 right-4 z-[1000] bg-white rounded-lg shadow-md p-3 text-xs">
+          <p className="text-gray-700 font-semibold mb-2">Légende des couleurs</p>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-green-500 inline-block"></span>
+              <span className="text-gray-600">En mouvement</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-gray-400 inline-block"></span>
+              <span className="text-gray-600">À l'arrêt</span>
+            </div>
+            <div className="border-t border-gray-200 pt-1.5 mt-1.5">
+              <p className="text-gray-600 font-medium mb-1">Types de véhicules</p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-blue-500 inline-block"></span>
+                  <span className="text-gray-600">Voiture</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-orange-500 inline-block"></span>
+                  <span className="text-gray-600">Camion</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-purple-500 inline-block"></span>
+                  <span className="text-gray-600">Utilitaire</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-red-500 inline-block"></span>
+                  <span className="text-gray-600">Moto</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

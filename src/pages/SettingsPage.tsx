@@ -95,6 +95,43 @@ export default function SettingsPage() {
   const [quietHoursStart, setQuietHoursStart] = useState('22:00')
   const [quietHoursEnd, setQuietHoursEnd] = useState('07:00')
 
+  // Session Timeout state
+  const [sessionTimeout, setSessionTimeout] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sessionTimeout') || '1h'
+    }
+    return '1h'
+  })
+
+  // Collaborators state
+  const [collaborators, setCollaborators] = useState<Array<{
+    id: string
+    name: string
+    email: string
+    role: string
+    lastActive: string
+  }>>([])
+  const [collabsLoading, setCollabsLoading] = useState(true)
+  const [showInviteForm, setShowInviteForm] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('Opérateur')
+
+  // White Label saving state
+  const [whiteLabelSaving, setWhiteLabelSaving] = useState(false)
+  const [whiteLabelSaved, setWhiteLabelSaved] = useState(false)
+
+  // Data Retention saving state
+  const [dataRetentionSaving, setDataRetentionSaving] = useState(false)
+  const [dataRetentionSaved, setDataRetentionSaved] = useState(false)
+
+  // Map Defaults saving state
+  const [mapDefaultsSaving, setMapDefaultsSaving] = useState(false)
+  const [mapDefaultsSaved, setMapDefaultsSaved] = useState(false)
+
+  // Quiet Hours saving state
+  const [quietHoursSaving, setQuietHoursSaving] = useState(false)
+  const [quietHoursSaved, setQuietHoursSaved] = useState(false)
+
   // Load active sessions
   useEffect(() => {
     const loadSessions = async () => {
@@ -180,6 +217,26 @@ export default function SettingsPage() {
     loadProviders()
   }, [organizationId])
 
+  // Load collaborators
+  useEffect(() => {
+    const loadCollaborators = async () => {
+      if (!organizationId) {
+        setCollabsLoading(false)
+        return
+      }
+      try {
+        const response = await apiClient.get(`/api/organizations/${organizationId}/users`)
+        const data = response.data
+        setCollaborators(data.users || data || [])
+      } catch (error) {
+        console.error('Failed to load collaborators:', error)
+      } finally {
+        setCollabsLoading(false)
+      }
+    }
+    loadCollaborators()
+  }, [organizationId])
+
   const handleProviderToggle = (provider: string) => {
     setProviders(prev => ({
       ...prev,
@@ -196,6 +253,120 @@ export default function SettingsPage() {
 
   const handleMapDefaultChange = (field: string, value: string) => {
     setMapDefaults(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleSaveWhiteLabel = async () => {
+    if (!organizationId) return
+    setWhiteLabelSaving(true)
+    try {
+      await apiClient.put(API_ROUTES.ORGANIZATION(organizationId), { whiteLabel })
+      setWhiteLabelSaved(true)
+      setTimeout(() => setWhiteLabelSaved(false), 3000)
+    } catch (error) {
+      console.error('Failed to save white label:', error)
+    } finally {
+      setWhiteLabelSaving(false)
+    }
+  }
+
+  const handleSaveDataRetention = async () => {
+    if (!organizationId) return
+    setDataRetentionSaving(true)
+    try {
+      await apiClient.patch(API_ROUTES.ORGANIZATION(organizationId), {
+        dataRetentionDays: parseInt(dataRetention),
+      })
+      setDataRetentionSaved(true)
+      setTimeout(() => setDataRetentionSaved(false), 3000)
+    } catch (error) {
+      console.error('Failed to save data retention:', error)
+    } finally {
+      setDataRetentionSaving(false)
+    }
+  }
+
+  const handleSaveMapDefaults = async () => {
+    setMapDefaultsSaving(true)
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('mapDefaults', JSON.stringify(mapDefaults))
+      }
+      setMapDefaultsSaved(true)
+      setTimeout(() => setMapDefaultsSaved(false), 3000)
+    } catch (error) {
+      console.error('Failed to save map defaults:', error)
+    } finally {
+      setMapDefaultsSaving(false)
+    }
+  }
+
+  const handleSaveQuietHours = async () => {
+    if (!organizationId) return
+    setQuietHoursSaving(true)
+    try {
+      await apiClient.patch(API_ROUTES.ORGANIZATION(organizationId), {
+        quietHours: {
+          enabled: quietHoursEnabled,
+          start: quietHoursStart,
+          end: quietHoursEnd,
+        },
+      })
+      setQuietHoursSaved(true)
+      setTimeout(() => setQuietHoursSaved(false), 3000)
+    } catch (error) {
+      console.error('Failed to save quiet hours:', error)
+    } finally {
+      setQuietHoursSaving(false)
+    }
+  }
+
+  const handleSessionTimeoutChange = (value: string) => {
+    setSessionTimeout(value)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sessionTimeout', value)
+    }
+  }
+
+  const handleInviteCollaborator = async () => {
+    if (!organizationId || !inviteEmail.trim()) return
+    try {
+      await apiClient.post(`/api/organizations/${organizationId}/users/invite`, {
+        email: inviteEmail,
+        role: inviteRole,
+      })
+      setInviteEmail('')
+      setInviteRole('Opérateur')
+      setShowInviteForm(false)
+      // Reload collaborators
+      const response = await apiClient.get(`/api/organizations/${organizationId}/users`)
+      setCollaborators(response.data.users || response.data || [])
+    } catch (error) {
+      console.error('Failed to invite collaborator:', error)
+    }
+  }
+
+  const handleDeleteCollaborator = async (userId: string) => {
+    if (!organizationId) return
+    try {
+      await apiClient.delete(`/api/organizations/${organizationId}/users/${userId}`)
+      setCollaborators(prev => prev.filter(c => c.id !== userId))
+    } catch (error) {
+      console.error('Failed to delete collaborator:', error)
+    }
+  }
+
+  const handleUpdateCollaboratorRole = async (userId: string, newRole: string) => {
+    if (!organizationId) return
+    try {
+      await apiClient.patch(`/api/organizations/${organizationId}/users/${userId}`, {
+        role: newRole,
+      })
+      setCollaborators(prev =>
+        prev.map(c => (c.id === userId ? { ...c, role: newRole } : c))
+      )
+    } catch (error) {
+      console.error('Failed to update collaborator role:', error)
+    }
   }
 
   const copyApiKey = () => {
@@ -664,6 +835,159 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Session Timeout Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wifi size={20} />
+            Configuration de session
+          </CardTitle>
+          <CardDescription>Gérez la durée d'inactivité avant déconnexion</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">Délai d'expiration de session</label>
+            <select
+              value={sessionTimeout}
+              onChange={(e) => handleSessionTimeoutChange(e.target.value)}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <option value="30m">30 minutes</option>
+              <option value="1h">1 heure</option>
+              <option value="2h">2 heures</option>
+              <option value="4h">4 heures</option>
+              <option value="8h">8 heures</option>
+              <option value="24h">24 heures</option>
+              <option value="7d">7 jours</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-2">
+              Vous serez automatiquement déconnecté après cette période d'inactivité.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Collaborators Section */}
+      {isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User size={20} />
+              Collaborateurs
+            </CardTitle>
+            <CardDescription>Gérez les utilisateurs et les rôles de votre organisation</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {collabsLoading ? (
+              <p className="text-sm text-gray-500">Chargement...</p>
+            ) : (
+              <>
+                {collaborators.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="border-b border-gray-200">
+                        <tr>
+                          <th className="text-left py-2 px-3 font-medium text-gray-700">Nom</th>
+                          <th className="text-left py-2 px-3 font-medium text-gray-700">Email</th>
+                          <th className="text-left py-2 px-3 font-medium text-gray-700">Rôle</th>
+                          <th className="text-left py-2 px-3 font-medium text-gray-700">Dernière activité</th>
+                          <th className="text-left py-2 px-3 font-medium text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {collaborators.map((collab) => (
+                          <tr key={collab.id} className="hover:bg-gray-50">
+                            <td className="py-3 px-3">{collab.name}</td>
+                            <td className="py-3 px-3 text-gray-600">{collab.email}</td>
+                            <td className="py-3 px-3">
+                              <select
+                                value={collab.role}
+                                onChange={(e) => handleUpdateCollaboratorRole(collab.id, e.target.value)}
+                                className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                              >
+                                <option value="Admin">Admin</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Opérateur">Opérateur</option>
+                              </select>
+                            </td>
+                            <td className="py-3 px-3 text-gray-600 text-xs">
+                              {new Date(collab.lastActive).toLocaleString('fr-FR')}
+                            </td>
+                            <td className="py-3 px-3">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600"
+                                onClick={() => handleDeleteCollaborator(collab.id)}
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Aucun collaborateur</p>
+                )}
+
+                {showInviteForm ? (
+                  <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email du collaborateur</label>
+                      <Input
+                        type="email"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        placeholder="collaborateur@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Rôle</label>
+                      <select
+                        value={inviteRole}
+                        onChange={(e) => setInviteRole(e.target.value)}
+                        className="rounded-md border border-gray-300 bg-white px-4 py-2 w-full text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <option value="Admin">Admin</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Opérateur">Opérateur</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button onClick={handleInviteCollaborator} className="flex-1">
+                        Inviter
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          setShowInviteForm(false)
+                          setInviteEmail('')
+                          setInviteRole('Opérateur')
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowInviteForm(true)}
+                  >
+                    <Plus size={16} className="mr-2" />
+                    Inviter un collaborateur
+                  </Button>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Notifications section */}
       <Card>
         <CardHeader>
@@ -741,6 +1065,20 @@ export default function SettingsPage() {
                     />
                   </div>
                 </div>
+                <Button
+                  onClick={handleSaveQuietHours}
+                  disabled={quietHoursSaving}
+                  size="sm"
+                  className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+                >
+                  {quietHoursSaved ? (
+                    <><Check size={14} /> Enregistré</>
+                  ) : quietHoursSaving ? (
+                    <><RefreshCw size={14} className="animate-spin" /> Enregistrement...</>
+                  ) : (
+                    <><Save size={14} /> Enregistrer</>
+                  )}
+                </Button>
               </div>
             )}
           </div>
@@ -760,56 +1098,82 @@ export default function SettingsPage() {
             <CardDescription>Personnalisez l'apparence pour votre organisation</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL du logo</label>
-              <Input
-                type="url"
-                value={whiteLabel.logoUrl}
-                onChange={(e) => setWhiteLabel({...whiteLabel, logoUrl: e.target.value})}
-                placeholder="https://example.com/logo.png"
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">Activer la marque blanche</label>
+              <input
+                type="checkbox"
+                checked={whiteLabelEnabled}
+                onChange={(e) => setWhiteLabelEnabled(e.target.checked)}
+                className="h-4 w-4"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'entreprise</label>
-              <Input
-                type="text"
-                value={whiteLabel.companyName}
-                onChange={(e) => setWhiteLabel({...whiteLabel, companyName: e.target.value})}
-                placeholder="Nom de votre entreprise"
-              />
-            </div>
+            {whiteLabelEnabled && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">URL du logo</label>
+                  <Input
+                    type="url"
+                    value={whiteLabel.logoUrl}
+                    onChange={(e) => setWhiteLabel({...whiteLabel, logoUrl: e.target.value})}
+                    placeholder="https://example.com/logo.png"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Couleur primaire</label>
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  value={whiteLabel.primaryColor}
-                  onChange={(e) => setWhiteLabel({...whiteLabel, primaryColor: e.target.value})}
-                  className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
-                />
-                <Input
-                  type="text"
-                  value={whiteLabel.primaryColor}
-                  onChange={(e) => setWhiteLabel({...whiteLabel, primaryColor: e.target.value})}
-                  placeholder="#000000"
-                  className="flex-1"
-                />
-              </div>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom de l'entreprise</label>
+                  <Input
+                    type="text"
+                    value={whiteLabel.companyName}
+                    onChange={(e) => setWhiteLabel({...whiteLabel, companyName: e.target.value})}
+                    placeholder="Nom de votre entreprise"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Domaine personnalisé</label>
-              <Input
-                type="text"
-                value={whiteLabel.customDomain}
-                onChange={(e) => setWhiteLabel({...whiteLabel, customDomain: e.target.value})}
-                placeholder="app.votreentreprise.com"
-              />
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Couleur primaire</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={whiteLabel.primaryColor}
+                      onChange={(e) => setWhiteLabel({...whiteLabel, primaryColor: e.target.value})}
+                      className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      type="text"
+                      value={whiteLabel.primaryColor}
+                      onChange={(e) => setWhiteLabel({...whiteLabel, primaryColor: e.target.value})}
+                      placeholder="#000000"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
 
-            <Button className="w-full">Enregistrer les paramètres de marque blanche</Button>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Domaine personnalisé</label>
+                  <Input
+                    type="text"
+                    value={whiteLabel.customDomain}
+                    onChange={(e) => setWhiteLabel({...whiteLabel, customDomain: e.target.value})}
+                    placeholder="app.votreentreprise.com"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleSaveWhiteLabel}
+                  disabled={whiteLabelSaving}
+                  className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+                >
+                  {whiteLabelSaved ? (
+                    <><Check size={16} /> Enregistré</>
+                  ) : whiteLabelSaving ? (
+                    <><RefreshCw size={16} className="animate-spin" /> Enregistrement...</>
+                  ) : (
+                    <><Save size={16} /> Enregistrer les paramètres de marque blanche</>
+                  )}
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
@@ -1060,7 +1424,19 @@ export default function SettingsPage() {
               Les données plus anciennes que la période sélectionnée seront automatiquement supprimées.
             </p>
           </div>
-          <Button className="w-full">Enregistrer la politique de conservation</Button>
+          <Button
+            onClick={handleSaveDataRetention}
+            disabled={dataRetentionSaving}
+            className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+          >
+            {dataRetentionSaved ? (
+              <><Check size={16} /> Enregistré</>
+            ) : dataRetentionSaving ? (
+              <><RefreshCw size={16} className="animate-spin" /> Enregistrement...</>
+            ) : (
+              <><Save size={16} /> Enregistrer la politique de conservation</>
+            )}
+          </Button>
         </CardContent>
       </Card>
 
@@ -1116,7 +1492,19 @@ export default function SettingsPage() {
               <option value="dark">Mapbox Sombre (dark-v11)</option>
             </select>
           </div>
-          <Button className="w-full">Enregistrer les paramètres de carte</Button>
+          <Button
+            onClick={handleSaveMapDefaults}
+            disabled={mapDefaultsSaving}
+            className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+          >
+            {mapDefaultsSaved ? (
+              <><Check size={16} /> Enregistré</>
+            ) : mapDefaultsSaving ? (
+              <><RefreshCw size={16} className="animate-spin" /> Enregistrement...</>
+            ) : (
+              <><Save size={16} /> Enregistrer les paramètres de carte</>
+            )}
+          </Button>
         </CardContent>
       </Card>
 

@@ -24,6 +24,17 @@ export declare const API_ROUTES: {
     readonly REPORTS_GENERATE: (orgId: string) => string;
     readonly USERS: (orgId: string) => string;
     readonly USER_DETAIL: (orgId: string, id: string) => string;
+    readonly DRIVERS: (orgId: string) => string;
+    readonly DRIVER_DETAIL: (orgId: string, id: string) => string;
+    readonly DRIVER_STATS: (orgId: string, id: string) => string;
+    readonly DEPARTMENTS: (orgId: string) => string;
+    readonly DEPARTMENT_DETAIL: (orgId: string, id: string) => string;
+    readonly VEHICLE_GROUPS: (orgId: string) => string;
+    readonly VEHICLE_GROUP_DETAIL: (orgId: string, id: string) => string;
+    readonly GPS_PROVIDERS: (orgId: string) => string;
+    readonly GPS_PROVIDER_DETAIL: (orgId: string, provider: string) => string;
+    readonly AUTH_SESSIONS: "/api/auth/sessions";
+    readonly AUTH_SESSION_DETAIL: (id: string) => string;
     readonly SUPER_ADMIN_HEALTH: "/api/super-admin/health";
     readonly SUPER_ADMIN_STATS: "/api/super-admin/stats";
 };

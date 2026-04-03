@@ -98,6 +98,30 @@ const findIndexByTimeOffset = (positions: GpsPosition[], currentTime: Date, offs
   return closestIndex
 }
 
+// Helper function to format time in HH:MM:SS format from seconds
+const formatTimeFromSeconds = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = Math.floor(seconds % 60)
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
+
+// Helper function to calculate elapsed time from positions
+const getElapsedTime = (positions: GpsPosition[], currentIndex: number): number => {
+  if (currentIndex === 0 || positions.length === 0) return 0
+  const startTime = new Date(positions[0].timestamp).getTime()
+  const currentTime = new Date(positions[currentIndex].timestamp).getTime()
+  return (currentTime - startTime) / 1000 // in seconds
+}
+
+// Helper function to get total duration from positions
+const getTotalDuration = (positions: GpsPosition[]): number => {
+  if (positions.length < 2) return 0
+  const startTime = new Date(positions[0].timestamp).getTime()
+  const endTime = new Date(positions[positions.length - 1].timestamp).getTime()
+  return (endTime - startTime) / 1000 // in seconds
+}
+
 // Map view controller component
 const MapViewController = ({
   positions,
@@ -391,7 +415,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
         <Card className="w-96">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-            <p className="text-sm text-muted-foreground">Loading GPS history...</p>
+            <p className="text-sm text-muted-foreground">Chargement de l'historique GPS...</p>
           </CardContent>
         </Card>
       </div>
@@ -405,7 +429,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
           <CardContent className="py-6">
             <div className="flex items-start gap-4">
               <div className="flex-1">
-                <h3 className="font-semibold text-destructive mb-2">Error Loading GPS History</h3>
+                <h3 className="font-semibold text-destructive mb-2">Erreur de chargement</h3>
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
               <Button variant="ghost" size="sm" onClick={onClose}>
@@ -425,9 +449,9 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
           <CardContent className="py-6">
             <div className="flex items-start gap-4">
               <div className="flex-1">
-                <h3 className="font-semibold mb-2">No GPS History</h3>
+                <h3 className="font-semibold mb-2">Aucun historique GPS</h3>
                 <p className="text-sm text-muted-foreground">
-                  No GPS history available for {vehicleName}
+                  Aucun historique GPS disponible pour {vehicleName}
                 </p>
               </div>
               <Button variant="ghost" size="sm" onClick={onClose}>
@@ -446,9 +470,9 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold">{vehicleName} - GPS History Replay</h2>
+            <h2 className="text-xl font-semibold">{vehicleName} - Relecture historique GPS</h2>
             <p className="text-sm text-muted-foreground">
-              {positions[0].timestamp} to {positions[positions.length - 1].timestamp}
+              {positions[0].timestamp} à {positions[positions.length - 1].timestamp}
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -554,11 +578,11 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                 >
                   <Popup>
                     <div className="text-sm">
-                      <p className="font-semibold">Current Position</p>
+                      <p className="font-semibold">Position actuelle</p>
                       <p>
                         {currentPosition.lat.toFixed(5)}, {currentPosition.lng.toFixed(5)}
                       </p>
-                      <p>Speed: {formatSpeed(currentPosition.speed)}</p>
+                      <p>Vitesse : {formatSpeed(currentPosition.speed)}</p>
                       <p>{formatDateTime(new Date(currentPosition.timestamp))}</p>
                     </div>
                   </Popup>
@@ -569,7 +593,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
               <Marker position={[positions[0].lat, positions[0].lng]}>
                 <Popup>
                   <div className="text-sm">
-                    <p className="font-semibold">Start</p>
+                    <p className="font-semibold">Départ</p>
                     <p>{formatDateTime(new Date(positions[0].timestamp))}</p>
                   </div>
                 </Popup>
@@ -579,11 +603,43 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
               <Marker position={[positions[positions.length - 1].lat, positions[positions.length - 1].lng]}>
                 <Popup>
                   <div className="text-sm">
-                    <p className="font-semibold">End</p>
+                    <p className="font-semibold">Arrivée</p>
                     <p>{formatDateTime(new Date(positions[positions.length - 1].timestamp))}</p>
                   </div>
                 </Popup>
               </Marker>
+
+              {/* Speed Legend */}
+              <div style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '20px',
+                backgroundColor: 'white',
+                padding: '12px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                zIndex: 1000,
+                fontSize: '12px',
+                fontFamily: 'system-ui, -apple-system, sans-serif'
+              }}>
+                <p style={{ fontWeight: 600, marginBottom: '8px' }}>Légende de vitesse</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <div style={{ width: '16px', height: '3px', backgroundColor: '#22c55e' }}></div>
+                  <span>&lt; 50 km/h</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <div style={{ width: '16px', height: '3px', backgroundColor: '#eab308' }}></div>
+                  <span>50-90 km/h</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                  <div style={{ width: '16px', height: '3px', backgroundColor: '#f97316' }}></div>
+                  <span>90-120 km/h</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ width: '16px', height: '3px', backgroundColor: '#ef4444' }}></div>
+                  <span>&gt; 120 km/h</span>
+                </div>
+              </div>
             </MapContainer>
           </div>
 
@@ -600,7 +656,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             <div className="bg-secondary rounded-lg p-3 flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Duration</p>
+                <p className="text-xs text-muted-foreground">Durée</p>
                 <p className="text-sm font-semibold">{formatDuration(stats.totalDuration)}</p>
               </div>
             </div>
@@ -608,7 +664,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             <div className="bg-secondary rounded-lg p-3 flex items-center gap-2">
               <Gauge className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Avg Speed</p>
+                <p className="text-xs text-muted-foreground">Vitesse moy.</p>
                 <p className="text-sm font-semibold">{formatSpeed(stats.avgSpeed)}</p>
               </div>
             </div>
@@ -616,7 +672,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             <div className="bg-secondary rounded-lg p-3 flex items-center gap-2">
               <Gauge className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Max Speed</p>
+                <p className="text-xs text-muted-foreground">Vitesse max.</p>
                 <p className="text-sm font-semibold">{formatSpeed(stats.maxSpeed)}</p>
               </div>
             </div>
@@ -624,7 +680,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             <div className="bg-secondary rounded-lg p-3 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Stops</p>
+                <p className="text-xs text-muted-foreground">Arrêts</p>
                 <p className="text-sm font-semibold">{stats.numStops}</p>
               </div>
             </div>
@@ -642,15 +698,15 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                 <p className="text-sm font-mono">{currentPosition.lng.toFixed(5)}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Speed</p>
+                <p className="text-xs text-muted-foreground">Vitesse</p>
                 <p className="text-sm font-semibold">{formatSpeed(currentPosition.speed)}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Heading</p>
+                <p className="text-xs text-muted-foreground">Cap</p>
                 <p className="text-sm font-semibold">{Math.round(currentPosition.heading)}°</p>
               </div>
               <div className="md:col-span-4">
-                <p className="text-xs text-muted-foreground">Timestamp</p>
+                <p className="text-xs text-muted-foreground">Horodatage</p>
                 <p className="text-sm font-mono">{formatDateTime(new Date(currentPosition.timestamp))}</p>
               </div>
             </div>
@@ -661,6 +717,9 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
                 {currentIndex + 1} / {positions.length}
+              </span>
+              <span className="text-xs text-muted-foreground font-semibold">
+                ({Math.round((currentIndex / (positions.length - 1)) * 100)}%)
               </span>
               <input
                 type="range"
@@ -677,12 +736,16 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                 {formatDateTime(new Date(currentPosition?.timestamp || positions[0].timestamp))}
               </span>
             </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{formatTimeFromSeconds(getElapsedTime(positions, currentIndex))}</span>
+              <span>{formatTimeFromSeconds(getTotalDuration(positions))}</span>
+            </div>
           </div>
 
           {/* Date filter section */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground">Date Filter:</span>
+              <span className="text-xs font-medium text-muted-foreground">Filtre de date :</span>
               <div className="flex gap-1 flex-wrap">
                 <Button
                   variant={startDate === format(new Date(), 'yyyy-MM-dd') && endDate === format(new Date(), 'yyyy-MM-dd') ? 'default' : 'outline'}
@@ -720,7 +783,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             </div>
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="text-xs text-muted-foreground">Start Date</label>
+                <label className="text-xs text-muted-foreground">Date de début</label>
                 <input
                   type="date"
                   value={startDate}
@@ -729,7 +792,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                 />
               </div>
               <div className="flex-1">
-                <label className="text-xs text-muted-foreground">End Date</label>
+                <label className="text-xs text-muted-foreground">Date de fin</label>
                 <input
                   type="date"
                   value={endDate}
@@ -813,7 +876,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Speed:</span>
+              <span className="text-sm text-muted-foreground">Vitesse :</span>
               {([1, 2, 5, 10] as const).map((speed) => (
                 <Button
                   key={speed}
@@ -828,7 +891,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
             </div>
 
             <Button variant="outline" size="sm" onClick={onClose}>
-              Close
+              Fermer
             </Button>
           </div>
         </CardContent>

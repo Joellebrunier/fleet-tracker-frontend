@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/lib/api';
-import { API_ROUTES, STORAGE_KEYS } from '@/lib/constants';
+import { API_ROUTES } from '@/lib/constants';
 export function useAuth() {
     const { user, token, isAuthenticated, isLoading, error, login, logout, setIsLoading, setError, hydrate, hasRole, canAccess, } = useAuthStore();
     // Fetch current user
@@ -23,10 +23,9 @@ export function useAuth() {
                 const response = await apiClient.post(API_ROUTES.AUTH_LOGIN, credentials);
                 const wrapped = response.data;
                 const authData = wrapped.data || wrapped;
-                const accessToken = authData.accessToken;
+                const accessToken = authData.accessToken || authData.access_token || authData.token;
                 const userData = authData.user;
-                localStorage.setItem(STORAGE_KEYS.TOKEN, accessToken);
-                localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+                // login() in the store normalizes snake_case fields and stores to localStorage
                 login(userData, accessToken);
                 setError(null);
                 return { user: userData, token: accessToken };
@@ -49,10 +48,9 @@ export function useAuth() {
                 const response = await apiClient.post(API_ROUTES.AUTH_REGISTER, data);
                 const wrapped = response.data;
                 const authData = wrapped.data || wrapped;
-                const accessToken = authData.accessToken;
+                const accessToken = authData.accessToken || authData.access_token || authData.token;
                 const userData = authData.user;
-                localStorage.setItem(STORAGE_KEYS.TOKEN, accessToken);
-                localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+                // login() in the store normalizes snake_case fields and stores to localStorage
                 login(userData, accessToken);
                 setError(null);
                 return { user: userData, token: accessToken };
