@@ -51,6 +51,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 })
 
+interface TripAddress {
+  houseNumber?: string
+  road?: string
+  postcode?: string
+  city?: string
+  state?: string
+  country?: string
+  countryCode?: string
+}
+
 interface Trip {
   id?: string
   startTime: Date
@@ -61,6 +71,10 @@ interface Trip {
   endLng: number
   startAddress?: string
   endAddress?: string
+  startAddressObj?: TripAddress
+  endAddressObj?: TripAddress
+  startMileage?: number
+  endMileage?: number
   distance: number
   duration: number
   averageSpeed: number
@@ -188,18 +202,60 @@ export default function VehicleDetailPage() {
         const dateFromISO = new Date(dateFrom).toISOString()
         const dateToISO = new Date(new Date(dateTo).getTime() + 24 * 60 * 60 * 1000).toISOString()
 
-        const response = await fetch(
-          `/api/organizations/${organizationId}/gps-history?vehicleId=${id}&dateFrom=${encodeURIComponent(dateFromISO)}&dateTo=${encodeURIComponent(dateToISO)}`
-        )
+        // Try real trips API first
+        let realTrips: Trip[] = []
+        try {
+          const tripsResp = await apiClient.get(
+            `/api/organizations/${organizationId}/trips?vehicleId=${id}&startDate=${encodeURIComponent(dateFromISO)}&endDate=${encodeURIComponent(dateToISO)}&limit=200`
+          )
+          const tripsData = (tripsResp.data as any)?.data || (tripsResp.data as any) || []
+          const items = Array.isArray(tripsData) ? tripsData : tripsData.data || []
 
-        if (!response.ok) throw new Error('Failed to fetch GPS history')
+          if (items.length > 0) {
+            realTrips = items.map((t: any) => {
+              const formatAddr = (addr: TripAddress | undefined) =>
+                addr ? [addr.houseNumber, addr.road, addr.postcode, addr.city].filter(Boolean).join(' ') : undefined
+              const durationSec = t.duration || Math.round((new Date(t.endDateTime).getTime() - new Date(t.startDateTime).getTime()) / 1000)
+              const distanceM = t.distance || 0
+              return {
+                id: t.id,
+                startTime: new Date(t.startDateTime),
+                endTime: new Date(t.endDateTime),
+                startLat: t.startLat,
+                startLng: t.startLng,
+                endLat: t.endLat,
+                endLng: t.endLng,
+                startAddress: formatAddr(t.startAddress),
+                endAddress: formatAddr(t.endAddress),
+                startAddressObj: t.startAddress,
+                endAddressObj: t.endAddress,
+                startMileage: t.startMileage,
+                endMileage: t.endMileage,
+                distance: distanceM / 1000, // convert to km
+                duration: durationSec,
+                averageSpeed: durationSec > 0 ? Math.round((distanceM / 1000) / (durationSec / 3600)) : 0,
+                maxSpeed: 0,
+                points: [],
+              } as Trip
+            })
+          }
+        } catch (_) {
+          // Trips API not available, fall back to GPS parsing
+        }
 
-        const data = await response.json()
-        const positions = Array.isArray(data) ? data : data.data || data.positions || []
-
-        // Parse trips from GPS positions
-        const parsedTrips = parseTripsFromPositions(positions)
-        setTrips(parsedTrips)
+        if (realTrips.length > 0) {
+          setTrips(realTrips)
+        } else {
+          // Fallback: parse trips from GPS positions
+          const response = await fetch(
+            `/api/organizations/${organizationId}/gps-history?vehicleId=${id}&dateFrom=${encodeURIComponent(dateFromISO)}&dateTo=${encodeURIComponent(dateToISO)}`
+          )
+          if (!response.ok) throw new Error('Failed to fetch GPS history')
+          const data = await response.json()
+          const positions = Array.isArray(data) ? data : data.data || data.positions || []
+          const parsedTrips = parseTripsFromPositions(positions)
+          setTrips(parsedTrips)
+        }
       } catch (error) {
         console.error('Error fetching trips:', error)
         setTrips([])
@@ -832,7 +888,7 @@ export default function VehicleDetailPage() {
               <Route size={18} className="text-gray-500 mb-2" />
               <p className="text-xs text-gray-500">Odomètre</p>
               <p className="font-sans font-semibold text-gray-900 mt-0.5">
-                {((vehicle as any).odometer || vehicle.totalDistance || 0).toLocaleString('fr-FR')} km
+                {Math.round(((vehicle as any).odometer || 0) / 1000).toLocaleString('fr-FR')} km
               </p>
             </CardContent>
           </Card>
@@ -1359,10 +1415,22 @@ export default function VehicleDetailPage() {
                           <p className="text-xs text-gray-500 mb-1">Vitesse moy.</p>
                           <p className="font-mono font-semibold text-blue-600">{trip.averageSpeed.toFixed(0)} km/h</p>
                         </div>
-                        <div className="bg-gray-100 border border-gray-200 rounded-lg p-2 text-center">
-                          <p className="text-xs text-gray-500 mb-1">Vitesse max</p>
-                          <p className="font-mono font-semibold text-blue-600">{trip.maxSpeed.toFixed(0)} km/h</p>
-                        </div>
+                        {trip.maxSpeed > 0 ? (
+                          <div className="bg-gray-100 border border-gray-200 rounded-lg p-2 text-center">
+                            <p className="text-xs text-gray-500 mb-1">Vitesse max</p>
+                            <p className="font-mono font-semibold text-blue-600">{trip.maxSpeed.toFixed(0)} km/h</p>
+                          </div>
+                        ) : trip.startMileage ? (
+                          <div className="bg-gray-100 border border-gray-200 rounded-lg p-2 text-center">
+                            <p className="text-xs text-gray-500 mb-1">Compteur</p>
+                            <p className="font-mono font-semibold text-blue-600">{Math.round((trip.endMileage || 0) / 1000).toLocaleString('fr-FR')} km</p>
+                          </div>
+                        ) : (
+                          <div className="bg-gray-100 border border-gray-200 rounded-lg p-2 text-center">
+                            <p className="text-xs text-gray-500 mb-1">Vitesse max</p>
+                            <p className="font-mono font-semibold text-blue-600">—</p>
+                          </div>
+                        )}
                       </div>
 
                       <Button
