@@ -39,7 +39,13 @@ export const API_ROUTES = {
 
   // GPS History (org-scoped)
   GPS_HISTORY: (orgId: string) => `${org(orgId)}/gps-history`,
-  GPS_PLAYBACK: (orgId: string, vehicleId: string) => `${org(orgId)}/gps-history/${vehicleId}/playback`,
+  GPS_PLAYBACK: (orgId: string, vehicleId: string, startDate?: string, endDate?: string) => {
+    const base = `${org(orgId)}/gps-history`
+    const params = new URLSearchParams({ vehicleId })
+    if (startDate) params.append('startDate', startDate)
+    if (endDate) params.append('endDate', endDate)
+    return `${base}?${params.toString()}`
+  },
 
   // Reports (org-scoped)
   REPORTS_GENERATE: (orgId: string) => `${org(orgId)}/reports/generate`,

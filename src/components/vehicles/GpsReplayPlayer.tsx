@@ -174,38 +174,54 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
   const lastTimeRef = useRef<number>(Date.now())
 
   // Fetch GPS history
-  useEffect(() => {
-    const fetchGpsHistory = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+  const fetchGpsHistory = useCallback(async (start?: string, end?: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+      setCurrentIndex(0)
+      setIsPlaying(false)
 
-        if (!orgId) {
-          setError('Organization ID not found')
-          return
-        }
-
-        const endpoint = API_ROUTES.GPS_PLAYBACK(orgId, vehicleId)
-        const response = await apiClient.get<GpsPosition[]>(endpoint)
-
-        const data = response.data as GpsPosition[]
-        if (!data || data.length === 0) {
-          setError('No GPS history available for this vehicle')
-          return
-        }
-
-        setPositions(data)
-        calculateStats(data)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch GPS history'
-        setError(message)
-      } finally {
-        setLoading(false)
+      if (!orgId) {
+        setError('Organization ID not found')
+        return
       }
-    }
 
-    fetchGpsHistory()
+      // Default to last 7 days if no dates specified
+      const now = new Date()
+      const defaultStart = start || subDays(now, 7).toISOString()
+      const defaultEnd = end || now.toISOString()
+
+      const endpoint = API_ROUTES.GPS_PLAYBACK(orgId, vehicleId, defaultStart, defaultEnd)
+      const response = await apiClient.get(endpoint)
+
+      // Handle wrapped response { success, data: { data: [...], total } }
+      let rawData = response.data
+      if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
+        if (Array.isArray(rawData.data)) rawData = rawData.data
+        else if (rawData.data && Array.isArray(rawData.data.data)) rawData = rawData.data.data
+      }
+
+      const data = (Array.isArray(rawData) ? rawData : []) as GpsPosition[]
+      if (data.length === 0) {
+        setError('Aucun historique GPS disponible pour cette période. Essayez une autre plage de dates.')
+        setPositions([])
+        return
+      }
+
+      setPositions(data)
+      calculateStats(data)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Échec du chargement de l\'historique GPS'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
   }, [vehicleId, orgId])
+
+  // Initial fetch on mount
+  useEffect(() => {
+    fetchGpsHistory()
+  }, [fetchGpsHistory])
 
   // Calculate statistics
   const calculateStats = (data: GpsPosition[]) => {
@@ -256,7 +272,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
     })
   }
 
-  // Handle date preset buttons
+  // Handle date preset buttons — triggers refetch
   const handleDatePreset = useCallback((preset: 'today' | 'yesterday' | '7days' | '30days') => {
     const now = new Date()
     let start: Date
@@ -284,7 +300,8 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
 
     setStartDate(format(start, 'yyyy-MM-dd'))
     setEndDate(format(end, 'yyyy-MM-dd'))
-  }, [])
+    fetchGpsHistory(start.toISOString(), end.toISOString())
+  }, [fetchGpsHistory])
 
   // Find stops (speed = 0 for > 30 seconds)
   const stops = useMemo(() => {
@@ -781,7 +798,7 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                 </Button>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <label className="text-xs text-muted-foreground">Date de début</label>
                 <input
@@ -800,6 +817,21 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
                   className="w-full px-2 py-1 text-xs border rounded bg-background"
                 />
               </div>
+              <Button
+                size="sm"
+                className="text-xs h-7 px-3"
+                onClick={() => {
+                  if (startDate && endDate) {
+                    fetchGpsHistory(
+                      new Date(startDate).toISOString(),
+                      endOfDay(new Date(endDate)).toISOString()
+                    )
+                  }
+                }}
+                disabled={!startDate || !endDate || loading}
+              >
+                {loading ? 'Chargement...' : 'Rechercher'}
+              </Button>
             </div>
           </div>
 
