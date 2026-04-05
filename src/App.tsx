@@ -28,6 +28,7 @@ const RolesPermissionsPage = lazy(() => import('@/pages/RolesPermissionsPage'))
 const ApiDocsPage = lazy(() => import('@/pages/ApiDocsPage'))
 const SdkExamplesPage = lazy(() => import('@/pages/SdkExamplesPage'))
 const TestEnvironmentPage = lazy(() => import('@/pages/TestEnvironmentPage'))
+const OrganizationAdminPage = lazy(() => import('@/pages/OrganizationAdminPage'))
 
 function PageLoader() {
   return (
@@ -104,6 +105,10 @@ function App() {
         <Route
           path="/test-environment"
           element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><TestEnvironmentPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/organizations"
+          element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><OrganizationAdminPage /></ProtectedRoute>}
         />
       </Route>
 
