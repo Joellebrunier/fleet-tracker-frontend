@@ -14,10 +14,19 @@ export const API_ROUTES = {
   AUTH_REFRESH: '/api/auth/refresh',
   AUTH_LOGOUT: '/api/auth/logout',
   AUTH_ME: '/api/auth/me',
+  AUTH_ORGANIZATIONS: '/api/auth/organizations',
+  AUTH_SWITCH_ORG: '/api/auth/switch-organization',
 
   // Organizations
   ORGANIZATIONS: '/api/organizations',
   ORGANIZATION: (orgId: string) => `/api/organizations/${orgId}`,
+  ORGANIZATION_TREE: (orgId: string) => `/api/organizations/${orgId}/tree`,
+  ORGANIZATION_ACCESSIBLE_IDS: (orgId: string) => `/api/organizations/${orgId}/accessible-ids`,
+  SUB_CLIENTS: (orgId: string) => `/api/organizations/${orgId}/sub-clients`,
+  PROVIDER_CREDENTIALS: (orgId: string) => `/api/organizations/${orgId}/provider-credentials`,
+  PROVIDER_CREDENTIAL_DELETE: (orgId: string, provider: string) => `/api/organizations/${orgId}/provider-credentials/${provider}`,
+  BULK_ASSIGN_VEHICLES: (orgId: string) => `${org(orgId)}/vehicles/bulk-assign`,
+  BULK_UNASSIGN_VEHICLES: (orgId: string) => `${org(orgId)}/vehicles/bulk-unassign`,
 
   // Vehicles (org-scoped)
   VEHICLES: (orgId: string) => `${org(orgId)}/vehicles`,

@@ -5,7 +5,7 @@ import { useUnacknowledgedAlertsCount } from '@/hooks/useAlerts'
 import { useVehicles } from '@/hooks/useVehicles'
 import { useUIStore } from '@/stores/uiStore'
 import { useQueryClient } from '@tanstack/react-query'
-import { LogOut, User, Search, Bell, RefreshCw, Settings, Menu } from 'lucide-react'
+import { LogOut, User, Search, Bell, RefreshCw, Settings, Menu, Building2, ChevronDown, Check } from 'lucide-react'
 import { getInitials } from '@/lib/utils'
 import { VehicleStatus } from '@/types/vehicle'
 
@@ -27,14 +27,20 @@ function StatusPill({ label, value }: { label: string; value: number }) {
 export default function Header() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { user, logout } = useAuth()
+  const { user, logout, organizations, switchOrganization } = useAuth()
   const alertsCount = useUnacknowledgedAlertsCount()
   const { data: vehiclesData } = useVehicles({ limit: 1000 })
   const { sidebarOpen, setSidebarOpen } = useUIStore()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [orgMenuOpen, setOrgMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
+  const orgMenuRef = useRef<HTMLDivElement>(null)
+
+  const currentOrgName = (organizations || []).find(
+    (o: any) => (o.organizationId || o.id) === user?.organizationId
+  )?.name || 'Organisation'
 
   const vehicles = vehiclesData?.data || []
   const totalVehicles = vehicles.length
@@ -58,11 +64,14 @@ export default function Header() {
     queryClient.invalidateQueries({ queryKey: ['alert-stats'] })
   }
 
-  // Close menu on click outside
+  // Close menus on click outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false)
+      }
+      if (orgMenuRef.current && !orgMenuRef.current.contains(e.target as Node)) {
+        setOrgMenuOpen(false)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -163,6 +172,59 @@ export default function Header() {
             >
               <Settings size={18} />
             </button>
+
+            {/* Organization Switcher */}
+            {organizations && organizations.length > 0 && (
+              <div className="relative" ref={orgMenuRef}>
+                <button
+                  onClick={() => setOrgMenuOpen(!orgMenuOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 text-white/80 hover:bg-white/20 transition-colors text-sm"
+                >
+                  <Building2 size={14} />
+                  <span className="hidden md:inline max-w-[120px] truncate">{currentOrgName}</span>
+                  <ChevronDown size={14} className={`transition-transform ${orgMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {orgMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg animate-fade-in overflow-hidden z-50">
+                    <div className="px-4 py-2.5 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-500 uppercase">Organisations</p>
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      {organizations.map((org: any) => {
+                        const orgId = org.organizationId || org.id
+                        const isActive = orgId === user?.organizationId
+                        return (
+                          <button
+                            key={orgId}
+                            onClick={async () => {
+                              if (!isActive) {
+                                try {
+                                  await switchOrganization(orgId)
+                                  queryClient.invalidateQueries()
+                                } catch {}
+                              }
+                              setOrgMenuOpen(false)
+                            }}
+                            className={`flex items-center justify-between w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                              isActive
+                                ? 'bg-blue-50 text-blue-700 font-semibold'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Building2 size={14} className="shrink-0" />
+                              <span className="truncate">{org.name || orgId}</span>
+                            </div>
+                            {isActive && <Check size={14} className="text-blue-600 shrink-0" />}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* User Menu */}
             <div className="relative border-l border-white/10 pl-4" ref={menuRef}>

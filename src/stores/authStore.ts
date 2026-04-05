@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { User, UserRole, Organization } from '@/types/user'
+import { User, UserRole, Organization, OrgMembership } from '@/types/user'
 import { STORAGE_KEYS } from '@/lib/constants'
 
 interface AuthState {
@@ -9,6 +9,8 @@ interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
+  /** All organizations the user belongs to (for org switcher) */
+  organizations: OrgMembership[]
 
   // Actions
   setUser: (user: User | null) => void
@@ -16,7 +18,9 @@ interface AuthState {
   setToken: (token: string | null) => void
   setIsLoading: (loading: boolean) => void
   setError: (error: string | null) => void
-  login: (user: User, token: string) => void
+  setOrganizations: (orgs: OrgMembership[]) => void
+  login: (user: User, token: string, organizations?: OrgMembership[]) => void
+  switchOrg: (user: User, token: string, organizations?: OrgMembership[]) => void
   logout: () => void
   hydrate: () => void
   hasRole: (role: UserRole | UserRole[]) => boolean
@@ -55,10 +59,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: initialAuth.isAuthenticated,
   isLoading: false,
   error: null,
+  organizations: [],
 
   setUser: (user) => set({ user }),
 
   setOrganization: (organization) => set({ organization }),
+
+  setOrganizations: (organizations) => set({ organizations }),
 
   setToken: (token) => {
     if (token) {
@@ -73,7 +80,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setError: (error) => set({ error }),
 
-  login: (user, token) => {
+  login: (user, token, organizations) => {
     // Normalize snake_case fields from backend
     const normalizedUser: User = {
       ...user,
@@ -82,11 +89,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     localStorage.setItem(STORAGE_KEYS.TOKEN, token)
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(normalizedUser))
+    if (organizations) {
+      localStorage.setItem('fleet-tracker_orgs', JSON.stringify(organizations))
+    }
     set({
       user: normalizedUser,
       token,
       isAuthenticated: true,
       error: null,
+      organizations: organizations || [],
+    })
+  },
+
+  switchOrg: (user, token, organizations) => {
+    const normalizedUser: User = {
+      ...user,
+      organizationId: (user as any).organizationId || (user as any).organization_id || '',
+      role: user.role ? (user.role.toUpperCase() as any) : user.role,
+    }
+    localStorage.setItem(STORAGE_KEYS.TOKEN, token)
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(normalizedUser))
+    if (organizations) {
+      localStorage.setItem('fleet-tracker_orgs', JSON.stringify(organizations))
+    }
+    set({
+      user: normalizedUser,
+      token,
+      isAuthenticated: true,
+      organizations: organizations || get().organizations,
     })
   },
 
@@ -106,6 +136,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   hydrate: () => {
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN)
     const userStr = localStorage.getItem(STORAGE_KEYS.USER)
+    const orgsStr = localStorage.getItem('fleet-tracker_orgs')
 
     if (token && userStr) {
       try {
@@ -115,13 +146,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           organizationId: raw.organizationId || raw.organization_id || '',
           role: raw.role ? (raw.role.toUpperCase() as any) : raw.role,
         }
+        let organizations: OrgMembership[] = []
+        if (orgsStr) {
+          try { organizations = JSON.parse(orgsStr) } catch {}
+        }
         set({
           user,
           token,
           isAuthenticated: true,
+          organizations,
         })
       } catch (e) {
-        // Invalid stored data
         get().logout()
       }
     }

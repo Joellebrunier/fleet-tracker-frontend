@@ -111,14 +111,14 @@ function KeyboardShortcuts({ onShortcut }: { onShortcut: (action: string) => voi
     <div className="relative">
       <button
         onClick={() => setShowHelp(!showHelp)}
-        className="absolute bottom-16 right-4 z-[1000] bg-white shadow-lg rounded-xl p-2 hover:bg-gray-50 border border-gray-200"
+        className="absolute bottom-16 right-4 z-[400] bg-white shadow-lg rounded-xl p-2 hover:bg-gray-50 border border-gray-200"
         title="Press ? for help"
       >
         <HelpCircle size={16} className="text-gray-500" />
       </button>
 
       {showHelp && (
-        <div className="absolute bottom-28 right-4 z-[1000] bg-white shadow-lg rounded-xl p-3 border border-gray-200 w-56 text-xs backdrop-blur">
+        <div className="absolute bottom-28 right-4 z-[400] bg-white shadow-lg rounded-xl p-3 border border-gray-200 w-56 text-xs backdrop-blur">
           <p className="font-sans font-semibold mb-2 text-gray-900">Raccourcis clavier</p>
           <div className="space-y-1.5 text-gray-500">
             <div className="flex justify-between">
@@ -192,7 +192,7 @@ function MiniMapOverview({ vehicles }: { vehicles: any[] }) {
   const map = useMap()
 
   return (
-    <div className="absolute bottom-32 left-56 z-[1000] w-56 h-56 border border-gray-200 rounded-xl overflow-hidden shadow-lg bg-white pointer-events-none">
+    <div className="absolute bottom-32 left-56 z-[400] w-56 h-56 border border-gray-200 rounded-xl overflow-hidden shadow-lg bg-white pointer-events-none">
       <MapContainer
         center={map.getCenter()}
         zoom={map.getZoom() - 4}
@@ -697,7 +697,7 @@ export default function MapPage() {
       {/* Map */}
       <div className={`relative ${isFullscreen ? 'w-full' : 'flex-1'} rounded-lg border border-gray-200 overflow-hidden shadow-sm`}>
         {/* Map Style Selector */}
-        <div className="absolute top-4 left-4 z-[1000] bg-white rounded-xl shadow-lg p-2 flex gap-1.5 backdrop-blur border border-gray-200">
+        <div className="absolute top-4 left-4 z-[400] bg-white rounded-xl shadow-lg p-2 flex gap-1.5 backdrop-blur border border-gray-200">
           {(
             [
               { id: 'plan', label: 'Plan' },
@@ -864,7 +864,7 @@ export default function MapPage() {
         </MapContainer>
 
         {/* Zoom level display */}
-        <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2 items-end">
+        <div className={`absolute top-4 z-[400] flex flex-col gap-2 items-end transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-4'}`}>
           <div className="bg-white rounded-xl shadow-lg px-3 py-1.5 text-xs font-medium text-gray-900 border border-gray-200 backdrop-blur">
             Zoom: {currentZoom}
             {currentZoom < 10 && (
@@ -874,7 +874,7 @@ export default function MapPage() {
         </div>
 
         {/* Map overlay controls */}
-        <div className="absolute top-14 right-4 z-[1000] flex flex-col gap-2">
+        <div className={`absolute top-14 z-[400] flex flex-col gap-2 transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-4'}`}>
           <Button
             size="sm"
             onClick={() => {
@@ -915,7 +915,7 @@ export default function MapPage() {
         </div>
 
         {/* Stats overlay with timezone */}
-        <div className="absolute top-20 left-4 z-[1000] flex flex-col gap-2">
+        <div className="absolute top-20 left-4 z-[400] flex flex-col gap-2">
           {/* Provider failover indicator */}
           <div className="rounded-xl bg-white px-3 py-1.5 shadow-lg text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-900 backdrop-blur">
             <span className={`h-2 w-2 rounded-full inline-block ${providerStatus.flespi.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
@@ -930,7 +930,7 @@ export default function MapPage() {
         </div>
 
         {/* Fleet stats overlay - Vehicle count by status */}
-        <div className="absolute bottom-4 left-4 z-[1000] bg-white rounded-xl shadow-lg p-3 text-xs font-medium border border-gray-200 text-gray-900 backdrop-blur">
+        <div className="absolute bottom-4 left-4 z-[400] bg-white rounded-xl shadow-lg p-3 text-xs font-medium border border-gray-200 text-gray-900 backdrop-blur">
           <p className="font-sans font-semibold mb-1.5">Statut des véhicules</p>
           <div className="flex gap-4 text-gray-500">
             <div className="flex items-center gap-2">
@@ -957,7 +957,7 @@ export default function MapPage() {
         </div>
 
         {/* Speed Legend - Marker color meanings */}
-        <div className="absolute bottom-4 right-4 z-[1000] bg-white rounded-xl shadow-lg p-3 text-xs border border-gray-200 text-gray-900 backdrop-blur">
+        <div className={`absolute bottom-4 z-[400] bg-white rounded-xl shadow-lg p-3 text-xs border border-gray-200 text-gray-900 backdrop-blur transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-4'}`}>
           <p className="font-sans font-semibold mb-2">Légende des couleurs</p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
@@ -994,7 +994,7 @@ export default function MapPage() {
 
         {/* Mini-map overview in bottom-right corner */}
         {showMiniMap && (
-          <div className="absolute bottom-4 right-80 z-[1000]">
+          <div className="absolute bottom-4 right-80 z-[400]">
             <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
               <div className="relative w-56 h-40 rounded overflow-hidden">
                 <MapContainer
@@ -1040,7 +1040,7 @@ export default function MapPage() {
 
         {/* Manual GPS entry form */}
         {showManualGps && (
-          <div className="absolute top-20 right-4 z-[1000]">
+          <div className="absolute top-20 right-4 z-[400]">
             <Card className="w-72 shadow-lg bg-white border border-gray-200 rounded-xl">
               <CardHeader className="pb-2 pt-4">
                 <div className="flex items-center justify-between">
@@ -1132,7 +1132,7 @@ export default function MapPage() {
         )}
 
         {/* Help button bottom right */}
-        <div className="absolute bottom-4 right-4 z-[1000]">
+        <div className={`absolute bottom-4 z-[400] transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-4'}`}>
           <Button
             size="sm"
             className="bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 shadow-lg backdrop-blur rounded-xl"
