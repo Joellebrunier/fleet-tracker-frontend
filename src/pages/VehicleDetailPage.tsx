@@ -41,7 +41,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { GpsReplayPlayer } from '@/components/vehicles/GpsReplayPlayer'
 import { GpsDataExport } from '@/components/vehicles/GpsDataExport'
 import { reverseGeocode } from '@/lib/geocoding'
-import { MAPBOX_TILE_URL } from '@/lib/constants'
+import { TOMTOM_TILE_URL } from '@/lib/constants'
 
 // Fix default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -700,9 +700,8 @@ export default function VehicleDetailPage() {
                     zoomControl={false}
                   >
                     <TileLayer
-                      url={MAPBOX_TILE_URL('streets-v12')}
-                      tileSize={512}
-                      zoomOffset={-1}
+                      url={TOMTOM_TILE_URL('basic')}
+                      attribution="&copy; TomTom"
                     />
                     <Marker position={[vehicle.currentLat!, vehicle.currentLng!]}>
                       <Popup>
@@ -1471,9 +1470,8 @@ export default function VehicleDetailPage() {
                     zoomControl={false}
                   >
                     <TileLayer
-                      url={MAPBOX_TILE_URL('streets-v12')}
-                      tileSize={512}
-                      zoomOffset={-1}
+                      url={TOMTOM_TILE_URL('basic')}
+                      attribution="&copy; TomTom"
                     />
 
                     {/* Start marker */}

@@ -62,7 +62,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
-import { MAPBOX_TILE_URL } from '@/lib/constants'
+import { TOMTOM_TILE_URL } from '@/lib/constants'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 import 'leaflet/dist/leaflet.css'
 
@@ -1782,8 +1782,8 @@ export default function DashboardPage() {
                       style={{ height: '100%', width: '100%' }}
                     >
                       <TileLayer
-                        url={MAPBOX_TILE_URL('streets-v12')}
-                        attribution='&copy; Mapbox'
+                        url={TOMTOM_TILE_URL('basic')}
+                        attribution='&copy; TomTom'
                       />
                       {heatmapData.map((marker, idx) => (
                         <HeatmapMarker

@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet-draw'
 import 'leaflet-draw/dist/leaflet.draw.css'
 import { GeofenceShape, Coordinates } from '@/types/geofence'
-import { MAPBOX_TILE_URL } from '@/lib/constants'
+import { TOMTOM_TILE_URL } from '@/lib/constants'
 
 interface GeofenceDrawMapProps {
   initialShape?: GeofenceShape
@@ -49,10 +49,8 @@ export default function GeofenceDrawMap({
     const map = L.map(containerRef.current).setView(center, zoom)
     mapRef.current = map
 
-    L.tileLayer(MAPBOX_TILE_URL('streets-v12'), {
-      attribution: '&copy; Mapbox &copy; OpenStreetMap',
-      tileSize: 512,
-      zoomOffset: -1,
+    L.tileLayer(TOMTOM_TILE_URL('basic'), {
+      attribution: '&copy; <a href="https://www.tomtom.com/">TomTom</a>',
     }).addTo(map)
 
     const drawnItems = drawnItemsRef.current

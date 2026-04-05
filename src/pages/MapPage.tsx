@@ -14,7 +14,7 @@ import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin, AlertCircle, ChevronDown, CheckCircle2, X, Edit2, Trash2, Maximize, Minimize, AlertTriangle, Clock, MapPinOff, Maximize2 } from 'lucide-react'
 import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
 import { useQueryClient } from '@tanstack/react-query'
-import { MAPBOX_TILE_URL, MAPBOX_TOKEN } from '@/lib/constants'
+import { TOMTOM_TILE_URL, TOMTOM_TRAFFIC_FLOW_URL } from '@/lib/constants'
 
 // Helper function to convert speed based on user preferences
 function getFormattedSpeed(speedKmh: number, useImperial: boolean): { value: string; unit: string } {
@@ -206,7 +206,7 @@ function MiniMapOverview({ vehicles }: { vehicles: any[] }) {
         touchZoom={false}
         className="pointer-events-none"
       >
-        <TileLayer url={MAPBOX_TILE_URL('dark-v11')} attribution="" tileSize={512} zoomOffset={-1} />
+        <TileLayer url={TOMTOM_TILE_URL('dark')} attribution="&copy; TomTom" />
         {vehicles.map((v: any) => v.currentLat && v.currentLng && (
           <Marker
             key={`minimap-${v.id}`}
@@ -567,24 +567,24 @@ export default function MapPage() {
   const getTileUrl = (style: MapStyle) => {
     switch (style) {
       case 'satellite':
-        return MAPBOX_TILE_URL('satellite-streets-v12')
+        return TOMTOM_TILE_URL('satellite')
       case 'relief':
-        return MAPBOX_TILE_URL('outdoors-v12')
+        return TOMTOM_TILE_URL('hybrid')
       case 'sombre':
-        return MAPBOX_TILE_URL('dark-v11')
+        return TOMTOM_TILE_URL('dark')
       case 'clair':
-        return MAPBOX_TILE_URL('light-v11')
+        return TOMTOM_TILE_URL('basic')
       case 'plan':
       default:
-        return MAPBOX_TILE_URL('streets-v12')
+        return TOMTOM_TILE_URL('basic')
     }
   }
 
   const tileUrl = getTileUrl(mapStyle)
 
-  const tileAttribution = '&copy; <a href="https://www.mapbox.com/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  const tileAttribution = '&copy; <a href="https://www.tomtom.com/">TomTom</a>'
 
-  const trafficUrl = `https://api.mapbox.com/styles/v1/mapbox/traffic-day-v2/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`
+  const trafficUrl = TOMTOM_TRAFFIC_FLOW_URL
 
   // Handle fullscreen via Fullscreen API
   const handleActualFullscreen = useCallback(async () => {
@@ -726,8 +726,8 @@ export default function MapPage() {
           className="h-full w-full z-0"
           zoomControl={false}
         >
-          <TileLayer url={tileUrl} attribution={tileAttribution} tileSize={512} zoomOffset={-1} />
-          {showTraffic && <TileLayer url={trafficUrl} attribution={tileAttribution} opacity={0.5} />}
+          <TileLayer url={tileUrl} attribution={tileAttribution} />
+          {showTraffic && <TileLayer url={trafficUrl} attribution="" opacity={0.6} />}
 
           <FitBounds vehicles={vehicles} />
           <KeyboardShortcuts onShortcut={handleShortcut} />
@@ -1009,7 +1009,7 @@ export default function MapPage() {
                   scrollWheelZoom={false}
                   touchZoom={false}
                 >
-                  <TileLayer url={MAPBOX_TILE_URL('dark-v11')} attribution="" tileSize={512} zoomOffset={-1} />
+                  <TileLayer url={TOMTOM_TILE_URL('dark')} attribution="&copy; TomTom" />
                   {vehiclesWithGps.map((v: any) => (
                     <CircleMarker
                       key={`minimap-${v.id}`}

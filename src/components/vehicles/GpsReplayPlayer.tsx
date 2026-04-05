@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { MAPBOX_TILE_URL } from '@/lib/constants'
+import { TOMTOM_TILE_URL } from '@/lib/constants'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -508,10 +508,8 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
               className="z-0"
             >
               <TileLayer
-                url={MAPBOX_TILE_URL('streets-v12')}
-                attribution='&copy; Mapbox &copy; OpenStreetMap'
-                tileSize={512}
-                zoomOffset={-1}
+                url={TOMTOM_TILE_URL('basic')}
+                attribution='&copy; TomTom'
               />
 
               <MapViewController positions={positions} currentPosition={currentPosition} />

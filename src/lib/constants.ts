@@ -1,7 +1,29 @@
-// Mapbox configuration
-export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || ''
-export const MAPBOX_TILE_URL = (style: string = 'streets-v12') =>
-  `https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`
+// TomTom configuration
+export const TOMTOM_API_KEY = import.meta.env.VITE_TOMTOM_API_KEY || '9fFJXdBwrgdAawv56noq3ldNdnlXqTHv'
+
+export const TOMTOM_TILE_URL = (style: string = 'basic') => {
+  switch (style) {
+    case 'satellite':
+    case 'sat':
+      return `https://api.tomtom.com/map/1/tile/sat/main/{z}/{x}/{y}.jpg?key=${TOMTOM_API_KEY}`
+    case 'hybrid':
+      return `https://api.tomtom.com/map/1/tile/hybrid/main/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`
+    case 'night':
+    case 'dark':
+      return `https://api.tomtom.com/map/1/tile/basic/night/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`
+    case 'labels':
+      return `https://api.tomtom.com/map/1/tile/labels/main/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`
+    default:
+      return `https://api.tomtom.com/map/1/tile/basic/main/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`
+  }
+}
+
+export const TOMTOM_TRAFFIC_FLOW_URL = `https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}&thickness=10`
+export const TOMTOM_TRAFFIC_INCIDENTS_URL = `https://api.tomtom.com/traffic/map/4/tile/incidents/s3/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`
+
+// Legacy aliases for compatibility
+export const MAPBOX_TOKEN = TOMTOM_API_KEY
+export const MAPBOX_TILE_URL = TOMTOM_TILE_URL
 
 // Helper to build org-scoped routes
 const org = (orgId: string) => `/api/organizations/${orgId}`;
@@ -95,9 +117,9 @@ export const MAP_DEFAULTS = {
   DEFAULT_ZOOM: 12,
   MIN_ZOOM: 2,
   MAX_ZOOM: 20,
-  MAP_STYLE: 'mapbox://styles/mapbox/streets-v12',
-  SATELLITE_STYLE: 'mapbox://styles/mapbox/satellite-streets-v12',
-  TERRAIN_STYLE: 'mapbox://styles/mapbox/outdoors-v12',
+  MAP_STYLE: 'basic',
+  SATELLITE_STYLE: 'satellite',
+  TERRAIN_STYLE: 'hybrid',
 } as const;
 
 // Pagination
