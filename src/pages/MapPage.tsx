@@ -7,14 +7,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { useVehicles } from '@/hooks/useVehicles'
+import { useVehicles, useCreateVehicle, useDeleteVehicle } from '@/hooks/useVehicles'
 import { useMapStore } from '@/stores/mapStore'
 import { useAuthStore } from '@/stores/authStore'
 import { formatSpeed, formatTimeAgo } from '@/lib/utils'
-import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin, AlertCircle, ChevronDown, CheckCircle2, X, Edit2, Trash2, Maximize, Minimize, AlertTriangle, Clock, MapPinOff, Maximize2 } from 'lucide-react'
+import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin, AlertCircle, ChevronDown, CheckCircle2, X, Edit2, Trash2, Maximize, Minimize, AlertTriangle, Clock, MapPinOff, Maximize2, Plus, Share2, Download, Settings, RefreshCw, Copy, Check } from 'lucide-react'
 import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
 import { useQueryClient } from '@tanstack/react-query'
 import { TOMTOM_TILE_URL, TOMTOM_TRAFFIC_FLOW_URL } from '@/lib/constants'
+import { apiClient } from '@/lib/api'
+
+// Helper: Derive GPS provider from vehicle metadata
+function getGpsProvider(vehicle: any): string {
+  const meta = vehicle.metadata || {}
+  if (meta.echoesRaw || meta.echoesUid) return 'ECHOES'
+  if (meta.ubiwanRaw || meta.ubiwanId) return 'UBIWAN'
+  if (meta.keeptraceRaw || meta.keeptraceId) return 'KEEPTRACE'
+  if (meta.flespiRaw || meta.flespiId) return 'FLESPI'
+  // Check device IMEI patterns or other hints
+  if (vehicle.deviceImei) return 'FLESPI'
+  return ''
+}
 
 // Helper function to convert speed based on user preferences
 function getFormattedSpeed(speedKmh: number, useImperial: boolean): { value: string; unit: string } {
@@ -434,6 +447,12 @@ export default function MapPage() {
   const [showMiniMapToggle, setShowMiniMapToggle] = useState(true)
   const [isActualFullscreen, setIsActualFullscreen] = useState(false)
   const [showRecentSearches, setShowRecentSearches] = useState(false)
+  // Dialog states
+  const [showCreateVehicle, setShowCreateVehicle] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showShareToast, setShowShareToast] = useState(false)
+  const [newVehicleForm, setNewVehicleForm] = useState({ name: '', plate: '', vin: '', type: 'car', brand: '', model: '' })
+  const [createError, setCreateError] = useState('')
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -459,7 +478,7 @@ export default function MapPage() {
   } = useMapStore()
 
   const queryClient = useQueryClient()
-  const { data: vehiclesData } = useVehicles({ limit: 500 })
+  const { data: vehiclesData, isLoading: vehiclesLoading, refetch: refetchVehicles } = useVehicles({ limit: 1000 })
 
   // Real-time WebSocket for GPS position updates
   const { isConnected } = useGpsWebSocket({
@@ -470,7 +489,14 @@ export default function MapPage() {
     },
   })
 
-  const vehicles = useMemo(() => vehiclesData?.data || [], [vehiclesData])
+  // Enrich vehicles with derived gpsProvider
+  const vehicles = useMemo(() => {
+    const raw = vehiclesData?.data || []
+    return raw.map((v: any) => ({
+      ...v,
+      gpsProvider: v.gpsProvider || getGpsProvider(v),
+    }))
+  }, [vehiclesData])
 
   // Get unique groups from vehicles (with colors for display)
   const uniqueGroups = useMemo(() => {
@@ -631,6 +657,84 @@ export default function MapPage() {
     }
   }, [searchTerm, addRecentSearch])
 
+  // Vehicle create mutation
+  const createVehicleMutation = useCreateVehicle()
+
+  const handleCreateVehicle = useCallback(async () => {
+    if (!newVehicleForm.plate.trim()) {
+      setCreateError('La plaque d\'immatriculation est requise')
+      return
+    }
+    setCreateError('')
+    try {
+      await createVehicleMutation.mutateAsync({
+        name: newVehicleForm.name || newVehicleForm.plate,
+        registrationNumber: newVehicleForm.plate,
+        vin: newVehicleForm.vin || '',
+        type: newVehicleForm.type || 'car',
+        manufacturer: newVehicleForm.brand,
+        model: newVehicleForm.model,
+        features: { hasGPS: true, hasFuelSensor: false, hasTemperatureSensor: false, hasCrashSensor: false },
+      } as any)
+      setShowCreateVehicle(false)
+      setNewVehicleForm({ name: '', plate: '', vin: '', type: 'car', brand: '', model: '' })
+      refetchVehicles()
+    } catch (err: any) {
+      setCreateError(err?.response?.data?.message || err?.message || 'Erreur lors de la création')
+    }
+  }, [newVehicleForm, createVehicleMutation, refetchVehicles])
+
+  // Share handler
+  const handleShare = useCallback(() => {
+    const url = window.location.href
+    navigator.clipboard.writeText(url).then(() => {
+      setShowShareToast(true)
+      setTimeout(() => setShowShareToast(false), 2000)
+    }).catch(() => {
+      // Fallback: open native share if available
+      if (navigator.share) {
+        navigator.share({ title: 'Fleet Tracker - Carte', url })
+      }
+    })
+  }, [])
+
+  // Export CSV handler
+  const handleExportCSV = useCallback(() => {
+    const headers = ['Plaque', 'Nom', 'VIN', 'Marque', 'Modèle', 'Type', 'Latitude', 'Longitude', 'Vitesse', 'Statut', 'Dernière communication', 'Fournisseur GPS']
+    const rows = filteredVehicles.map((v: any) => [
+      v.plate || '', v.name || '', v.vin || '', v.brand || '', v.model || '', v.type || '',
+      v.currentLat || '', v.currentLng || '', v.currentSpeed || 0, v.status || '',
+      v.lastCommunication || '', v.gpsProvider || ''
+    ])
+    const csvContent = [headers.join(';'), ...rows.map((r: any[]) => r.join(';'))].join('\n')
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `fleet-tracker-vehicules-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [filteredVehicles])
+
+  // Delete vehicle handler
+  const handleDeleteVehicle = useCallback(async () => {
+    if (!selectedVehicle?.id) return
+    try {
+      const orgId = useAuthStore.getState().user?.organizationId || ''
+      await apiClient.delete(`/api/organizations/${orgId}/vehicles/${selectedVehicle.id}`)
+      selectVehicle(null)
+      setShowDeleteConfirm(false)
+      refetchVehicles()
+    } catch (err) {
+      console.error('Delete failed:', err)
+    }
+  }, [selectedVehicle?.id, selectVehicle, refetchVehicles])
+
+  // Refresh detail panel data
+  const handleRefreshDetail = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['vehicles'] })
+  }, [queryClient])
+
   // Simulate vehicle trails (in production, fetch from API)
   useEffect(() => {
     if (selectedVehicle?.id) {
@@ -700,19 +804,33 @@ export default function MapPage() {
         <div className="w-[310px] flex flex-col overflow-hidden bg-white border-r border-gray-200 shrink-0">
           {/* Action buttons bar */}
           <div className="flex items-center gap-2 px-3 py-2.5 border-b border-gray-200">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4361EE] text-white rounded text-xs font-semibold hover:bg-[#3B52D3] transition-colors">
-              <span className="text-sm">+</span> VÉHICULE
+            <button
+              onClick={() => setShowCreateVehicle(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4361EE] text-white rounded text-xs font-semibold hover:bg-[#3B52D3] transition-colors"
+            >
+              <Plus size={14} /> VÉHICULE
             </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 text-gray-600 rounded text-xs font-medium hover:bg-gray-50 transition-colors">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 text-gray-600 rounded text-xs font-medium hover:bg-gray-50 transition-colors"
+            >
+              <Share2 size={12} />
               PARTAGE
             </button>
             <div className="flex-1" />
-            <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors" title="Exporter">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <button
+              onClick={handleExportCSV}
+              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              title="Exporter CSV"
+            >
+              <Download size={16} />
             </button>
-            <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors" title="Paramètres">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            <button
+              onClick={() => navigate('/settings')}
+              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+              title="Paramètres"
+            >
+              <Settings size={16} />
             </button>
           </div>
 
@@ -834,7 +952,10 @@ export default function MapPage() {
                       <p className="text-[11px] text-gray-400 truncate uppercase">{vehicle.name}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-[11px] font-medium text-gray-500 uppercase">{vehicle.gpsProvider || '—'}</p>
+                      <p className={`text-[12px] font-bold tabular-nums ${isMoving ? 'text-emerald-600' : hasGps ? 'text-gray-400' : 'text-red-400'}`}>
+                        {hasGps ? `${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} ${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}` : 'N/A'}
+                      </p>
+                      <p className="text-[10px] font-medium text-gray-400 uppercase">{vehicle.gpsProvider || '—'}</p>
                     </div>
                   </div>
                 </button>
@@ -941,7 +1062,7 @@ export default function MapPage() {
                 <button onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors" title="Éditer">
                   <Edit2 size={14} />
                 </button>
-                <button className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Supprimer">
+                <button onClick={() => setShowDeleteConfirm(true)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Supprimer">
                   <Trash2 size={14} />
                 </button>
                 <span className={`px-2.5 py-1 rounded text-[11px] font-semibold uppercase ${selectedVehicle.currentSpeed > 2 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -1042,13 +1163,116 @@ export default function MapPage() {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-200 p-3">
+          <div className="border-t border-gray-200 p-3 space-y-2">
             <button
-              onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
-              className="w-full text-center px-4 py-2 text-[#4361EE] border border-[#4361EE] rounded text-xs font-semibold hover:bg-[#4361EE] hover:text-white transition-colors"
+              onClick={handleRefreshDetail}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-[#4361EE] border border-[#4361EE] rounded text-xs font-semibold hover:bg-[#4361EE] hover:text-white transition-colors"
             >
+              <RefreshCw size={13} />
               RAFRAÎCHIR
             </button>
+            <button
+              onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
+              className="w-full text-center px-4 py-2 bg-gray-100 text-gray-600 rounded text-xs font-semibold hover:bg-gray-200 transition-colors"
+            >
+              VOIR DÉTAILS COMPLETS
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ CREATE VEHICLE DIALOG ═══ */}
+      {showCreateVehicle && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center" onClick={() => setShowCreateVehicle(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-200" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Nouveau véhicule</h2>
+              <button onClick={() => setShowCreateVehicle(false)} className="p-1 text-gray-400 hover:text-gray-600"><X size={18} /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              {createError && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                  <AlertCircle size={14} /> {createError}
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Plaque d&apos;immatriculation *</label>
+                <input type="text" value={newVehicleForm.plate} onChange={(e) => setNewVehicleForm(prev => ({ ...prev, plate: e.target.value.toUpperCase() }))} placeholder="AA-123-BB" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4361EE]/20 focus:border-[#4361EE] outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Nom du véhicule</label>
+                <input type="text" value={newVehicleForm.name} onChange={(e) => setNewVehicleForm(prev => ({ ...prev, name: e.target.value }))} placeholder="Ex: Camion livraison 01" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4361EE]/20 focus:border-[#4361EE] outline-none" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Marque</label>
+                  <input type="text" value={newVehicleForm.brand} onChange={(e) => setNewVehicleForm(prev => ({ ...prev, brand: e.target.value }))} placeholder="BMW, Mercedes..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4361EE]/20 focus:border-[#4361EE] outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Modèle</label>
+                  <input type="text" value={newVehicleForm.model} onChange={(e) => setNewVehicleForm(prev => ({ ...prev, model: e.target.value }))} placeholder="Série 3, Sprinter..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4361EE]/20 focus:border-[#4361EE] outline-none" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">VIN</label>
+                  <input type="text" value={newVehicleForm.vin} onChange={(e) => setNewVehicleForm(prev => ({ ...prev, vin: e.target.value.toUpperCase() }))} placeholder="Optionnel" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4361EE]/20 focus:border-[#4361EE] outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Type</label>
+                  <select value={newVehicleForm.type} onChange={(e) => setNewVehicleForm(prev => ({ ...prev, type: e.target.value }))} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#4361EE]/20 focus:border-[#4361EE] outline-none bg-white">
+                    <option value="car">Voiture</option>
+                    <option value="truck">Camion</option>
+                    <option value="van">Utilitaire</option>
+                    <option value="motorcycle">Moto</option>
+                    <option value="bus">Bus</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3 bg-gray-50">
+              <button onClick={() => setShowCreateVehicle(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">Annuler</button>
+              <button onClick={handleCreateVehicle} disabled={createVehicleMutation.isPending} className="px-5 py-2 bg-[#4361EE] text-white text-sm font-semibold rounded-lg hover:bg-[#3B52D3] transition-colors disabled:opacity-50 flex items-center gap-2">
+                {createVehicleMutation.isPending ? (<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Création...</>) : (<><Plus size={14} /> Créer le véhicule</>)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ DELETE CONFIRMATION DIALOG ═══ */}
+      {showDeleteConfirm && selectedVehicle && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden border border-gray-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><Trash2 size={24} className="text-red-500" /></div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer le véhicule ?</h3>
+              <p className="text-sm text-gray-500">Voulez-vous vraiment supprimer <span className="font-semibold text-gray-700">{selectedVehicle.plate || selectedVehicle.name}</span> ? Cette action est irréversible.</p>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3 bg-gray-50">
+              <button onClick={() => setShowDeleteConfirm(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">Annuler</button>
+              <button onClick={handleDeleteVehicle} className="px-5 py-2 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition-colors">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ SHARE TOAST ═══ */}
+      {showShareToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] bg-gray-900 text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 text-sm font-medium" style={{ animation: 'fadeInDown 0.2s ease-out' }}>
+          <Check size={16} className="text-emerald-400" />
+          Lien copié dans le presse-papier
+        </div>
+      )}
+
+      {/* ═══ LOADING OVERLAY ═══ */}
+      {vehiclesLoading && vehicles.length === 0 && (
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-sm pointer-events-none">
+          <div className="text-center">
+            <div className="w-10 h-10 border-3 border-[#4361EE]/20 border-t-[#4361EE] rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-sm font-medium text-gray-500">Chargement des véhicules...</p>
           </div>
         </div>
       )}
