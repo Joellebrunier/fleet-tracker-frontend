@@ -18,7 +18,7 @@ export const TOMTOM_TILE_URL = (style: string = 'basic') => {
   }
 }
 
-export const TOMTOM_TRAFFIC_FLOW_URL = `https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}&thickness=10`
+export const TOMTOM_TRAFFIC_FLOW_URL = `https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`
 export const TOMTOM_TRAFFIC_INCIDENTS_URL = `https://api.tomtom.com/traffic/map/4/tile/incidents/s3/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`
 
 // Legacy aliases for compatibility
