@@ -693,38 +693,164 @@ export default function MapPage() {
   }
 
   return (
-    <div ref={mapContainerRef} className={`flex h-full bg-[#F8F9FC] gap-0 ${isActualFullscreen ? 'fixed inset-0 z-[10000] w-screen h-screen' : ''}`}>
-      {/* Map */}
-      <div className={`relative ${isFullscreen ? 'w-full' : 'flex-1'} overflow-hidden`}>
-        {/* Map Style Selector */}
-        <div className="absolute top-3 left-3 z-[400] bg-white/95 rounded-xl shadow-lg p-1.5 flex gap-1 backdrop-blur-md border border-gray-200/50">
-          {(
-            [
+    <div ref={mapContainerRef} className={`flex h-full bg-white ${isActualFullscreen ? 'fixed inset-0 z-[10000] w-screen h-screen' : ''}`}>
+
+      {/* ═══ LEFT SIDEBAR ═══ */}
+      {!isFullscreen && (
+        <div className="w-[310px] flex flex-col overflow-hidden bg-white border-r border-gray-200 shrink-0">
+          {/* Action buttons bar */}
+          <div className="flex items-center gap-2 px-3 py-2.5 border-b border-gray-200">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4361EE] text-white rounded text-xs font-semibold hover:bg-[#3B52D3] transition-colors">
+              <span className="text-sm">+</span> VÉHICULE
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 text-gray-600 rounded text-xs font-medium hover:bg-gray-50 transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              PARTAGE
+            </button>
+            <div className="flex-1" />
+            <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors" title="Exporter">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors" title="Paramètres">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            </button>
+          </div>
+
+          {/* Map style selector row */}
+          <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-200 bg-gray-50">
+            {([
               { id: 'plan', label: 'Plan' },
               { id: 'satellite', label: 'Satellite' },
               { id: 'relief', label: 'Relief' },
               { id: 'sombre', label: 'Sombre' },
               { id: 'clair', label: 'Clair' },
-            ] as const
-          ).map((style) => (
-            <button
-              key={style.id}
-              onClick={() => setMapStyle(style.id as MapStyle)}
-              className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${
-                mapStyle === style.id
-                  ? 'bg-[#4361EE] text-white shadow-sm'
-                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-              }`}
-            >
-              {style.label}
-            </button>
-          ))}
+            ] as const).map((style) => (
+              <button
+                key={style.id}
+                onClick={() => setMapStyle(style.id as MapStyle)}
+                className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                  mapStyle === style.id
+                    ? 'bg-[#4361EE] text-white shadow-sm'
+                    : 'text-gray-500 hover:bg-white hover:text-gray-700'
+                }`}
+              >
+                {style.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="px-3 py-2.5 border-b border-gray-200">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 text-gray-400" size={14} />
+              <Input
+                ref={searchInputRef}
+                type="search"
+                placeholder="Nom, plaque, VIN, ville..."
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
+                onFocus={() => setShowRecentSearches(searchTerm.length === 0 && recentSearches.length > 0)}
+                className="pl-9 h-9 bg-white border border-gray-300 text-gray-900 text-xs placeholder-gray-400 focus:ring-2 focus:ring-[#4361EE]/20 focus:border-[#4361EE] rounded"
+              />
+              {showRecentSearches && recentSearches.length > 0 && (
+                <div className="absolute top-11 left-0 right-0 bg-white border border-gray-200 rounded shadow-xl z-[100] overflow-hidden">
+                  <div className="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">Recherches récentes</div>
+                  {recentSearches.map((search, idx) => (
+                    <button key={idx} onClick={() => handleRecentSearchSelect(search)} className="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2">
+                      <Clock size={11} className="text-gray-300" />{search}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* SOURCE filter */}
+          <div className="px-3 pt-3 pb-1">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">SOURCE</p>
+            <div className="flex flex-wrap gap-1">
+              {(['TOUS', 'ECHOES', 'UBIWAN', 'KEEPTRACE'] as const).map((source) => (
+                <button
+                  key={source}
+                  onClick={() => setSourceFilter(source)}
+                  className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-all ${
+                    sourceFilter === source
+                      ? 'bg-[#4361EE] text-white'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  {source}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* STATUT filter */}
+          <div className="px-3 pt-2 pb-2.5 border-b border-gray-200">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">STATUT</p>
+            <div className="flex gap-1">
+              {(['TOUS', 'LOCALISÉS', 'NON LOC.'] as const).map((statut) => (
+                <button
+                  key={statut}
+                  onClick={() => setStatutFilter(statut)}
+                  className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-all ${
+                    statutFilter === statut
+                      ? 'bg-[#4361EE] text-white'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  {statut}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Vehicle list header */}
+          <div className="px-3 py-2 flex items-center justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200 bg-gray-50">
+            <span>VÉHICULE — {filteredVehicles.length} RÉSULTATS</span>
+            <span>VITESSE</span>
+          </div>
+
+          {/* Vehicle list */}
+          <div className="flex-1 overflow-y-auto">
+            {filteredVehicles.map((vehicle: any) => {
+              const isMoving = (vehicle.currentSpeed || 0) > 2
+              const hasGps = vehicle.currentLat && vehicle.currentLng
+              const isSelected = selectedVehicleId === vehicle.id
+              return (
+                <button
+                  key={vehicle.id}
+                  onClick={() => selectVehicle(vehicle.id)}
+                  className={`w-full px-3 py-2.5 text-left transition-all border-b border-gray-100 ${
+                    isSelected
+                      ? 'bg-blue-50 border-l-3 border-l-[#4361EE]'
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold text-[13px] ${isSelected ? 'text-[#4361EE]' : 'text-gray-900'}`}>{vehicle.plate || vehicle.name}</p>
+                      <p className="text-[11px] text-gray-400 truncate uppercase">{vehicle.name}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-[11px] font-medium text-gray-500 uppercase">{vehicle.gpsProvider || '—'}</p>
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         </div>
+      )}
+
+      {/* ═══ CENTER MAP ═══ */}
+      <div className="relative flex-1 overflow-hidden">
         <MapContainer
           center={[43.7, 3.87]}
           zoom={6}
           className="h-full w-full z-0"
-          zoomControl={false}
+          zoomControl={true}
         >
           <TileLayer url={tileUrl} attribution={tileAttribution} />
           {showTraffic && <TileLayer url={trafficUrl} attribution="" opacity={0.6} />}
@@ -737,12 +863,10 @@ export default function MapPage() {
             <FlyToVehicle lat={selectedVehicle.currentLat} lng={selectedVehicle.currentLng} />
           )}
 
-          {/* Vehicle trails and breadcrumbs for selected vehicle */}
           {selectedVehicle?.id && vehicleTrails[selectedVehicle.id] && (
             <VehicleTrail trail={vehicleTrails[selectedVehicle.id]} />
           )}
 
-          {/* Event markers */}
           <EventMarkersComponent alerts={activeAlerts} />
 
           {displayedVehicles.map((vehicle: any) => {
@@ -757,611 +881,176 @@ export default function MapPage() {
                     vehicle.id === selectedVehicleId,
                     vehicle.type
                   )}
-                  eventHandlers={{
-                    click: () => selectVehicle(vehicle.id),
-                  }}
+                  eventHandlers={{ click: () => selectVehicle(vehicle.id) }}
                 >
                   <Popup>
                     <div className="min-w-48 p-1 bg-white text-gray-900">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <p className="font-bold text-sm font-sans">{vehicle.name}</p>
-                          <p className="text-xs text-gray-500">{vehicle.plate}</p>
+                          <p className="font-bold text-sm font-sans">{vehicle.plate || vehicle.name}</p>
+                          <p className="text-xs text-gray-500">{vehicle.name}</p>
                         </div>
-                        {vehicle.gpsProviderFailover && (
-                          <div title="Basculement fournisseur actif">
-                            <AlertCircle size={14} className="text-amber-500" />
-                          </div>
-                        )}
                       </div>
                       <div className="text-xs space-y-1">
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between">
                           <span className="text-gray-500">Vitesse:</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}</span>
-                            {(vehicle.currentSpeed || 0) > 130 && (
-                              <Badge className="bg-red-500 text-white text-xs gap-1">
-                                <AlertCircle size={10} />
-                                EXCÈS
-                              </Badge>
-                            )}
-                          </div>
+                          <span className="font-medium">{getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}</span>
                         </div>
-                        {(vehicle.currentSpeed || 0) <= 2 && idleInfo.durationStr && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">À l'arrêt depuis:</span>
-                            <span className="font-medium text-blue-600">{idleInfo.durationStr}</span>
-                          </div>
-                        )}
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Fournisseur:</span>
+                          <span className="font-medium">{vehicle.gpsProvider || '—'}</span>
+                        </div>
                         <div className="flex justify-between">
                           <span className="text-gray-500">Dernière com.:</span>
                           <span className="font-medium">{formatTimeAgo(vehicle.lastCommunication)}</span>
                         </div>
-                        {vehicle.gpsProvider && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">Fournisseur:</span>
-                            <span className="font-medium text-xs">{vehicle.gpsProvider}</span>
-                          </div>
-                        )}
-                        {vehicle._clusterCount && vehicle._clusterCount > 1 && (
-                          <div className="mt-2 pt-2 border-t border-gray-200">
-                            <p className="text-gray-500 font-medium">{vehicle._clusterCount} véhicules dans cette zone</p>
-                          </div>
-                        )}
                       </div>
                       <button
                         onClick={() => navigate(`/vehicles/${vehicle.id}`)}
-                        className="mt-2 w-full text-xs text-blue-600 hover:text-[#3B82F6] font-medium"
+                        className="mt-2 w-full text-xs text-[#4361EE] hover:text-[#3B52D3] font-medium"
                       >
                         Voir détails →
                       </button>
                     </div>
                   </Popup>
                 </Marker>
-
-                {/* Display stop markers for stopped vehicles */}
                 {(vehicle.currentSpeed || 0) <= 2 && (
-                  <CircleMarker
-                    center={[vehicle.currentLat, vehicle.currentLng]}
-                    radius={6}
-                    fillColor="#EF4444"
-                    color="#EF4444"
-                    weight={2}
-                    opacity={0.6}
-                    fillOpacity={0.3}
-                  />
+                  <CircleMarker center={[vehicle.currentLat, vehicle.currentLng]} radius={6} fillColor="#6b7280" color="#6b7280" weight={1} opacity={0.4} fillOpacity={0.2} />
                 )}
               </div>
             )
           })}
 
-          {/* Manual GPS markers */}
           {manualMarkers.map((marker, idx) => (
-            <Marker
-              key={`manual-${idx}`}
-              position={[marker.lat, marker.lng]}
-              icon={L.divIcon({
-                html: `<div style="
-                  width: 20px; height: 20px;
-                  background: #f97316;
-                  border: 2px solid #ffffff;
-                  border-radius: 50%;
-                  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                "></div>`,
-                className: 'manual-marker',
-                iconSize: [20, 20],
-                iconAnchor: [10, 10],
-              })}
-            >
-              <Popup>
-                <div className="text-sm bg-white text-gray-900">
-                  <p className="font-bold font-sans">{marker.name}</p>
-                  <p className="text-xs text-gray-500 font-mono">{marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}</p>
-                </div>
-              </Popup>
+            <Marker key={`manual-${idx}`} position={[marker.lat, marker.lng]}
+              icon={L.divIcon({ html: `<div style="width:16px;height:16px;background:#f97316;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`, className: 'manual-marker', iconSize: [16, 16], iconAnchor: [8, 8] })}>
+              <Popup><div className="text-sm"><p className="font-bold">{marker.name}</p><p className="text-xs text-gray-500 font-mono">{marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}</p></div></Popup>
             </Marker>
           ))}
         </MapContainer>
+      </div>
 
-        {/* Map overlay controls - compact vertical toolbar */}
-        <div className={`absolute top-3 z-[400] flex flex-col gap-1.5 transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-3'}`}>
-          <button
-            onClick={() => setShowTraffic(!showTraffic)}
-            className={`flex items-center justify-center w-9 h-9 rounded-lg shadow-lg backdrop-blur-md border transition-all duration-200 ${showTraffic ? 'bg-[#4361EE] text-white border-[#4361EE]' : 'bg-white/95 border-gray-200/50 text-gray-600 hover:bg-white hover:text-gray-900'}`}
-            title="Afficher le trafic (T)"
-          >
-            <Wind size={16} />
-          </button>
-          <button
-            onClick={handleActualFullscreen}
-            className="flex items-center justify-center w-9 h-9 rounded-lg shadow-lg backdrop-blur-md bg-white/95 border border-gray-200/50 text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-200"
-            title="Plein écran (F)"
-          >
-            <Maximize2 size={16} />
-          </button>
-          <button
-            onClick={() => setShowManualGps(!showManualGps)}
-            className={`flex items-center justify-center w-9 h-9 rounded-lg shadow-lg backdrop-blur-md border transition-all duration-200 ${showManualGps ? 'bg-[#4361EE] text-white border-[#4361EE]' : 'bg-white/95 border-gray-200/50 text-gray-600 hover:bg-white hover:text-gray-900'}`}
-            title="Saisie manuelle GPS"
-          >
-            <MapPin size={16} />
-          </button>
-        </div>
-
-        {/* Compact bottom status bar */}
-        <div className="absolute bottom-3 left-3 right-3 z-[400] flex items-center justify-between pointer-events-none">
-          <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl shadow-lg px-4 py-2 border border-gray-200/50 flex items-center gap-4 text-[11px] font-medium">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span className="text-gray-500">En route</span>
-              <span className="font-bold text-gray-900 tabular-nums">{movingCount}</span>
-            </div>
-            <div className="w-px h-3 bg-gray-200"></div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-              <span className="text-gray-500">Arrêt</span>
-              <span className="font-bold text-gray-900 tabular-nums">{stoppedCount}</span>
-            </div>
-            <div className="w-px h-3 bg-gray-200"></div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-red-400"></span>
-              <span className="text-gray-500">Hors ligne</span>
-              <span className="font-bold text-gray-900 tabular-nums">{offlineCount}</span>
-            </div>
-            <div className="w-px h-3 bg-gray-200"></div>
-            <div className="flex items-center gap-1.5 text-gray-400">
-              <span className="tabular-nums">{vehiclesWithGps.length}/{vehicles.length} GPS</span>
-            </div>
-            <div className={`flex items-center gap-1 ${isConnected ? 'text-emerald-600' : 'text-gray-400'}`}>
-              {isConnected ? <Wifi size={11} /> : <WifiOff size={11} />}
-              <span className="text-[10px]">{isConnected ? 'Live' : 'Polling'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Manual GPS entry form */}
-        {showManualGps && (
-          <div className={`absolute top-14 z-[400] transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[22rem]' : 'right-14'}`}>
-            <Card className="w-64 shadow-2xl bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-xl">
-              <CardHeader className="pb-2 pt-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-sans text-gray-900">Saisie manuelle GPS</CardTitle>
-                  <button
-                    onClick={() => setShowManualGps(false)}
-                    className="text-gray-500 hover:text-gray-900"
-                  >
-                    ×
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Véhicule</label>
-                  <select
-                    value={manualGpsForm.vehicleId}
-                    onChange={(e) => setManualGpsForm({ ...manualGpsForm, vehicleId: e.target.value })}
-                    className="w-full h-8 px-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
-                  >
-                    <option value="">Sélectionner un véhicule</option>
-                    {vehicles.map((v: any) => (
-                      <option key={v.id} value={v.id} className="bg-white text-gray-900">
-                        {v.name} ({v.plate})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Latitude</label>
-                  <Input
-                    type="number"
-                    step="0.00001"
-                    placeholder="43.7"
-                    value={manualGpsForm.lat}
-                    onChange={(e) => setManualGpsForm({ ...manualGpsForm, lat: e.target.value })}
-                    className="h-8 text-xs bg-white border border-gray-200 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Longitude</label>
-                  <Input
-                    type="number"
-                    step="0.00001"
-                    placeholder="3.87"
-                    value={manualGpsForm.lng}
-                    onChange={(e) => setManualGpsForm({ ...manualGpsForm, lng: e.target.value })}
-                    className="h-8 text-xs bg-white border border-gray-200 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg"
-                  />
-                </div>
-                <Button
-                  size="sm"
-                  disabled={!manualGpsForm.vehicleId || !manualGpsForm.lat || !manualGpsForm.lng || isSubmittingGps}
-                  onClick={async () => {
-                    if (manualGpsForm.vehicleId && manualGpsForm.lat && manualGpsForm.lng && organizationId) {
-                      setIsSubmittingGps(true)
-                      try {
-                        const response = await fetch(
-                          `/api/organizations/${organizationId}/vehicles/${manualGpsForm.vehicleId}/position`,
-                          {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                              lat: parseFloat(manualGpsForm.lat),
-                              lng: parseFloat(manualGpsForm.lng),
-                              timestamp: new Date().toISOString(),
-                              source: 'manual',
-                            }),
-                          }
-                        )
-                        if (response.ok) {
-                          setManualGpsForm({ lat: '', lng: '', vehicleId: '', name: '' })
-                          queryClient.invalidateQueries({ queryKey: ['vehicles'] })
-                        }
-                      } catch (error) {
-                        console.error('Erreur lors de la soumission GPS:', error)
-                      } finally {
-                        setIsSubmittingGps(false)
-                      }
-                    }
-                  }}
-                  className="w-full text-xs h-8 bg-blue-600 text-white hover:bg-[#3B82F6] disabled:opacity-50"
-                >
-                  {isSubmittingGps ? 'Envoi...' : 'Envoyer'}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Help button */}
-        <div className={`absolute bottom-14 z-[400] transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-3'}`}>
-          <button
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/90 backdrop-blur-md border border-gray-200/50 text-gray-400 hover:text-gray-600 shadow-md transition-all"
-            onClick={() => setShowHelpPopover(!showHelpPopover)}
-            title="Raccourcis clavier (?)"
-          >
-            <HelpCircle size={14} />
-          </button>
-        </div>
-
-        {/* Vehicle Detail Panel */}
-        {selectedVehicle && !isFullscreen && (
-          <div className="absolute top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-gray-100 z-[999] flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[#1a2540] to-[#243154] px-4 py-3.5">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-base font-bold text-white">{selectedVehicle.plate || selectedVehicle.name}</h2>
-                    <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${selectedVehicle.currentSpeed > 2 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/10 text-white/50'}`}>
-                      {selectedVehicle.currentSpeed > 2 ? 'EN ROUTE' : 'ARRÊT'}
-                    </div>
-                  </div>
-                  <p className="text-white/40 text-[11px] mt-0.5">{selectedVehicle.name}</p>
-                </div>
-                <button
-                  onClick={() => selectVehicle(null)}
-                  className="text-white/40 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <X size={18} />
+      {/* ═══ RIGHT DETAIL PANEL ═══ */}
+      {selectedVehicle && !isFullscreen && (
+        <div className="w-[320px] bg-white border-l border-gray-200 flex flex-col overflow-hidden shrink-0">
+          {/* Header with vehicle name */}
+          <div className="px-4 py-3 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-900">{selectedVehicle.plate || selectedVehicle.name}</h2>
+              <div className="flex items-center gap-2">
+                <button onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors" title="Éditer">
+                  <Edit2 size={14} />
+                </button>
+                <button className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="Supprimer">
+                  <Trash2 size={14} />
+                </button>
+                <span className={`px-2.5 py-1 rounded text-[11px] font-semibold uppercase ${selectedVehicle.currentSpeed > 2 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  {selectedVehicle.currentSpeed > 2 ? 'EN ROUTE' : "À L'ARRÊT"}
+                </span>
+                <button onClick={() => selectVehicle(null)} className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                  <X size={16} />
                 </button>
               </div>
             </div>
-
-            {/* Tabs */}
-            <div className="flex border-b border-gray-100 bg-gray-50/50">
-              <button
-                onClick={() => setActiveDetailTab('temps-reel')}
-                className={`flex-1 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition-all ${
-                  activeDetailTab === 'temps-reel'
-                    ? 'text-[#4361EE] border-b-2 border-[#4361EE] bg-white'
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                Temps réel
-              </button>
-              <button
-                onClick={() => setActiveDetailTab('historique')}
-                className={`flex-1 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition-all ${
-                  activeDetailTab === 'historique'
-                    ? 'text-[#4361EE] border-b-2 border-[#4361EE] bg-white'
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                Historique
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto">
-              {activeDetailTab === 'temps-reel' ? (
-                <div className="divide-y divide-gray-200">
-                  {/* IDENTITÉ section */}
-                  <div className="p-4">
-                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Identité</h3>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Plaque</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.plate}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">VIN</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.vin || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Statut API</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.apiStatus || 'Actif'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Flotte ID</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.fleetId || selectedVehicle.id}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* APPAREIL GPS section */}
-                  <div className="p-4">
-                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Appareil GPS</h3>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Type</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.gpsDeviceType || 'Standard'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">ID Appareil</span>
-                        <span className="font-medium text-gray-900 truncate">{selectedVehicle.gpsDeviceId || 'N/A'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* TÉLÉMÉTRIE section */}
-                  <div className="p-4">
-                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Télémétrie</h3>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Vitesse</span>
-                        <span className="font-medium text-gray-900">
-                          {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).value} {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).unit}
-                        </span>
-                      </div>
-                      {(selectedVehicle.currentSpeed || 0) <= 2 && calculateIdleDuration(selectedVehicle.currentSpeed || 0, selectedVehicle.lastCommunication).durationStr && (
-                        <div className="flex justify-between text-blue-600 font-medium">
-                          <span className="text-gray-500">À l'arrêt depuis</span>
-                          <span>{calculateIdleDuration(selectedVehicle.currentSpeed || 0, selectedVehicle.lastCommunication).durationStr}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Odomètre</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.odometer || 'N/A'} km</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Carburant</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.fuelLevel || 'N/A'}%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* POSITION section */}
-                  <div className="p-4">
-                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Position</h3>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Latitude</span>
-                        <span className="font-mono text-gray-900">{selectedVehicle.currentLat?.toFixed(6)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Longitude</span>
-                        <span className="font-mono text-gray-900">{selectedVehicle.currentLng?.toFixed(6)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ACTIVITÉ section */}
-                  <div className="p-4">
-                    <h3 className="text-xs font-sans font-bold text-gray-900 uppercase tracking-wide mb-3">Activité</h3>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Dernière com.</span>
-                        <span className="font-medium text-gray-900">{formatTimeAgo(selectedVehicle.lastCommunication)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Début trajet</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.tripStart || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Fin trajet</span>
-                        <span className="font-medium text-gray-900">{selectedVehicle.tripEnd || 'N/A'}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 text-xs text-gray-500">
-                  <p>Historique non disponible</p>
-                </div>
-              )}
-            </div>
-
-            {/* Footer with action button */}
-            <div className="border-t border-gray-100 p-3 bg-gray-50/50">
-              <button
-                onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#4361EE] text-white rounded-lg text-[12px] font-semibold hover:bg-[#3B52D3] transition-colors shadow-sm"
-              >
-                <Eye size={14} />
-                Voir les détails complets
-                <ChevronRight size={14} />
-              </button>
-            </div>
           </div>
-        )}
-      </div>
 
-      {/* Sidebar */}
-      {!isFullscreen && (<div className="w-80 flex flex-col overflow-hidden bg-white border-l border-gray-100 shadow-inner">
-        {/* Search */}
-        <div className="p-3 border-b border-gray-100">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 text-gray-300" size={15} />
-            <Input
-              ref={searchInputRef}
-              type="search"
-              placeholder="Rechercher un véhicule..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
-              onFocus={() => setShowRecentSearches(searchTerm.length === 0 && recentSearches.length > 0)}
-              className="pl-9 h-9 bg-gray-50 border-0 text-gray-900 text-[13px] placeholder-gray-300 focus:ring-2 focus:ring-[#4361EE]/20 focus:bg-white rounded-lg"
-            />
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveDetailTab('temps-reel')}
+              className={`flex items-center gap-1.5 flex-1 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition-all border-b-2 ${
+                activeDetailTab === 'temps-reel'
+                  ? 'text-[#4361EE] border-[#4361EE]'
+                  : 'text-gray-400 border-transparent hover:text-gray-600'
+              }`}
+            >
+              <Wifi size={12} />
+              TEMPS RÉEL
+            </button>
+            <button
+              onClick={() => setActiveDetailTab('historique')}
+              className={`flex items-center gap-1.5 flex-1 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide transition-all border-b-2 ${
+                activeDetailTab === 'historique'
+                  ? 'text-[#4361EE] border-[#4361EE]'
+                  : 'text-gray-400 border-transparent hover:text-gray-600'
+              }`}
+            >
+              <Clock size={12} />
+              HISTORIQUE
+            </button>
+          </div>
 
-            {/* Recent searches dropdown */}
-            {showRecentSearches && recentSearches.length > 0 && (
-              <div className="absolute top-11 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] overflow-hidden">
-                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                  Recherches récentes
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto">
+            {activeDetailTab === 'temps-reel' ? (
+              <div className="divide-y divide-gray-100">
+                {/* IDENTITÉ */}
+                <div className="px-4 py-3">
+                  <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">IDENTITÉ</h3>
+                  <div className="space-y-2 text-[13px]">
+                    <div className="flex justify-between"><span className="text-gray-500">Plaque</span><span className="font-medium text-gray-900">{selectedVehicle.plate}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">VIN</span><span className="font-medium text-gray-900 text-[12px] font-mono">{selectedVehicle.vin || 'N/A'}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">Statut API</span><span className="font-medium text-gray-900 uppercase text-[12px]">{selectedVehicle.apiStatus || 'ENABLED'}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">Flotte ID</span><span className="font-medium text-gray-900">{selectedVehicle.fleetId || '—'}</span></div>
+                  </div>
                 </div>
-                <div className="max-h-32 overflow-y-auto">
-                  {recentSearches.map((search, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleRecentSearchSelect(search)}
-                      className="w-full text-left px-3 py-2 text-[12px] text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
-                    >
-                      <Clock size={11} className="text-gray-300" />
-                      {search}
-                    </button>
-                  ))}
+
+                {/* APPAREIL GPS */}
+                <div className="px-4 py-3">
+                  <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">APPAREIL GPS</h3>
+                  <div className="space-y-2 text-[13px]">
+                    <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="font-medium text-gray-900">{selectedVehicle.gpsDeviceType || 'Standard'}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">ID Appareil</span><span className="font-medium text-gray-900 font-mono text-[12px]">{selectedVehicle.gpsDeviceId || 'N/A'}</span></div>
+                  </div>
                 </div>
+
+                {/* TÉLÉMÉTRIE */}
+                <div className="px-4 py-3">
+                  <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">TÉLÉMÉTRIE</h3>
+                  <div className="space-y-2 text-[13px]">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Vitesse</span>
+                      <span className={`font-medium ${(selectedVehicle.currentSpeed || 0) > 2 ? 'text-green-600' : 'text-red-500'}`}>
+                        {(selectedVehicle.currentSpeed || 0) > 0
+                          ? `${getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).value} ${getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).unit}`
+                          : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between"><span className="text-gray-500">Odomètre</span><span className="font-medium text-gray-900">{selectedVehicle.odometer ? `${Math.round(selectedVehicle.odometer / 1000)} km` : 'N/A'}</span></div>
+                    {(selectedVehicle.currentSpeed || 0) <= 2 && calculateIdleDuration(selectedVehicle.currentSpeed || 0, selectedVehicle.lastCommunication).durationStr && (
+                      <div className="flex justify-between"><span className="text-gray-500">À l'arrêt depuis</span><span className="font-medium text-amber-600">{calculateIdleDuration(selectedVehicle.currentSpeed || 0, selectedVehicle.lastCommunication).durationStr}</span></div>
+                    )}
+                  </div>
+                </div>
+
+                {/* POSITION */}
+                <div className="px-4 py-3">
+                  <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">POSITION</h3>
+                  <div className="space-y-2 text-[13px]">
+                    <div className="flex justify-between"><span className="text-gray-500">Latitude</span><span className="font-mono text-gray-900 text-[12px]">{selectedVehicle.currentLat?.toFixed(6)}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">Longitude</span><span className="font-mono text-gray-900 text-[12px]">{selectedVehicle.currentLng?.toFixed(6)}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-500">Dernière com.</span><span className="font-medium text-gray-900">{formatTimeAgo(selectedVehicle.lastCommunication)}</span></div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 text-sm text-gray-400 text-center py-12">
+                <Clock size={32} className="mx-auto text-gray-200 mb-2" />
+                Historique non disponible
               </div>
             )}
           </div>
-        </div>
 
-        {/* Compact Filter Row */}
-        <div className="px-3 py-2.5 border-b border-gray-100 bg-gray-50/50 space-y-2">
-          <div className="flex flex-wrap gap-1">
-            {(['TOUS', 'ECHOES', 'UBIWAN', 'KEEPTRACE'] as const).map((source) => (
-              <button
-                key={source}
-                onClick={() => setSourceFilter(source)}
-                className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all duration-200 ${
-                  sourceFilter === source
-                    ? 'bg-[#4361EE] text-white shadow-sm'
-                    : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-200'
-                }`}
-              >
-                {source}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-1">
-            {(['TOUS', 'LOCALISÉS', 'NON LOC.'] as const).map((statut) => (
-              <button
-                key={statut}
-                onClick={() => setStatutFilter(statut)}
-                className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all duration-200 ${
-                  statutFilter === statut
-                    ? 'bg-[#4361EE] text-white shadow-sm'
-                    : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-200'
-                }`}
-              >
-                {statut}
-              </button>
-            ))}
-          </div>
-          {uniqueGroups.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              <button
-                onClick={() => setGroupeFilter('Tous')}
-                className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
-                  groupeFilter === 'Tous' ? 'bg-[#4361EE] text-white shadow-sm' : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-200'
-                }`}
-              >
-                Tous groupes
-              </button>
-              {uniqueGroups.map((group) => (
-                <button
-                  key={group}
-                  onClick={() => setGroupeFilter(group)}
-                  className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
-                    groupeFilter === group ? 'bg-[#4361EE] text-white shadow-sm' : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-200'
-                  }`}
-                >
-                  {group}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Vehicle list header */}
-        <div className="px-3 py-2 flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-          <span>{filteredVehicles.length} véhicules</span>
-          <span>km/h</span>
-        </div>
-
-        {/* Vehicle list */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-2 space-y-0.5">
-            {filteredVehicles.map((vehicle: any) => {
-              const isMoving = (vehicle.currentSpeed || 0) > 2
-              const hasGps = vehicle.currentLat && vehicle.currentLng
-              const isSelected = selectedVehicleId === vehicle.id
-              return (
-                <button
-                  key={vehicle.id}
-                  onClick={() => selectVehicle(vehicle.id)}
-                  className={`w-full rounded-lg p-2.5 text-left transition-all duration-150 ${
-                    isSelected
-                      ? 'bg-[#4361EE]/8 ring-1 ring-[#4361EE]/20'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${isMoving ? 'bg-emerald-500' : hasGps ? 'bg-amber-400' : 'bg-gray-300'}`} />
-                      <div className="min-w-0">
-                        <p className={`font-semibold text-[12px] truncate ${isSelected ? 'text-[#4361EE]' : 'text-gray-900'}`}>{vehicle.plate || vehicle.name}</p>
-                        <p className="text-[10px] text-gray-400 truncate">{vehicle.name}</p>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className={`text-[12px] font-bold tabular-nums ${isMoving ? 'text-gray-900' : 'text-gray-300'}`}>
-                        {hasGps ? getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value : '—'}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
+          {/* Footer */}
+          <div className="border-t border-gray-200 p-3">
+            <button
+              onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
+              className="w-full text-center px-4 py-2 text-[#4361EE] border border-[#4361EE] rounded text-xs font-semibold hover:bg-[#4361EE] hover:text-white transition-colors"
+            >
+              RAFRAÎCHIR
+            </button>
           </div>
         </div>
-
-        {/* GPS Provider Status - compact footer */}
-        <div className="border-t border-gray-100 px-3 py-2 bg-gray-50/50">
-          <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowProviderPanel(!showProviderPanel)}>
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fournisseurs GPS</span>
-            <ChevronDown
-              size={12}
-              className={`transition-transform text-gray-400 ${showProviderPanel ? 'rotate-0' : '-rotate-90'}`}
-            />
-          </div>
-          {showProviderPanel && (
-            <div className="mt-2 grid grid-cols-2 gap-1.5">
-              {[
-                { key: 'flespi', label: 'Flespi' },
-                { key: 'echoes', label: 'Echoes' },
-                { key: 'keeptrace', label: 'KeepTrace' },
-                { key: 'ubiwan', label: 'Ubiwan' },
-              ].map((provider) => (
-                <div key={provider.key} className="flex items-center gap-1.5 px-2 py-1.5 bg-white rounded-lg border border-gray-200/50">
-                  <span className={`w-1.5 h-1.5 rounded-full ${providerStatus[provider.key as keyof typeof providerStatus].status === 'connected' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-                  <span className="text-[10px] font-medium text-gray-600">{provider.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
       )}
     </div>
   )

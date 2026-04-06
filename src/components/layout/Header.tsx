@@ -9,12 +9,11 @@ import { LogOut, User, Search, Bell, RefreshCw, Settings, Menu, Building2, Chevr
 import { getInitials } from '@/lib/utils'
 import { VehicleStatus } from '@/types/vehicle'
 
-function StatusChip({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
+function StatusPill({ label, value, color }: { label: string; value: number; color?: string }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/8 hover:bg-white/12 transition-colors cursor-default">
-      <div className={`w-2 h-2 rounded-full ${color}`} />
-      <span className="text-white/60 text-[11px] font-medium uppercase tracking-wider">{label}</span>
-      <span className="text-white text-sm font-bold tabular-nums">{value}</span>
+    <div className="flex items-center gap-2">
+      <span className="text-white/60 text-xs font-medium uppercase tracking-wide">{label}</span>
+      <span className={`text-sm font-bold tabular-nums ${color || 'text-white'}`}>{value}</span>
     </div>
   )
 }
@@ -109,60 +108,50 @@ export default function Header() {
 
             {/* Logo mark */}
             <div
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4361EE] to-[#3B52D3] flex items-center justify-center shrink-0 shadow-md cursor-pointer hover:scale-105 transition-transform"
+              className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 cursor-pointer hover:scale-105 transition-transform"
               onClick={() => navigate('/')}
             >
-              <span className="text-white font-extrabold text-sm tracking-tight">FT</span>
+              <MapPin size={16} className="text-white" />
             </div>
 
             {/* Branding text */}
             <div className="hidden sm:block cursor-pointer" onClick={() => navigate('/')}>
-              <h1 className="text-white font-bold text-[13px] tracking-widest leading-none">FLEET TRACKER</h1>
-              <p className="text-blue-300/60 text-[10px] font-medium mt-0.5 tracking-wide">Géolocalisation temps réel</p>
+              <h1 className="text-white font-bold text-[14px] tracking-wider leading-none">FLEET TRACK</h1>
+              <p className="text-white/30 text-[9px] font-medium mt-0.5 tracking-widest uppercase">Géolocalisation temps réel</p>
             </div>
           </div>
 
-          {/* Center: Vehicle Status Chips */}
-          <div className="hidden lg:flex items-center gap-2 flex-1 justify-center">
-            <StatusChip icon={null} label="Total" value={totalVehicles} color="bg-blue-400" />
-            <StatusChip icon={null} label="En route" value={movingVehicles} color="bg-emerald-400" />
-            <StatusChip icon={null} label="Arrêt" value={stoppedVehicles} color="bg-amber-400" />
-            <StatusChip icon={null} label="Hors ligne" value={notLocatedVehicles} color="bg-red-400" />
+          {/* Center: Vehicle Status Pills */}
+          <div className="hidden lg:flex items-center gap-6 flex-1 justify-center">
+            <StatusPill label="VÉHICULES" value={totalVehicles} />
+            <StatusPill label="EN MOUVEMENT" value={movingVehicles} color="text-emerald-400" />
+            <StatusPill label="À L'ARRÊT" value={stoppedVehicles} color="text-amber-400" />
+            <StatusPill label="NON LOCALISÉS" value={notLocatedVehicles} color="text-red-400" />
           </div>
 
           {/* Right: Controls and User */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Search Button */}
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="hidden sm:flex items-center gap-2 h-8 px-3 rounded-lg bg-white/8 border border-white/10 text-white/50 hover:bg-white/12 hover:text-white/70 transition-all text-xs group"
-            >
-              <Search size={14} />
-              <span className="hidden md:inline text-[11px]">Rechercher...</span>
-              <kbd className="hidden md:inline text-[10px] font-mono bg-white/8 border border-white/10 px-1.5 py-0.5 rounded ml-2">⌘K</kbd>
-            </button>
-
-            {/* Alerts */}
+            {/* Alerts with label */}
             <button
               onClick={() => navigate('/alerts')}
-              className="relative p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-              title="Alertes"
+              className="relative flex items-center gap-1.5 px-2 py-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
             >
-              <Bell size={17} />
+              <Bell size={15} />
+              <span className="text-[11px] font-medium hidden md:inline">ALERTES</span>
               {alertsCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] font-bold rounded-full h-[18px] min-w-[18px] flex items-center justify-center px-1 shadow-lg animate-pulse">
+                <span className="bg-red-500 text-white text-[9px] font-bold rounded-full h-[16px] min-w-[16px] flex items-center justify-center px-1">
                   {alertsCount > 99 ? '99+' : alertsCount}
                 </span>
               )}
             </button>
 
-            {/* Refresh */}
+            {/* Refresh with label */}
             <button
               onClick={handleRefresh}
-              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-              title="Rafraîchir les données"
+              className="flex items-center gap-1.5 px-2 py-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
             >
-              <RefreshCw size={17} className={isRefreshing ? 'animate-spin' : ''} />
+              <RefreshCw size={15} className={isRefreshing ? 'animate-spin' : ''} />
+              <span className="text-[11px] font-medium hidden md:inline">RAFRAÎCHIR</span>
             </button>
 
             {/* Settings */}
@@ -171,11 +160,11 @@ export default function Header() {
               className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-all"
               title="Paramètres"
             >
-              <Settings size={17} />
+              <Settings size={15} />
             </button>
 
             {/* Separator */}
-            <div className="w-px h-6 bg-white/10 mx-1" />
+            <div className="w-px h-5 bg-white/10 mx-1" />
 
             {/* Organization Switcher */}
             {organizations && organizations.length > 0 && (
