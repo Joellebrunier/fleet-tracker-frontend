@@ -693,11 +693,11 @@ export default function MapPage() {
   }
 
   return (
-    <div ref={mapContainerRef} className={`flex h-full bg-[#F5F7FA] gap-4 ${isActualFullscreen ? 'fixed inset-0 z-[10000] w-screen h-screen' : ''}`}>
+    <div ref={mapContainerRef} className={`flex h-full bg-[#F8F9FC] gap-0 ${isActualFullscreen ? 'fixed inset-0 z-[10000] w-screen h-screen' : ''}`}>
       {/* Map */}
-      <div className={`relative ${isFullscreen ? 'w-full' : 'flex-1'} rounded-lg border border-gray-200 overflow-hidden shadow-sm`}>
+      <div className={`relative ${isFullscreen ? 'w-full' : 'flex-1'} overflow-hidden`}>
         {/* Map Style Selector */}
-        <div className="absolute top-4 left-4 z-[400] bg-white rounded-xl shadow-lg p-2 flex gap-1.5 backdrop-blur border border-gray-200">
+        <div className="absolute top-3 left-3 z-[400] bg-white/95 rounded-xl shadow-lg p-1.5 flex gap-1 backdrop-blur-md border border-gray-200/50">
           {(
             [
               { id: 'plan', label: 'Plan' },
@@ -710,10 +710,10 @@ export default function MapPage() {
             <button
               key={style.id}
               onClick={() => setMapStyle(style.id as MapStyle)}
-              className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 ${
                 mapStyle === style.id
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  ? 'bg-[#4361EE] text-white shadow-sm'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
               }`}
             >
               {style.label}
@@ -863,185 +863,66 @@ export default function MapPage() {
           ))}
         </MapContainer>
 
-        {/* Zoom level display */}
-        <div className={`absolute top-4 z-[400] flex flex-col gap-2 items-end transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-4'}`}>
-          <div className="bg-white rounded-xl shadow-lg px-3 py-1.5 text-xs font-medium text-gray-900 border border-gray-200 backdrop-blur">
-            Zoom: {currentZoom}
-            {currentZoom < 10 && (
-              <span className="ml-1 text-gray-500 text-xs">(groupage actif)</span>
-            )}
-          </div>
-        </div>
-
-        {/* Map overlay controls */}
-        <div className={`absolute top-14 z-[400] flex flex-col gap-2 transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-4'}`}>
-          <Button
-            size="sm"
-            onClick={() => {
-              if (tileLayer === 'streets') setTileLayer('satellite')
-              else if (tileLayer === 'satellite') setTileLayer('terrain')
-              else setTileLayer('streets')
-            }}
-            className="gap-2 bg-white shadow-lg border border-gray-200 text-gray-900 hover:bg-gray-50 backdrop-blur rounded-xl transition-colors"
-          >
-            {tileLayer === 'streets' ? <Satellite size={16} /> : tileLayer === 'satellite' ? <MapIcon size={16} /> : <Layers size={16} />}
-            {tileLayer === 'streets' ? 'Satellite' : tileLayer === 'satellite' ? 'Terrain' : 'Plan'}
-          </Button>
-          <Button
-            size="sm"
+        {/* Map overlay controls - compact vertical toolbar */}
+        <div className={`absolute top-3 z-[400] flex flex-col gap-1.5 transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-3'}`}>
+          <button
             onClick={() => setShowTraffic(!showTraffic)}
-            className={`gap-2 shadow-lg backdrop-blur border rounded-xl ${showTraffic ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-50'}`}
+            className={`flex items-center justify-center w-9 h-9 rounded-lg shadow-lg backdrop-blur-md border transition-all duration-200 ${showTraffic ? 'bg-[#4361EE] text-white border-[#4361EE]' : 'bg-white/95 border-gray-200/50 text-gray-600 hover:bg-white hover:text-gray-900'}`}
+            title="Afficher le trafic (T)"
           >
             <Wind size={16} />
-            Trafic
-          </Button>
-          <Button
-            size="sm"
+          </button>
+          <button
             onClick={handleActualFullscreen}
-            className="gap-2 bg-white shadow-lg border border-gray-200 text-gray-900 hover:bg-gray-50 backdrop-blur rounded-xl transition-colors"
-            title="Appuyez sur F pour un raccourci"
+            className="flex items-center justify-center w-9 h-9 rounded-lg shadow-lg backdrop-blur-md bg-white/95 border border-gray-200/50 text-gray-600 hover:bg-white hover:text-gray-900 transition-all duration-200"
+            title="Plein écran (F)"
           >
             <Maximize2 size={16} />
-            {isActualFullscreen ? 'Quitter plein écran' : 'Plein écran'}
-          </Button>
-          <Button
-            size="sm"
+          </button>
+          <button
             onClick={() => setShowManualGps(!showManualGps)}
-            className="gap-2 bg-white shadow-lg border border-gray-200 text-gray-900 hover:bg-gray-50 backdrop-blur rounded-xl transition-colors"
+            className={`flex items-center justify-center w-9 h-9 rounded-lg shadow-lg backdrop-blur-md border transition-all duration-200 ${showManualGps ? 'bg-[#4361EE] text-white border-[#4361EE]' : 'bg-white/95 border-gray-200/50 text-gray-600 hover:bg-white hover:text-gray-900'}`}
+            title="Saisie manuelle GPS"
           >
             <MapPin size={16} />
-            Saisie manuelle
-          </Button>
+          </button>
         </div>
 
-        {/* Stats overlay with timezone */}
-        <div className="absolute top-20 left-4 z-[400] flex flex-col gap-2">
-          {/* Provider failover indicator */}
-          <div className="rounded-xl bg-white px-3 py-1.5 shadow-lg text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-900 backdrop-blur">
-            <span className={`h-2 w-2 rounded-full inline-block ${providerStatus.flespi.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-            Fournisseur principal: Flespi
-            {providerStatus.flespi.failoverActive && <AlertCircle size={12} className="text-amber-500" />}
-          </div>
-          {/* Timezone display */}
-          <div className="rounded-xl bg-white px-3 py-1.5 shadow-lg text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-900 backdrop-blur">
-            <Clock size={12} className="text-blue-600" />
-            {getCurrentTimezone().offset} ({getCurrentTimezone().name})
-          </div>
-        </div>
-
-        {/* Fleet stats overlay - Vehicle count by status */}
-        <div className="absolute bottom-4 left-4 z-[400] bg-white rounded-xl shadow-lg p-3 text-xs font-medium border border-gray-200 text-gray-900 backdrop-blur">
-          <p className="font-sans font-semibold mb-1.5">Statut des véhicules</p>
-          <div className="flex gap-4 text-gray-500">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-blue-600 inline-block"></span>
-              <span>En mouvement: <span className="font-bold text-gray-900">{movingCount}</span></span>
+        {/* Compact bottom status bar */}
+        <div className="absolute bottom-3 left-3 right-3 z-[400] flex items-center justify-between pointer-events-none">
+          <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-xl shadow-lg px-4 py-2 border border-gray-200/50 flex items-center gap-4 text-[11px] font-medium">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="text-gray-500">En route</span>
+              <span className="font-bold text-gray-900 tabular-nums">{movingCount}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[#9CA3AF] inline-block"></span>
-              <span>À l'arrêt: <span className="font-bold text-gray-900">{stoppedCount}</span></span>
+            <div className="w-px h-3 bg-gray-200"></div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span className="text-gray-500">Arrêt</span>
+              <span className="font-bold text-gray-900 tabular-nums">{stoppedCount}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-red-500 inline-block"></span>
-              <span>Hors ligne: <span className="font-bold text-gray-900">{offlineCount}</span></span>
+            <div className="w-px h-3 bg-gray-200"></div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-400"></span>
+              <span className="text-gray-500">Hors ligne</span>
+              <span className="font-bold text-gray-900 tabular-nums">{offlineCount}</span>
             </div>
-          </div>
-          <div className="mt-1.5 pt-1.5 border-t border-gray-200 flex gap-4 text-gray-500">
-            <span>Vitesse moy.: <span className="font-bold text-gray-900">{getFormattedSpeed(avgFleetSpeed, useImperialUnits).value} {getFormattedSpeed(avgFleetSpeed, useImperialUnits).unit}</span></span>
-            <span>{vehiclesWithGps.length}/{vehicles.length} GPS actif</span>
-            <div className={`flex items-center gap-1.5 ${isConnected ? 'text-blue-600' : 'text-gray-500'}`}>
-              {isConnected ? <Wifi size={12} /> : <WifiOff size={12} />}
-              {isConnected ? 'Live' : 'Polling'}
+            <div className="w-px h-3 bg-gray-200"></div>
+            <div className="flex items-center gap-1.5 text-gray-400">
+              <span className="tabular-nums">{vehiclesWithGps.length}/{vehicles.length} GPS</span>
+            </div>
+            <div className={`flex items-center gap-1 ${isConnected ? 'text-emerald-600' : 'text-gray-400'}`}>
+              {isConnected ? <Wifi size={11} /> : <WifiOff size={11} />}
+              <span className="text-[10px]">{isConnected ? 'Live' : 'Polling'}</span>
             </div>
           </div>
         </div>
-
-        {/* Speed Legend - Marker color meanings */}
-        <div className={`absolute bottom-4 z-[400] bg-white rounded-xl shadow-lg p-3 text-xs border border-gray-200 text-gray-900 backdrop-blur transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-4'}`}>
-          <p className="font-sans font-semibold mb-2">Légende des couleurs</p>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-blue-600 inline-block"></span>
-              <span className="text-gray-500">En mouvement</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#9CA3AF] inline-block"></span>
-              <span className="text-gray-500">À l'arrêt</span>
-            </div>
-            <div className="border-t border-gray-200 pt-1.5 mt-1.5">
-              <p className="text-gray-500 font-medium mb-1">Types de véhicules</p>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#3b82f6] inline-block"></span>
-                  <span className="text-gray-500">Voiture</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#f97316] inline-block"></span>
-                  <span className="text-gray-500">Camion</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#8b5cf6] inline-block"></span>
-                  <span className="text-gray-500">Utilitaire</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#ef4444] inline-block"></span>
-                  <span className="text-gray-500">Moto</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Mini-map overview in bottom-right corner */}
-        {showMiniMap && (
-          <div className="absolute bottom-4 right-80 z-[400]">
-            <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
-              <div className="relative w-56 h-40 rounded overflow-hidden">
-                <MapContainer
-                  center={[43.7, 3.87]}
-                  zoom={5}
-                  className="h-full w-full z-0"
-                  zoomControl={false}
-                  dragging={false}
-                  doubleClickZoom={false}
-                  boxZoom={false}
-                  keyboard={false}
-                  scrollWheelZoom={false}
-                  touchZoom={false}
-                >
-                  <TileLayer url={TOMTOM_TILE_URL('dark')} attribution="&copy; TomTom" />
-                  {vehiclesWithGps.map((v: any) => (
-                    <CircleMarker
-                      key={`minimap-${v.id}`}
-                      center={[v.currentLat, v.currentLng]}
-                      radius={3}
-                      fillColor="#4361EE"
-                      color="#4361EE"
-                      weight={1}
-                      opacity={0.8}
-                      fillOpacity={0.7}
-                    />
-                  ))}
-                </MapContainer>
-                {/* Mini-map label */}
-                <div className="absolute top-2 left-2 z-[1001] bg-white rounded-lg px-2 py-1 text-xs font-medium text-gray-900 border border-gray-200 shadow-sm">
-                  {vehiclesWithGps.length} véhicules
-                </div>
-                <button
-                  onClick={() => setShowMiniMap(false)}
-                  className="absolute top-2 right-2 z-[1001] text-gray-500 hover:text-gray-900 bg-white rounded w-6 h-6 flex items-center justify-center shadow-sm"
-                >
-                  ×
-                </button>
-              </div>
-            </Card>
-          </div>
-        )}
 
         {/* Manual GPS entry form */}
         {showManualGps && (
-          <div className="absolute top-20 right-4 z-[400]">
-            <Card className="w-72 shadow-lg bg-white border border-gray-200 rounded-xl">
+          <div className={`absolute top-14 z-[400] transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[22rem]' : 'right-14'}`}>
+            <Card className="w-64 shadow-2xl bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-xl">
               <CardHeader className="pb-2 pt-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-sans text-gray-900">Saisie manuelle GPS</CardTitle>
@@ -1131,61 +1012,62 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* Help button bottom right */}
-        <div className={`absolute bottom-4 z-[400] transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-4'}`}>
-          <Button
-            size="sm"
-            className="bg-white border border-gray-200 text-gray-900 hover:bg-gray-50 shadow-lg backdrop-blur rounded-xl"
+        {/* Help button */}
+        <div className={`absolute bottom-14 z-[400] transition-all duration-300 ${selectedVehicle && !isFullscreen ? 'right-[21rem]' : 'right-3'}`}>
+          <button
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/90 backdrop-blur-md border border-gray-200/50 text-gray-400 hover:text-gray-600 shadow-md transition-all"
             onClick={() => setShowHelpPopover(!showHelpPopover)}
+            title="Raccourcis clavier (?)"
           >
-            <HelpCircle size={16} />
-          </Button>
+            <HelpCircle size={14} />
+          </button>
         </div>
 
         {/* Vehicle Detail Panel */}
         {selectedVehicle && !isFullscreen && (
-          <div className="absolute top-0 right-0 h-full w-80 bg-white shadow-lg border-l border-gray-200 z-[999] flex flex-col overflow-hidden rounded-l-xl">
+          <div className="absolute top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-gray-100 z-[999] flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="bg-white p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-2">
+            <div className="bg-gradient-to-r from-[#1a2540] to-[#243154] px-4 py-3.5">
+              <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h2 className="text-lg font-sans font-bold text-gray-900">{selectedVehicle.plate}</h2>
-                  <Badge
-                    className={`text-xs mt-1 ${selectedVehicle.currentSpeed > 2 ? 'bg-blue-600 text-white' : 'bg-[#9CA3AF] text-gray-900'}`}
-                  >
-                    {selectedVehicle.currentSpeed > 2 ? 'EN MOUVEMENT' : 'À L\'ARRÊT'}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-bold text-white">{selectedVehicle.plate || selectedVehicle.name}</h2>
+                    <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${selectedVehicle.currentSpeed > 2 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/10 text-white/50'}`}>
+                      {selectedVehicle.currentSpeed > 2 ? 'EN ROUTE' : 'ARRÊT'}
+                    </div>
+                  </div>
+                  <p className="text-white/40 text-[11px] mt-0.5">{selectedVehicle.name}</p>
                 </div>
                 <button
                   onClick={() => selectVehicle(null)}
-                  className="text-gray-500 hover:text-gray-900 p-1"
+                  className="text-white/40 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 bg-white">
+            <div className="flex border-b border-gray-100 bg-gray-50/50">
               <button
                 onClick={() => setActiveDetailTab('temps-reel')}
-                className={`flex-1 px-4 py-2 text-xs font-medium transition-all ${
+                className={`flex-1 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition-all ${
                   activeDetailTab === 'temps-reel'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                    : 'text-gray-500 hover:text-gray-900'
+                    ? 'text-[#4361EE] border-b-2 border-[#4361EE] bg-white'
+                    : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                TEMPS RÉEL
+                Temps réel
               </button>
               <button
                 onClick={() => setActiveDetailTab('historique')}
-                className={`flex-1 px-4 py-2 text-xs font-medium transition-all ${
+                className={`flex-1 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider transition-all ${
                   activeDetailTab === 'historique'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-white'
-                    : 'text-gray-500 hover:text-gray-900'
+                    ? 'text-[#4361EE] border-b-2 border-[#4361EE] bg-white'
+                    : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                HISTORIQUE
+                Historique
               </button>
             </div>
 
@@ -1299,20 +1181,15 @@ export default function MapPage() {
               )}
             </div>
 
-            {/* Footer with action buttons */}
-            <div className="border-t border-gray-200 p-4 flex gap-2 bg-white">
+            {/* Footer with action button */}
+            <div className="border-t border-gray-100 p-3 bg-gray-50/50">
               <button
                 onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded text-xs font-medium hover:bg-[#3B82F6] transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#4361EE] text-white rounded-lg text-[12px] font-semibold hover:bg-[#3B52D3] transition-colors shadow-sm"
               >
-                <Edit2 size={14} />
-                Éditer
-              </button>
-              <button
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-500/10 text-red-500 rounded text-xs font-medium hover:bg-red-500/20 transition-colors border border-red-500/30"
-              >
-                <Trash2 size={14} />
-                Supprimer
+                <Eye size={14} />
+                Voir les détails complets
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -1320,254 +1197,170 @@ export default function MapPage() {
       </div>
 
       {/* Sidebar */}
-      {!isFullscreen && (<div className="w-80 flex flex-col gap-4 overflow-hidden">
-        {/* Search with recent searches dropdown */}
-        <Card className="bg-white rounded-xl border border-gray-200 shadow-lg">
-          <CardContent className="pt-4 pb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 text-gray-500" size={16} />
-              <Input
-                ref={searchInputRef}
-                type="search"
-                placeholder="Rechercher un véhicule..."
-                value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                onFocus={() => setShowRecentSearches(searchTerm.length === 0 && recentSearches.length > 0)}
-                className="pl-9 h-10 bg-white border border-gray-200 text-gray-900 placeholder-[#9CA3AF] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg"
-              />
+      {!isFullscreen && (<div className="w-80 flex flex-col overflow-hidden bg-white border-l border-gray-100 shadow-inner">
+        {/* Search */}
+        <div className="p-3 border-b border-gray-100">
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 text-gray-300" size={15} />
+            <Input
+              ref={searchInputRef}
+              type="search"
+              placeholder="Rechercher un véhicule..."
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
+              onFocus={() => setShowRecentSearches(searchTerm.length === 0 && recentSearches.length > 0)}
+              className="pl-9 h-9 bg-gray-50 border-0 text-gray-900 text-[13px] placeholder-gray-300 focus:ring-2 focus:ring-[#4361EE]/20 focus:bg-white rounded-lg"
+            />
 
-              {/* Recent searches dropdown */}
-              {showRecentSearches && recentSearches.length > 0 && (
-                <div className="absolute top-12 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-[100] overflow-hidden">
-                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200">
-                    Recherches récentes
-                  </div>
-                  <div className="max-h-40 overflow-y-auto">
-                    {recentSearches.map((search, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleRecentSearchSelect(search)}
-                        className="w-full text-left px-3 py-2 text-xs text-gray-900 hover:bg-gray-100 transition-colors flex items-center gap-2"
-                      >
-                        <Clock size={12} className="text-gray-500" />
-                        {search}
-                      </button>
-                    ))}
-                  </div>
+            {/* Recent searches dropdown */}
+            {showRecentSearches && recentSearches.length > 0 && (
+              <div className="absolute top-11 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-[100] overflow-hidden">
+                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                  Recherches récentes
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Vehicle list with filters */}
-        <Card className="flex-1 overflow-hidden flex flex-col bg-white rounded-xl border border-gray-200 shadow-lg">
-          {/* Filter Controls */}
-          <CardHeader className="pb-3 pt-4">
-            {/* SOURCE filter */}
-            <div className="mb-3">
-              <p className="text-xs font-semibold text-gray-900 mb-1.5">SOURCE</p>
-              <div className="flex gap-1.5">
-                {(['TOUS', 'ECHOES', 'UBIWAN', 'KEEPTRACE'] as const).map((source) => (
-                  <button
-                    key={source}
-                    onClick={() => setSourceFilter(source)}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                      sourceFilter === source
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
-                  >
-                    {source}
-                  </button>
-                ))}
+                <div className="max-h-32 overflow-y-auto">
+                  {recentSearches.map((search, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleRecentSearchSelect(search)}
+                      className="w-full text-left px-3 py-2 text-[12px] text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <Clock size={11} className="text-gray-300" />
+                      {search}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+          </div>
+        </div>
 
-            {/* STATUT filter */}
-            <div className="mb-3">
-              <p className="text-xs font-semibold text-gray-900 mb-1.5">STATUT</p>
-              <div className="flex gap-1.5">
-                {(['TOUS', 'LOCALISÉS', 'NON LOC.'] as const).map((statut) => (
-                  <button
-                    key={statut}
-                    onClick={() => setStatutFilter(statut)}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                      statutFilter === statut
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
-                  >
-                    {statut}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* GROUPE filter */}
-            <div className="mb-2">
-              <p className="text-xs font-semibold text-gray-900 mb-1.5">GROUPE</p>
-              <div className="flex flex-wrap gap-1.5">
+        {/* Compact Filter Row */}
+        <div className="px-3 py-2.5 border-b border-gray-100 bg-gray-50/50 space-y-2">
+          <div className="flex flex-wrap gap-1">
+            {(['TOUS', 'ECHOES', 'UBIWAN', 'KEEPTRACE'] as const).map((source) => (
+              <button
+                key={source}
+                onClick={() => setSourceFilter(source)}
+                className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all duration-200 ${
+                  sourceFilter === source
+                    ? 'bg-[#4361EE] text-white shadow-sm'
+                    : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-200'
+                }`}
+              >
+                {source}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1">
+            {(['TOUS', 'LOCALISÉS', 'NON LOC.'] as const).map((statut) => (
+              <button
+                key={statut}
+                onClick={() => setStatutFilter(statut)}
+                className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all duration-200 ${
+                  statutFilter === statut
+                    ? 'bg-[#4361EE] text-white shadow-sm'
+                    : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-200'
+                }`}
+              >
+                {statut}
+              </button>
+            ))}
+          </div>
+          {uniqueGroups.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              <button
+                onClick={() => setGroupeFilter('Tous')}
+                className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
+                  groupeFilter === 'Tous' ? 'bg-[#4361EE] text-white shadow-sm' : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-200'
+                }`}
+              >
+                Tous groupes
+              </button>
+              {uniqueGroups.map((group) => (
                 <button
-                  onClick={() => setGroupeFilter('Tous')}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    groupeFilter === 'Tous'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  key={group}
+                  onClick={() => setGroupeFilter(group)}
+                  className={`px-2 py-1 rounded-md text-[10px] font-semibold transition-all ${
+                    groupeFilter === group ? 'bg-[#4361EE] text-white shadow-sm' : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-200'
                   }`}
                 >
-                  Tous
+                  {group}
                 </button>
-                {uniqueGroups.map((group) => (
-                  <button
-                    key={group}
-                    onClick={() => setGroupeFilter(group)}
-                    className={`px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                      groupeFilter === group
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
-                  >
-                    <span className="text-sm">■</span>
-                    {group}
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-          </CardHeader>
+          )}
+        </div>
 
-          {/* Vehicle list header */}
-          <div className="px-4 py-2 border-t border-gray-200 flex items-center justify-between text-xs font-semibold text-gray-900">
-            <span>VÉHICULE — {filteredVehicles.length} RÉSULTATS</span>
-            <span>VITESSE</span>
-          </div>
+        {/* Vehicle list header */}
+        <div className="px-3 py-2 flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+          <span>{filteredVehicles.length} véhicules</span>
+          <span>km/h</span>
+        </div>
 
-          {/* Vehicle list */}
-          <CardContent className="flex-1 overflow-y-auto pb-4">
-            <div className="space-y-1.5">
-              {filteredVehicles.map((vehicle: any) => {
-                const isMoving = (vehicle.currentSpeed || 0) > 2
-                const hasGps = vehicle.currentLat && vehicle.currentLng
-                return (
-                  <button
-                    key={vehicle.id}
-                    onClick={() => selectVehicle(vehicle.id)}
-                    className={`w-full rounded-lg border-l-4 border-b border-r border-t p-2.5 text-left transition-all bg-white ${
-                      selectedVehicleId === vehicle.id
-                        ? 'border-l-blue-600 border-gray-200 bg-blue-50 shadow-sm'
-                        : 'border-l-transparent border-gray-200 hover:bg-blue-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm text-gray-900 truncate">{vehicle.plate}</p>
-                        <p className="text-xs text-gray-500 truncate">{vehicle.name}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-xs font-medium text-gray-900">
-                          {hasGps ? `${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value}` : '—'}
-                        </p>
-                        <p className="text-xs text-gray-500">{vehicle.gpsProvider || '—'}</p>
+        {/* Vehicle list */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-2 space-y-0.5">
+            {filteredVehicles.map((vehicle: any) => {
+              const isMoving = (vehicle.currentSpeed || 0) > 2
+              const hasGps = vehicle.currentLat && vehicle.currentLng
+              const isSelected = selectedVehicleId === vehicle.id
+              return (
+                <button
+                  key={vehicle.id}
+                  onClick={() => selectVehicle(vehicle.id)}
+                  className={`w-full rounded-lg p-2.5 text-left transition-all duration-150 ${
+                    isSelected
+                      ? 'bg-[#4361EE]/8 ring-1 ring-[#4361EE]/20'
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${isMoving ? 'bg-emerald-500' : hasGps ? 'bg-amber-400' : 'bg-gray-300'}`} />
+                      <div className="min-w-0">
+                        <p className={`font-semibold text-[12px] truncate ${isSelected ? 'text-[#4361EE]' : 'text-gray-900'}`}>{vehicle.plate || vehicle.name}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{vehicle.name}</p>
                       </div>
                     </div>
-                  </button>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                    <div className="text-right flex-shrink-0">
+                      <p className={`text-[12px] font-bold tabular-nums ${isMoving ? 'text-gray-900' : 'text-gray-300'}`}>
+                        {hasGps ? getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value : '—'}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
-        {/* GPS Provider Status Panel */}
-        <Card className="bg-white rounded-xl border border-gray-200 shadow-lg">
-          <CardHeader className="pb-2 pt-4">
-            <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowProviderPanel(!showProviderPanel)}>
-              <CardTitle className="text-sm font-sans font-semibold text-gray-900">Fournisseurs GPS</CardTitle>
-              <ChevronDown
-                size={16}
-                className={`transition-transform text-gray-500 ${showProviderPanel ? 'rotate-0' : '-rotate-90'}`}
-              />
-            </div>
-          </CardHeader>
+        {/* GPS Provider Status - compact footer */}
+        <div className="border-t border-gray-100 px-3 py-2 bg-gray-50/50">
+          <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowProviderPanel(!showProviderPanel)}>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fournisseurs GPS</span>
+            <ChevronDown
+              size={12}
+              className={`transition-transform text-gray-400 ${showProviderPanel ? 'rotate-0' : '-rotate-90'}`}
+            />
+          </div>
           {showProviderPanel && (
-            <CardContent className="space-y-2 text-xs pb-4">
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
               {[
                 { key: 'flespi', label: 'Flespi' },
                 { key: 'echoes', label: 'Echoes' },
                 { key: 'keeptrace', label: 'KeepTrace' },
                 { key: 'ubiwan', label: 'Ubiwan' },
               ].map((provider) => (
-                <div key={provider.key} className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200">
-                  <span className="font-medium text-gray-900">{provider.label}</span>
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex items-center gap-1">
-                      {providerStatus[provider.key as keyof typeof providerStatus].status === 'connected' ? (
-                        <>
-                          <CheckCircle2 size={12} className="text-green-500" />
-                          <span className="text-gray-500">Connecté</span>
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle size={12} className="text-red-500" />
-                          <span className="text-gray-500">Erreur</span>
-                        </>
-                      )}
-                    </div>
-                    {providerStatus[provider.key as keyof typeof providerStatus].failoverActive && (
-                      <Badge className="text-xs bg-amber-500/20 text-amber-500 border-amber-500/30">
-                        Secours
-                      </Badge>
-                    )}
-                  </div>
+                <div key={provider.key} className="flex items-center gap-1.5 px-2 py-1.5 bg-white rounded-lg border border-gray-200/50">
+                  <span className={`w-1.5 h-1.5 rounded-full ${providerStatus[provider.key as keyof typeof providerStatus].status === 'connected' ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                  <span className="text-[10px] font-medium text-gray-600">{provider.label}</span>
                 </div>
               ))}
-            </CardContent>
+            </div>
           )}
-        </Card>
-
-        {/* Selected vehicle details */}
-        {selectedVehicle && (
-          <Card className="bg-white rounded-xl border border-gray-200 shadow-lg">
-            <CardHeader className="pb-2 pt-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-sans font-semibold text-gray-900">{selectedVehicle.name}</CardTitle>
-                <Badge
-                  className={`text-xs ${selectedVehicle.currentSpeed > 2 ? 'bg-blue-600 text-white' : 'bg-[#9CA3AF] text-gray-900'}`}
-                >
-                  {selectedVehicle.currentSpeed > 2 ? 'En route' : 'Arrêté'}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm pb-4">
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-blue-50 rounded-lg p-2 border border-gray-200">
-                  <p className="text-gray-500">Vitesse</p>
-                  <p className="font-bold text-lg text-gray-900">{getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).value}<span className="text-xs font-normal"> {getFormattedSpeed(selectedVehicle.currentSpeed || 0, useImperialUnits).unit}</span></p>
-                </div>
-                <div className="bg-blue-50 rounded-lg p-2 border border-gray-200">
-                  <p className="text-gray-500">Cap</p>
-                  <p className="font-bold text-lg text-gray-900">{(selectedVehicle.currentHeading || 0).toFixed(0)}<span className="text-xs font-normal">°</span></p>
-                </div>
-              </div>
-              <div className="text-xs text-gray-500">
-                <p>Position: <span className="font-mono text-gray-900">{selectedVehicle.currentLat?.toFixed(5)}, {selectedVehicle.currentLng?.toFixed(5)}</span></p>
-                <p>Dernière com.: {formatTimeAgo(selectedVehicle.lastCommunication)}</p>
-                {(selectedVehicle as any).gpsProvider && (
-                  <p>Fournisseur: <span className="font-medium text-gray-900">{(selectedVehicle as any).gpsProvider}</span></p>
-                )}
-              </div>
-              <Button
-                className="w-full gap-2 bg-blue-600 text-white hover:bg-[#3B82F6]"
-                size="sm"
-                onClick={() => navigate(`/vehicles/${selectedVehicle.id}`)}
-              >
-                <Eye size={14} />
-                Voir les détails
-                <ChevronRight size={14} />
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        </div>
       </div>
       )}
     </div>

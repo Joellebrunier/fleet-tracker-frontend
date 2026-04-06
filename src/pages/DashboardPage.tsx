@@ -722,36 +722,27 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] p-4 md:p-6">
-      <div className="space-y-6">
+    <div className="min-h-screen bg-[#F8F9FC]">
+      <div className="space-y-5">
         {/* Keyboard Shortcuts Modal */}
         <KeyboardShortcutsModal />
 
         {/* Header with Widget Configuration */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold font-sans text-gray-900">Tableau de bord</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Vue d'ensemble de votre flotte — {stats.total} véhicules, {stats.withGps} avec GPS actif
+            <h1 className="text-xl font-bold font-sans text-gray-900">Tableau de bord</h1>
+            <p className="mt-0.5 text-[13px] text-gray-400">
+              {stats.total} véhicules · {stats.withGps} GPS actifs · Dernière mise à jour: {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 border-gray-200 bg-white text-gray-900 hover:bg-gray-100"
-              title="Appuyez sur ? pour les raccourcis"
-            >
-              <HelpCircle size={16} />
-              <span>Aide</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
               onClick={() => setShowWidgetConfig(!showWidgetConfig)}
-              className="gap-2 border-gray-200 bg-white text-gray-900 hover:bg-gray-100"
+              className="gap-2 border-gray-200 bg-white text-gray-600 hover:bg-gray-50 rounded-lg text-[12px] h-8"
             >
-              <Settings size={16} />
+              <Settings size={14} />
               <span>Personnaliser</span>
             </Button>
           </div>
@@ -850,79 +841,74 @@ export default function DashboardPage() {
         )}
 
         {/* KPI Cards - Always visible */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {/* Total Vehicles */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total véhicules</p>
-                <p className="text-3xl font-bold font-mono text-gray-900 mt-1">{stats.total}</p>
-                <p className="text-xs text-gray-500 mt-1">{stats.withGps} GPS actif</p>
+          <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                <Truck className="text-blue-500" size={18} />
               </div>
-              <div className="rounded-xl bg-[rgba(59,130,246,0.1)] p-3 border border-[rgba(59,130,246,0.2)]">
-                <Truck className="text-[#3B82F6]" size={24} />
-              </div>
+              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">Total</span>
             </div>
+            <p className="text-2xl font-bold tabular-nums text-gray-900">{stats.total}</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">{stats.withGps} GPS actifs</p>
           </div>
 
           {/* Moving Vehicles */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">En mouvement</p>
-                <p className="text-3xl font-bold font-mono text-[#22C55E] mt-1">{stats.moving}</p>
-                <p className="text-xs text-gray-500 mt-1">{stats.stopped} à l'arrêt</p>
+          <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <Navigation className="text-emerald-500" size={18} />
               </div>
-              <div className="rounded-xl bg-[rgba(34,197,94,0.1)] p-3 border border-[rgba(34,197,94,0.2)]">
-                <Navigation className="text-[#22C55E]" size={24} />
-              </div>
+              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">En route</span>
             </div>
+            <p className="text-2xl font-bold tabular-nums text-emerald-600">{stats.moving}</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">{stats.stopped} à l'arrêt</p>
           </div>
 
           {/* Recently Active */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Actifs récents</p>
-                <p className="text-3xl font-bold font-mono text-amber-500 mt-1">{stats.recentlyActive}</p>
-                <p className="text-xs text-gray-500 mt-1">dernières 10 min</p>
+          <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
+                <Activity className="text-amber-500" size={18} />
               </div>
-              <div className="rounded-xl bg-[rgba(255,181,71,0.1)] p-3 border border-[rgba(255,181,71,0.2)]">
-                <Activity className="text-amber-500" size={24} />
-              </div>
+              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">Récents</span>
             </div>
+            <p className="text-2xl font-bold tabular-nums text-amber-600">{stats.recentlyActive}</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">dernières 10 min</p>
           </div>
 
           {/* Offline */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Hors ligne</p>
-                <p className="text-3xl font-bold font-mono text-red-500 mt-1">{stats.noGps}</p>
-                <p className="text-xs text-gray-500 mt-1">sans position GPS</p>
+          <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center">
+                <WifiOff className="text-red-400" size={18} />
               </div>
-              <div className="rounded-xl bg-[rgba(255,77,106,0.1)] p-3 border border-[rgba(255,77,106,0.2)]">
-                <WifiOff className="text-red-500" size={24} />
-              </div>
+              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">Hors ligne</span>
             </div>
+            <p className="text-2xl font-bold tabular-nums text-red-500">{stats.noGps}</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">sans position GPS</p>
           </div>
 
           {/* Daily KM */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Km du jour</p>
-                <p className="text-3xl font-bold font-mono text-blue-600 mt-1">{(dailySummary.totalKm / 1000).toFixed(1)}K</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <span className={`text-xs font-medium ${dailySummary.comparisons.km >= 0 ? 'text-[#22C55E]' : 'text-red-500'}`}>
-                    {dailySummary.comparisons.km >= 0 ? '+' : ''}{dailySummary.comparisons.km.toFixed(1)}%
-                  </span>
-                  <span className="text-xs text-gray-500">vs hier</span>
-                </div>
+          <div className="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 rounded-lg bg-indigo-50 flex items-center justify-center">
+                <Route className="text-indigo-500" size={18} />
               </div>
-              <div className="rounded-xl bg-[rgba(59,130,246,0.1)] p-3 border border-[rgba(59,130,246,0.2)]">
-                <Route className="text-blue-600" size={24} />
-              </div>
+              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">Km/jour</span>
+            </div>
+            <p className="text-2xl font-bold tabular-nums text-indigo-600">{(dailySummary.totalKm / 1000).toFixed(1)}K</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              {dailySummary.comparisons.km >= 0 ? (
+                <TrendingUp size={12} className="text-emerald-500" />
+              ) : (
+                <TrendingDown size={12} className="text-red-500" />
+              )}
+              <span className={`text-[11px] font-semibold ${dailySummary.comparisons.km >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                {dailySummary.comparisons.km >= 0 ? '+' : ''}{dailySummary.comparisons.km.toFixed(1)}%
+              </span>
+              <span className="text-[11px] text-gray-300">vs hier</span>
             </div>
           </div>
         </div>
