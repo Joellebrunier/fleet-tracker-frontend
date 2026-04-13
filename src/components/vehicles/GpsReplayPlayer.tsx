@@ -451,8 +451,8 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-96">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]" style={{ isolation: 'isolate' }}>
+        <Card className="w-96 relative z-[10000]">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
             <p className="text-sm text-muted-foreground">Chargement de l'historique GPS...</p>
@@ -464,8 +464,8 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-96">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]" style={{ isolation: 'isolate' }}>
+        <Card className="w-96 relative z-[10000]">
           <CardContent className="py-6">
             <div className="flex items-start gap-4">
               <div className="flex-1">
@@ -484,8 +484,8 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
 
   if (positions.length === 0) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <Card className="w-96">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999]" style={{ isolation: 'isolate' }}>
+        <Card className="w-96 relative z-[10000]">
           <CardContent className="py-6">
             <div className="flex items-start gap-4">
               <div className="flex-1">
@@ -505,14 +505,14 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full h-full max-w-6xl max-h-screen flex flex-col">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[9999] p-4" style={{ isolation: 'isolate' }}>
+      <Card className="w-full h-full max-w-6xl max-h-[95vh] flex flex-col relative z-[10000] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex-1">
             <h2 className="text-xl font-semibold">{vehicleName} - Relecture historique GPS</h2>
             <p className="text-sm text-muted-foreground">
-              {positions[0].timestamp} à {positions[positions.length - 1].timestamp}
+              {formatDateTime(new Date(positions[0].timestamp))} à {formatDateTime(new Date(positions[positions.length - 1].timestamp))}
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
