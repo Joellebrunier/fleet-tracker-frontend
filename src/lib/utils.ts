@@ -21,16 +21,20 @@ export function formatDate(date: Date | string | number): string {
 /**
  * Format a datetime for display
  */
-export function formatDateTime(date: Date | string | number): string {
+export function formatDateTime(date: Date | string | number | null | undefined): string {
+  if (!date) return '—'
   const dateObj = typeof date === 'string' ? new Date(date) : date instanceof Date ? date : new Date(date)
+  if (isNaN(dateObj.getTime())) return '—'
   return format(dateObj, DATE_FORMATS.DISPLAY_DATETIME)
 }
 
 /**
  * Format time for display
  */
-export function formatTime(date: Date | string | number): string {
+export function formatTime(date: Date | string | number | null | undefined): string {
+  if (!date) return '—'
   const dateObj = typeof date === 'string' ? new Date(date) : date instanceof Date ? date : new Date(date)
+  if (isNaN(dateObj.getTime())) return '—'
   return format(dateObj, DATE_FORMATS.DISPLAY_TIME)
 }
 

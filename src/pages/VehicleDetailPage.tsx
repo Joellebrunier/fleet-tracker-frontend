@@ -271,9 +271,18 @@ export default function VehicleDetailPage() {
   const parseTripsFromPositions = (positions: any[]): Trip[] => {
     if (!Array.isArray(positions) || positions.length === 0) return []
 
-    const sortedPositions = [...positions].sort((a, b) => {
-      const timeA = new Date(a.createdAt || a.timestamp).getTime()
-      const timeB = new Date(b.createdAt || b.timestamp).getTime()
+    // Filter out positions with invalid timestamps
+    const validPositions = positions.filter(p => {
+      const ts = p.createdAt || p.timestamp || p.created_at
+      if (!ts) return false
+      const d = new Date(ts)
+      return !isNaN(d.getTime())
+    })
+    if (validPositions.length === 0) return []
+
+    const sortedPositions = [...validPositions].sort((a, b) => {
+      const timeA = new Date(a.createdAt || a.timestamp || a.created_at).getTime()
+      const timeB = new Date(b.createdAt || b.timestamp || b.created_at).getTime()
       return timeA - timeB
     })
 
@@ -1092,7 +1101,7 @@ export default function VehicleDetailPage() {
                     {positions.slice(0, 15).map((pos: any, idx: number) => (
                       <tr key={idx} className="text-xs text-gray-900">
                         <td className="py-2 pr-4 text-gray-500">
-                          {pos.createdAt ? formatDateTime(pos.createdAt) : formatDateTime(pos.timestamp)}
+                          {formatDateTime(pos.createdAt || pos.timestamp || pos.created_at)}
                         </td>
                         <td className="py-2 pr-4 font-mono font-semibold">{(pos.speed || 0).toFixed(0)} km/h</td>
                         <td className="py-2 pr-4 text-gray-500">{(pos.heading || 0).toFixed(0)}°</td>

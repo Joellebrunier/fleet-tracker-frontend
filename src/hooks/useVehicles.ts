@@ -127,15 +127,22 @@ export function useVehicleHistory(id: string, dateFrom?: Date, dateTo?: Date) {
     queryFn: async () => {
       const params = new URLSearchParams()
       params.append('vehicleId', id)
-      if (dateFrom) params.append('dateFrom', dateFrom.toISOString())
-      if (dateTo) params.append('dateTo', dateTo.toISOString())
+      // Default to last 7 days if no dates specified
+      const now = new Date()
+      const defaultFrom = dateFrom || new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      const defaultTo = dateTo || now
+      params.append('startDate', defaultFrom.toISOString())
+      params.append('endDate', defaultTo.toISOString())
+      params.append('limit', '500')
+      params.append('interval', '60') // 1-minute sampling for detail page
 
       const response = await apiClient.get(
-        `${API_ROUTES.GPS_HISTORY(orgId)}?${params}`
+        `${API_ROUTES.GPS_HISTORY(orgId)}?${params}`,
+        { timeout: 30000 }
       )
       return response.data
     },
-    enabled: !!id,
+    enabled: !!id && !!orgId,
   })
 }
 

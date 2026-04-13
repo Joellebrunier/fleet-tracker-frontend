@@ -192,18 +192,41 @@ export const GpsReplayPlayer: React.FC<GpsReplayPlayerProps> = ({
       const defaultEnd = end || now.toISOString()
 
       const endpoint = API_ROUTES.GPS_PLAYBACK(orgId, vehicleId, defaultStart, defaultEnd)
-      const response = await apiClient.get(endpoint)
+      const response = await apiClient.get(endpoint, { timeout: 30000 })
 
-      // Handle wrapped response { success, data: { data: [...], total } }
+      // The axios interceptor already unwraps {success, data} envelope
+      // So response.data = { data: [...], total: N }
       let rawData = response.data
       if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
         if (Array.isArray(rawData.data)) rawData = rawData.data
         else if (rawData.data && Array.isArray(rawData.data.data)) rawData = rawData.data.data
       }
 
-      const data = (Array.isArray(rawData) ? rawData : []) as GpsPosition[]
-      if (data.length === 0) {
+      const rawArray = Array.isArray(rawData) ? rawData : []
+      if (rawArray.length === 0) {
         setError('Aucun historique GPS disponible pour cette période. Essayez une autre plage de dates.')
+        setPositions([])
+        return
+      }
+
+      // Map API fields to GpsPosition format (API uses createdAt, we need timestamp)
+      const data: GpsPosition[] = rawArray
+        .filter((p: any) => p.lat && p.lng)
+        .map((p: any) => ({
+          lat: typeof p.lat === 'string' ? parseFloat(p.lat) : p.lat,
+          lng: typeof p.lng === 'string' ? parseFloat(p.lng) : p.lng,
+          speed: typeof p.speed === 'string' ? parseFloat(p.speed) : (p.speed || 0),
+          heading: typeof p.heading === 'string' ? parseFloat(p.heading) : (p.heading || 0),
+          timestamp: p.createdAt || p.timestamp || p.created_at || '',
+        }))
+        .filter((p: GpsPosition) => {
+          const d = new Date(p.timestamp)
+          return !isNaN(d.getTime())
+        })
+        .sort((a: GpsPosition, b: GpsPosition) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+
+      if (data.length === 0) {
+        setError('Aucun historique GPS valide disponible pour cette période.')
         setPositions([])
         return
       }
