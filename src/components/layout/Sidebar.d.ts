@@ -1,2 +1,2 @@
-export default function Sidebar(): import("react/jsx-runtime").JSX.Element;
+export default function Sidebar(): null;
 //# sourceMappingURL=Sidebar.d.ts.map

@@ -1,2 +1,2 @@
-export default function StatusBar(): import("react/jsx-runtime").JSX.Element;
+export default function StatusBar(): null;
 //# sourceMappingURL=StatusBar.d.ts.map

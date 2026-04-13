@@ -1,15 +1,15 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
-const badgeVariants = cva('inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-[#00E5CC] focus:ring-offset-2 focus:ring-offset-[#0A0A0F]', {
+const badgeVariants = cva('inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-[#4361EE] focus:ring-offset-2 focus:ring-offset-[#F5F7FA]', {
     variants: {
         variant: {
-            default: 'border-[#00E5CC] bg-[rgba(0,229,204,0.15)] text-[#00E5CC]',
-            secondary: 'border-[#2A2A3D] bg-[rgba(42,42,61,0.4)] text-[#F0F0F5]',
-            destructive: 'border-[#FF4D6A] bg-[rgba(255,77,106,0.15)] text-[#FF4D6A]',
-            outline: 'border-[#1F1F2E] text-[#F0F0F5]',
-            success: 'border-[#00E5CC] bg-[rgba(0,229,204,0.15)] text-[#00E5CC]',
-            warning: 'border-[#FFB547] bg-[rgba(255,181,71,0.15)] text-[#FFB547]',
+            default: 'border-[#BFDBFE] bg-[#EFF6FF] text-[#1E40AF]',
+            secondary: 'border-[#E5E7EB] bg-[#F3F4F6] text-[#1F2937]',
+            destructive: 'border-[#FECACA] bg-[#FEE2E2] text-[#DC2626]',
+            outline: 'border-[#D1D5DB] text-[#4B5563]',
+            success: 'border-[#BBEF63] bg-[#ECFDF5] text-[#15803D]',
+            warning: 'border-[#FCD34D] bg-[#FFFBEB] text-[#B45309]',
         },
     },
     defaultVariants: {

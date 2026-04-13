@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { apiClient } from '@/lib/api';
 import { API_ROUTES } from '@/lib/constants';
 export function useAuth() {
-    const { user, token, isAuthenticated, isLoading, error, login, logout, setIsLoading, setError, hydrate, hasRole, canAccess, } = useAuthStore();
+    const { user, token, isAuthenticated, isLoading, error, login, switchOrg, logout, setIsLoading, setError, hydrate, hasRole, canAccess, organizations, setOrganizations, } = useAuthStore();
     // Fetch current user
     const { data: currentUser, isLoading: userLoading } = useQuery({
         queryKey: ['auth', 'me'],
@@ -25,9 +25,20 @@ export function useAuth() {
                 const authData = wrapped.data || wrapped;
                 const accessToken = authData.accessToken || authData.access_token || authData.token;
                 const userData = authData.user;
+                const orgs = authData.organizations || [];
                 // login() in the store normalizes snake_case fields and stores to localStorage
-                login(userData, accessToken);
+                login(userData, accessToken, orgs);
                 setError(null);
+                // Fetch full org details for the switcher
+                try {
+                    const orgsResp = await apiClient.get(API_ROUTES.AUTH_ORGANIZATIONS, {
+                        headers: { Authorization: `Bearer ${accessToken}` },
+                    });
+                    const fullOrgs = orgsResp.data?.data || orgsResp.data || [];
+                    setOrganizations(fullOrgs);
+                    localStorage.setItem('fleet-tracker_orgs', JSON.stringify(fullOrgs));
+                }
+                catch { }
                 return { user: userData, token: accessToken };
             }
             catch (err) {
@@ -65,6 +76,31 @@ export function useAuth() {
             }
         },
     });
+    // Switch organization mutation
+    const switchOrganizationMutation = useMutation({
+        mutationFn: async (organizationId) => {
+            setIsLoading(true);
+            try {
+                const response = await apiClient.post(API_ROUTES.AUTH_SWITCH_ORG, { organizationId });
+                const wrapped = response.data;
+                const authData = wrapped.data || wrapped;
+                const accessToken = authData.accessToken || authData.access_token || authData.token;
+                const userData = authData.user;
+                const orgs = authData.organizations || organizations;
+                switchOrg(userData, accessToken, orgs);
+                setError(null);
+                return { user: userData, token: accessToken };
+            }
+            catch (err) {
+                const message = err.response?.data?.message || 'Échec du changement d\'organisation';
+                setError(message);
+                throw err;
+            }
+            finally {
+                setIsLoading(false);
+            }
+        },
+    });
     // Logout mutation
     const logoutMutation = useMutation({
         mutationFn: async () => {
@@ -89,10 +125,12 @@ export function useAuth() {
         isAuthenticated: isAuthenticated || !!currentUser,
         isLoading: isLoading || userLoading,
         error,
+        organizations,
         // Methods
         login: loginMutation.mutateAsync,
         register: registerMutation.mutateAsync,
         logout: logoutMutation.mutateAsync,
+        switchOrganization: switchOrganizationMutation.mutateAsync,
         initAuth,
         hasRole,
         canAccess,
@@ -100,6 +138,7 @@ export function useAuth() {
         loginMutation,
         registerMutation,
         logoutMutation,
+        switchOrganizationMutation,
     };
 }
 // Hook to check if user can access a feature

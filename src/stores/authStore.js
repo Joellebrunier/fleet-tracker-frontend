@@ -32,8 +32,10 @@ export const useAuthStore = create((set, get) => ({
     isAuthenticated: initialAuth.isAuthenticated,
     isLoading: false,
     error: null,
+    organizations: [],
     setUser: (user) => set({ user }),
     setOrganization: (organization) => set({ organization }),
+    setOrganizations: (organizations) => set({ organizations }),
     setToken: (token) => {
         if (token) {
             localStorage.setItem(STORAGE_KEYS.TOKEN, token);
@@ -45,7 +47,7 @@ export const useAuthStore = create((set, get) => ({
     },
     setIsLoading: (isLoading) => set({ isLoading }),
     setError: (error) => set({ error }),
-    login: (user, token) => {
+    login: (user, token, organizations) => {
         // Normalize snake_case fields from backend
         const normalizedUser = {
             ...user,
@@ -54,11 +56,33 @@ export const useAuthStore = create((set, get) => ({
         };
         localStorage.setItem(STORAGE_KEYS.TOKEN, token);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(normalizedUser));
+        if (organizations) {
+            localStorage.setItem('fleet-tracker_orgs', JSON.stringify(organizations));
+        }
         set({
             user: normalizedUser,
             token,
             isAuthenticated: true,
             error: null,
+            organizations: organizations || [],
+        });
+    },
+    switchOrg: (user, token, organizations) => {
+        const normalizedUser = {
+            ...user,
+            organizationId: user.organizationId || user.organization_id || '',
+            role: user.role ? user.role.toUpperCase() : user.role,
+        };
+        localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(normalizedUser));
+        if (organizations) {
+            localStorage.setItem('fleet-tracker_orgs', JSON.stringify(organizations));
+        }
+        set({
+            user: normalizedUser,
+            token,
+            isAuthenticated: true,
+            organizations: organizations || get().organizations,
         });
     },
     logout: () => {
@@ -76,6 +100,7 @@ export const useAuthStore = create((set, get) => ({
     hydrate: () => {
         const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
         const userStr = localStorage.getItem(STORAGE_KEYS.USER);
+        const orgsStr = localStorage.getItem('fleet-tracker_orgs');
         if (token && userStr) {
             try {
                 const raw = JSON.parse(userStr);
@@ -84,14 +109,21 @@ export const useAuthStore = create((set, get) => ({
                     organizationId: raw.organizationId || raw.organization_id || '',
                     role: raw.role ? raw.role.toUpperCase() : raw.role,
                 };
+                let organizations = [];
+                if (orgsStr) {
+                    try {
+                        organizations = JSON.parse(orgsStr);
+                    }
+                    catch { }
+                }
                 set({
                     user,
                     token,
                     isAuthenticated: true,
+                    organizations,
                 });
             }
             catch (e) {
-                // Invalid stored data
                 get().logout();
             }
         }

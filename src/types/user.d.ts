@@ -34,10 +34,18 @@ export interface Organization {
     createdAt: Date;
     updatedAt: Date;
 }
+export interface OrgMembership {
+    organizationId: string;
+    role: UserRole;
+    name?: string;
+    slug?: string;
+    parentOrganizationId?: string | null;
+}
 export interface AuthResponse {
     accessToken: string;
     expiresIn: string;
     user: User;
+    organizations?: OrgMembership[];
 }
 export interface LoginRequest {
     email: string;

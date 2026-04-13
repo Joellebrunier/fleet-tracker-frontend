@@ -79,33 +79,33 @@ export default function NotificationCenter() {
     }, []);
     const getNotificationColor = (type, severity) => {
         if (severity === 'critical')
-            return 'text-[#FF4D6A]';
+            return 'text-[#DC2626]';
         if (severity === 'high')
-            return 'text-[#FFB547]';
+            return 'text-[#B45309]';
         if (type === 'alert')
-            return 'text-[#FF4D6A]';
+            return 'text-[#DC2626]';
         if (type === 'location')
-            return 'text-[#00E5CC]';
+            return 'text-[#0891B2]';
         if (type === 'status')
-            return 'text-[#FFB547]';
-        return 'text-[#6B6B80]';
+            return 'text-[#B45309]';
+        return 'text-[#6B7280]';
     };
     const getNotificationBgColor = (type, severity) => {
         if (severity === 'critical')
-            return 'bg-[rgba(255,77,106,0.15)]';
+            return 'bg-[#FEE2E2]';
         if (severity === 'high')
-            return 'bg-[rgba(255,181,71,0.15)]';
+            return 'bg-[#FFFBEB]';
         if (type === 'alert')
-            return 'bg-[rgba(255,77,106,0.15)]';
+            return 'bg-[#FEE2E2]';
         if (type === 'location')
-            return 'bg-[rgba(0,229,204,0.15)]';
+            return 'bg-[#CFFAFE]';
         if (type === 'status')
-            return 'bg-[rgba(255,181,71,0.15)]';
-        return 'bg-[rgba(107,107,128,0.15)]';
+            return 'bg-[#FFFBEB]';
+        return 'bg-[#F3F4F6]';
     };
-    return (_jsxs("div", { className: "relative", ref: dropdownRef, children: [_jsxs("button", { onClick: () => setIsOpen(!isOpen), className: "relative text-[#6B6B80] hover:text-[#F0F0F5] transition-colors", children: [_jsx(Bell, { size: 20 }), store.unreadCount > 0 && (_jsx("span", { className: "absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#FF4D6A] text-xs font-bold text-white", children: store.unreadCount > 9 ? '9+' : store.unreadCount }))] }), isOpen && (_jsxs("div", { className: "absolute right-0 mt-2 w-96 max-h-96 rounded-lg border border-[#1F1F2E] bg-[#12121A] shadow-lg overflow-hidden flex flex-col", children: [_jsxs("div", { className: "flex items-center justify-between px-4 py-3 border-b border-[#1F1F2E] bg-[#0A0A0F]", children: [_jsx("h3", { className: "font-semibold text-[#F0F0F5]", children: "Notifications" }), store.unreadCount > 0 && (_jsx("button", { onClick: () => store.markAllAsRead(), className: "text-xs text-[#00E5CC] hover:text-[#00D4B8] font-medium", children: "Mark all as read" }))] }), _jsx("div", { className: "flex-1 overflow-y-auto", children: store.notifications.length > 0 ? (store.notifications.map((notification) => (_jsx("div", { className: `border-b border-[#1F1F2E] p-3 hover:bg-[#1A1A25] transition-colors cursor-pointer ${notification.read ? 'bg-[#12121A]' : 'bg-[rgba(0,229,204,0.08)]'}`, onClick: () => store.markAsRead(notification.id), children: _jsxs("div", { className: "flex gap-3", children: [_jsx("div", { className: `flex-shrink-0 rounded-full p-2 ${getNotificationBgColor(notification.type, notification.severity)}`, children: _jsx("div", { className: getNotificationColor(notification.type, notification.severity), children: notification.icon }) }), _jsxs("div", { className: "flex-1 min-w-0", children: [_jsxs("div", { className: "flex items-start justify-between gap-2", children: [_jsxs("div", { children: [_jsx("p", { className: "text-sm font-medium text-[#F0F0F5]", children: notification.title }), _jsx("p", { className: "text-xs text-[#6B6B80] mt-0.5 line-clamp-2", children: notification.message })] }), !notification.read && (_jsx("div", { className: "flex-shrink-0 h-2 w-2 rounded-full bg-[#00E5CC] mt-1" }))] }), _jsx("p", { className: "text-xs text-[#44445A] mt-1", children: formatTimeAgo(notification.timestamp) })] }), _jsx("button", { onClick: (e) => {
+    return (_jsxs("div", { className: "relative", ref: dropdownRef, children: [_jsxs("button", { onClick: () => setIsOpen(!isOpen), className: "relative text-[#6B7280] hover:text-[#1F2937] transition-colors", children: [_jsx(Bell, { size: 20 }), store.unreadCount > 0 && (_jsx("span", { className: "absolute -right-2 -top-2 inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#EF4444] text-xs font-bold text-white", children: store.unreadCount > 9 ? '9+' : store.unreadCount }))] }), isOpen && (_jsxs("div", { className: "absolute right-0 mt-2 w-96 max-h-96 rounded-lg border border-[#E5E7EB] bg-[#FFFFFF] shadow-lg overflow-hidden flex flex-col", children: [_jsxs("div", { className: "flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-[#F9FAFB]", children: [_jsx("h3", { className: "font-semibold text-[#1F2937]", children: "Notifications" }), store.unreadCount > 0 && (_jsx("button", { onClick: () => store.markAllAsRead(), className: "text-xs text-[#4361EE] hover:text-[#3651DE] font-medium", children: "Mark all as read" }))] }), _jsx("div", { className: "flex-1 overflow-y-auto", children: store.notifications.length > 0 ? (store.notifications.map((notification) => (_jsx("div", { className: `border-b border-[#E5E7EB] p-3 hover:bg-[#F9FAFB] transition-colors cursor-pointer ${notification.read ? 'bg-[#FFFFFF]' : 'bg-[#F0F9FF]'}`, onClick: () => store.markAsRead(notification.id), children: _jsxs("div", { className: "flex gap-3", children: [_jsx("div", { className: `flex-shrink-0 rounded-full p-2 ${getNotificationBgColor(notification.type, notification.severity)}`, children: _jsx("div", { className: getNotificationColor(notification.type, notification.severity), children: notification.icon }) }), _jsxs("div", { className: "flex-1 min-w-0", children: [_jsxs("div", { className: "flex items-start justify-between gap-2", children: [_jsxs("div", { children: [_jsx("p", { className: "text-sm font-medium text-[#1F2937]", children: notification.title }), _jsx("p", { className: "text-xs text-[#6B7280] mt-0.5 line-clamp-2", children: notification.message })] }), !notification.read && (_jsx("div", { className: "flex-shrink-0 h-2 w-2 rounded-full bg-[#4361EE] mt-1" }))] }), _jsx("p", { className: "text-xs text-[#9CA3AF] mt-1", children: formatTimeAgo(notification.timestamp) })] }), _jsx("button", { onClick: (e) => {
                                             e.stopPropagation();
                                             store.removeNotification(notification.id);
-                                        }, className: "flex-shrink-0 text-[#44445A] hover:text-[#6B6B80] p-1", children: _jsx(X, { size: 14 }) })] }) }, notification.id)))) : (_jsxs("div", { className: "flex flex-col items-center justify-center py-8 text-center", children: [_jsx(Bell, { size: 24, className: "text-[#44445A] mb-2" }), _jsx("p", { className: "text-sm text-[#6B6B80]", children: "No notifications" })] })) }), store.notifications.length > 0 && (_jsx("div", { className: "px-4 py-3 border-t border-[#1F1F2E] bg-[#0A0A0F]", children: _jsx("button", { className: "w-full text-center text-sm font-medium text-[#00E5CC] hover:text-[#00D4B8]", children: "View all notifications" }) }))] }))] }));
+                                        }, className: "flex-shrink-0 text-[#9CA3AF] hover:text-[#6B7280] p-1", children: _jsx(X, { size: 14 }) })] }) }, notification.id)))) : (_jsxs("div", { className: "flex flex-col items-center justify-center py-8 text-center", children: [_jsx(Bell, { size: 24, className: "text-[#9CA3AF] mb-2" }), _jsx("p", { className: "text-sm text-[#6B7280]", children: "No notifications" })] })) }), store.notifications.length > 0 && (_jsx("div", { className: "px-4 py-3 border-t border-[#E5E7EB] bg-[#F9FAFB]", children: _jsx("button", { className: "w-full text-center text-sm font-medium text-[#4361EE] hover:text-[#3651DE]", children: "View all notifications" }) }))] }))] }));
 }
 //# sourceMappingURL=NotificationCenter.js.map

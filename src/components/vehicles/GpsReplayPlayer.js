@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { MapContainer, TileLayer, Polyline, CircleMarker, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MAPBOX_TILE_URL } from '@/lib/constants';
+import { TOMTOM_TILE_URL } from '@/lib/constants';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, SkipBack, SkipForward, X, Gauge, Clock, MapPin, Route, ChevronLeft, ChevronRight, } from 'lucide-react';
@@ -114,35 +114,51 @@ export const GpsReplayPlayer = ({ vehicleId, vehicleName, onClose, }) => {
     const animationFrameRef = useRef(null);
     const lastTimeRef = useRef(Date.now());
     // Fetch GPS history
-    useEffect(() => {
-        const fetchGpsHistory = async () => {
-            try {
-                setLoading(true);
-                setError(null);
-                if (!orgId) {
-                    setError('Organization ID not found');
-                    return;
-                }
-                const endpoint = API_ROUTES.GPS_PLAYBACK(orgId, vehicleId);
-                const response = await apiClient.get(endpoint);
-                const data = response.data;
-                if (!data || data.length === 0) {
-                    setError('No GPS history available for this vehicle');
-                    return;
-                }
-                setPositions(data);
-                calculateStats(data);
+    const fetchGpsHistory = useCallback(async (start, end) => {
+        try {
+            setLoading(true);
+            setError(null);
+            setCurrentIndex(0);
+            setIsPlaying(false);
+            if (!orgId) {
+                setError('Organization ID not found');
+                return;
             }
-            catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to fetch GPS history';
-                setError(message);
+            // Default to last 7 days if no dates specified
+            const now = new Date();
+            const defaultStart = start || subDays(now, 7).toISOString();
+            const defaultEnd = end || now.toISOString();
+            const endpoint = API_ROUTES.GPS_PLAYBACK(orgId, vehicleId, defaultStart, defaultEnd);
+            const response = await apiClient.get(endpoint);
+            // Handle wrapped response { success, data: { data: [...], total } }
+            let rawData = response.data;
+            if (rawData && typeof rawData === 'object' && !Array.isArray(rawData)) {
+                if (Array.isArray(rawData.data))
+                    rawData = rawData.data;
+                else if (rawData.data && Array.isArray(rawData.data.data))
+                    rawData = rawData.data.data;
             }
-            finally {
-                setLoading(false);
+            const data = (Array.isArray(rawData) ? rawData : []);
+            if (data.length === 0) {
+                setError('Aucun historique GPS disponible pour cette période. Essayez une autre plage de dates.');
+                setPositions([]);
+                return;
             }
-        };
-        fetchGpsHistory();
+            setPositions(data);
+            calculateStats(data);
+        }
+        catch (err) {
+            const message = err instanceof Error ? err.message : 'Échec du chargement de l\'historique GPS';
+            setError(message);
+        }
+        finally {
+            setLoading(false);
+        }
     }, [vehicleId, orgId]);
+    // Initial fetch on mount
+    useEffect(() => {
+        fetchGpsHistory();
+    }, [fetchGpsHistory]);
     // Calculate statistics
     const calculateStats = (data) => {
         if (data.length === 0)
@@ -187,7 +203,7 @@ export const GpsReplayPlayer = ({ vehicleId, vehicleName, onClose, }) => {
             numStops: stopCount,
         });
     };
-    // Handle date preset buttons
+    // Handle date preset buttons — triggers refetch
     const handleDatePreset = useCallback((preset) => {
         const now = new Date();
         let start;
@@ -213,7 +229,8 @@ export const GpsReplayPlayer = ({ vehicleId, vehicleName, onClose, }) => {
         }
         setStartDate(format(start, 'yyyy-MM-dd'));
         setEndDate(format(end, 'yyyy-MM-dd'));
-    }, []);
+        fetchGpsHistory(start.toISOString(), end.toISOString());
+    }, [fetchGpsHistory]);
     // Find stops (speed = 0 for > 30 seconds)
     const stops = useMemo(() => {
         const stopMarkers = [];
@@ -326,7 +343,7 @@ export const GpsReplayPlayer = ({ vehicleId, vehicleName, onClose, }) => {
     if (positions.length === 0) {
         return (_jsx("div", { className: "fixed inset-0 bg-black/50 flex items-center justify-center z-50", children: _jsx(Card, { className: "w-96", children: _jsx(CardContent, { className: "py-6", children: _jsxs("div", { className: "flex items-start gap-4", children: [_jsxs("div", { className: "flex-1", children: [_jsx("h3", { className: "font-semibold mb-2", children: "Aucun historique GPS" }), _jsxs("p", { className: "text-sm text-muted-foreground", children: ["Aucun historique GPS disponible pour ", vehicleName] })] }), _jsx(Button, { variant: "ghost", size: "sm", onClick: onClose, children: _jsx(X, { className: "h-4 w-4" }) })] }) }) }) }));
     }
-    return (_jsx("div", { className: "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4", children: _jsxs(Card, { className: "w-full h-full max-w-6xl max-h-screen flex flex-col", children: [_jsxs("div", { className: "flex items-center justify-between p-4 border-b", children: [_jsxs("div", { className: "flex-1", children: [_jsxs("h2", { className: "text-xl font-semibold", children: [vehicleName, " - Relecture historique GPS"] }), _jsxs("p", { className: "text-sm text-muted-foreground", children: [positions[0].timestamp, " \u00E0 ", positions[positions.length - 1].timestamp] })] }), _jsx(Button, { variant: "ghost", size: "sm", onClick: onClose, children: _jsx(X, { className: "h-5 w-5" }) })] }), _jsxs(CardContent, { className: "flex-1 p-4 overflow-hidden flex flex-col gap-4", children: [_jsx("div", { className: "flex-1 rounded-lg overflow-hidden border", children: _jsxs(MapContainer, { center: [positions[0].lat, positions[0].lng], zoom: 13, style: { width: '100%', height: '100%' }, className: "z-0", children: [_jsx(TileLayer, { url: MAPBOX_TILE_URL('streets-v12'), attribution: '\u00A9 Mapbox \u00A9 OpenStreetMap', tileSize: 512, zoomOffset: -1 }), _jsx(MapViewController, { positions: positions, currentPosition: currentPosition }), polylineSegments.map((segment, idx) => (_jsx(Polyline, { positions: segment.positions, color: segment.color, weight: 3, opacity: 0.7 }, `route-${idx}`))), stops.map((stop, idx) => (_jsx(CircleMarker, { center: [stop.lat, stop.lng], radius: 6, fillColor: "#ef4444", fillOpacity: 0.8, color: "#dc2626", weight: 2, children: _jsx(Popup, { children: _jsxs("div", { className: "text-sm", children: [_jsx("p", { className: "font-semibold", children: "Arr\u00EAt" }), _jsx("p", { children: formatDateTime(new Date(stop.timestamp)) })] }) }) }, `stop-${idx}`))), brakingEvents.map((event, idx) => (_jsx(Marker, { position: [event.position.lat, event.position.lng], icon: L.divIcon({
+    return (_jsx("div", { className: "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4", children: _jsxs(Card, { className: "w-full h-full max-w-6xl max-h-screen flex flex-col", children: [_jsxs("div", { className: "flex items-center justify-between p-4 border-b", children: [_jsxs("div", { className: "flex-1", children: [_jsxs("h2", { className: "text-xl font-semibold", children: [vehicleName, " - Relecture historique GPS"] }), _jsxs("p", { className: "text-sm text-muted-foreground", children: [positions[0].timestamp, " \u00E0 ", positions[positions.length - 1].timestamp] })] }), _jsx(Button, { variant: "ghost", size: "sm", onClick: onClose, children: _jsx(X, { className: "h-5 w-5" }) })] }), _jsxs(CardContent, { className: "flex-1 p-4 overflow-hidden flex flex-col gap-4", children: [_jsx("div", { className: "flex-1 rounded-lg overflow-hidden border", children: _jsxs(MapContainer, { center: [positions[0].lat, positions[0].lng], zoom: 13, style: { width: '100%', height: '100%' }, className: "z-0", children: [_jsx(TileLayer, { url: TOMTOM_TILE_URL('basic'), attribution: '\u00A9 TomTom' }), _jsx(MapViewController, { positions: positions, currentPosition: currentPosition }), polylineSegments.map((segment, idx) => (_jsx(Polyline, { positions: segment.positions, color: segment.color, weight: 3, opacity: 0.7 }, `route-${idx}`))), stops.map((stop, idx) => (_jsx(CircleMarker, { center: [stop.lat, stop.lng], radius: 6, fillColor: "#ef4444", fillOpacity: 0.8, color: "#dc2626", weight: 2, children: _jsx(Popup, { children: _jsxs("div", { className: "text-sm", children: [_jsx("p", { className: "font-semibold", children: "Arr\u00EAt" }), _jsx("p", { children: formatDateTime(new Date(stop.timestamp)) })] }) }) }, `stop-${idx}`))), brakingEvents.map((event, idx) => (_jsx(Marker, { position: [event.position.lat, event.position.lng], icon: L.divIcon({
                                             html: `<div style="
                       width: 0; height: 0;
                       border-left: 8px solid transparent; border-right: 8px solid transparent;
@@ -364,7 +381,11 @@ export const GpsReplayPlayer = ({ vehicleId, vehicleName, onClose, }) => {
                                         }, children: [_jsx("p", { style: { fontWeight: 600, marginBottom: '8px' }, children: "L\u00E9gende de vitesse" }), _jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }, children: [_jsx("div", { style: { width: '16px', height: '3px', backgroundColor: '#22c55e' } }), _jsx("span", { children: "< 50 km/h" })] }), _jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }, children: [_jsx("div", { style: { width: '16px', height: '3px', backgroundColor: '#eab308' } }), _jsx("span", { children: "50-90 km/h" })] }), _jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }, children: [_jsx("div", { style: { width: '16px', height: '3px', backgroundColor: '#f97316' } }), _jsx("span", { children: "90-120 km/h" })] }), _jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '8px' }, children: [_jsx("div", { style: { width: '16px', height: '3px', backgroundColor: '#ef4444' } }), _jsx("span", { children: "> 120 km/h" })] })] })] }) }), _jsxs("div", { className: "grid grid-cols-5 gap-2", children: [_jsxs("div", { className: "bg-secondary rounded-lg p-3 flex items-center gap-2", children: [_jsx(Route, { className: "h-4 w-4 text-muted-foreground" }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Distance" }), _jsxs("p", { className: "text-sm font-semibold", children: [stats.totalDistance.toFixed(2), " km"] })] })] }), _jsxs("div", { className: "bg-secondary rounded-lg p-3 flex items-center gap-2", children: [_jsx(Clock, { className: "h-4 w-4 text-muted-foreground" }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Dur\u00E9e" }), _jsx("p", { className: "text-sm font-semibold", children: formatDuration(stats.totalDuration) })] })] }), _jsxs("div", { className: "bg-secondary rounded-lg p-3 flex items-center gap-2", children: [_jsx(Gauge, { className: "h-4 w-4 text-muted-foreground" }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Vitesse moy." }), _jsx("p", { className: "text-sm font-semibold", children: formatSpeed(stats.avgSpeed) })] })] }), _jsxs("div", { className: "bg-secondary rounded-lg p-3 flex items-center gap-2", children: [_jsx(Gauge, { className: "h-4 w-4 text-muted-foreground" }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Vitesse max." }), _jsx("p", { className: "text-sm font-semibold", children: formatSpeed(stats.maxSpeed) })] })] }), _jsxs("div", { className: "bg-secondary rounded-lg p-3 flex items-center gap-2", children: [_jsx(MapPin, { className: "h-4 w-4 text-muted-foreground" }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Arr\u00EAts" }), _jsx("p", { className: "text-sm font-semibold", children: stats.numStops })] })] })] }), currentPosition && (_jsxs("div", { className: "bg-secondary rounded-lg p-3 grid grid-cols-2 md:grid-cols-4 gap-4", children: [_jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Latitude" }), _jsx("p", { className: "text-sm font-mono", children: currentPosition.lat.toFixed(5) })] }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Longitude" }), _jsx("p", { className: "text-sm font-mono", children: currentPosition.lng.toFixed(5) })] }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Vitesse" }), _jsx("p", { className: "text-sm font-semibold", children: formatSpeed(currentPosition.speed) })] }), _jsxs("div", { children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Cap" }), _jsxs("p", { className: "text-sm font-semibold", children: [Math.round(currentPosition.heading), "\u00B0"] })] }), _jsxs("div", { className: "md:col-span-4", children: [_jsx("p", { className: "text-xs text-muted-foreground", children: "Horodatage" }), _jsx("p", { className: "text-sm font-mono", children: formatDateTime(new Date(currentPosition.timestamp)) })] })] })), _jsxs("div", { className: "space-y-2", children: [_jsxs("div", { className: "flex items-center gap-2", children: [_jsxs("span", { className: "text-xs text-muted-foreground", children: [currentIndex + 1, " / ", positions.length] }), _jsxs("span", { className: "text-xs text-muted-foreground font-semibold", children: ["(", Math.round((currentIndex / (positions.length - 1)) * 100), "%)"] }), _jsx("input", { type: "range", min: "0", max: positions.length - 1, value: currentIndex, onChange: (e) => {
                                                 setCurrentIndex(parseInt(e.target.value, 10));
                                                 setIsPlaying(false);
-                                            }, className: "flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer" }), _jsx("span", { className: "text-xs text-muted-foreground", children: formatDateTime(new Date(currentPosition?.timestamp || positions[0].timestamp)) })] }), _jsxs("div", { className: "flex justify-between text-xs text-muted-foreground", children: [_jsx("span", { children: formatTimeFromSeconds(getElapsedTime(positions, currentIndex)) }), _jsx("span", { children: formatTimeFromSeconds(getTotalDuration(positions)) })] })] }), _jsxs("div", { className: "space-y-2", children: [_jsxs("div", { className: "flex items-center gap-2", children: [_jsx("span", { className: "text-xs font-medium text-muted-foreground", children: "Filtre de date :" }), _jsxs("div", { className: "flex gap-1 flex-wrap", children: [_jsx(Button, { variant: startDate === format(new Date(), 'yyyy-MM-dd') && endDate === format(new Date(), 'yyyy-MM-dd') ? 'default' : 'outline', size: "sm", onClick: () => handleDatePreset('today'), className: "text-xs h-7 px-2", children: "Aujourd'hui" }), _jsx(Button, { variant: "outline", size: "sm", onClick: () => handleDatePreset('yesterday'), className: "text-xs h-7 px-2", children: "Hier" }), _jsx(Button, { variant: "outline", size: "sm", onClick: () => handleDatePreset('7days'), className: "text-xs h-7 px-2", children: "7 derniers jours" }), _jsx(Button, { variant: "outline", size: "sm", onClick: () => handleDatePreset('30days'), className: "text-xs h-7 px-2", children: "30 derniers jours" })] })] }), _jsxs("div", { className: "flex gap-2", children: [_jsxs("div", { className: "flex-1", children: [_jsx("label", { className: "text-xs text-muted-foreground", children: "Date de d\u00E9but" }), _jsx("input", { type: "date", value: startDate, onChange: (e) => setStartDate(e.target.value), className: "w-full px-2 py-1 text-xs border rounded bg-background" })] }), _jsxs("div", { className: "flex-1", children: [_jsx("label", { className: "text-xs text-muted-foreground", children: "Date de fin" }), _jsx("input", { type: "date", value: endDate, onChange: (e) => setEndDate(e.target.value), className: "w-full px-2 py-1 text-xs border rounded bg-background" })] })] })] }), _jsxs("div", { className: "flex items-center justify-between gap-4", children: [_jsxs("div", { className: "flex items-center gap-2", children: [_jsx(Button, { variant: "outline", size: "sm", onClick: () => setCurrentIndex(0), disabled: currentIndex === 0, children: _jsx(SkipBack, { className: "h-4 w-4" }) }), _jsxs(Button, { variant: "outline", size: "sm", onClick: () => {
+                                            }, className: "flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer" }), _jsx("span", { className: "text-xs text-muted-foreground", children: formatDateTime(new Date(currentPosition?.timestamp || positions[0].timestamp)) })] }), _jsxs("div", { className: "flex justify-between text-xs text-muted-foreground", children: [_jsx("span", { children: formatTimeFromSeconds(getElapsedTime(positions, currentIndex)) }), _jsx("span", { children: formatTimeFromSeconds(getTotalDuration(positions)) })] })] }), _jsxs("div", { className: "space-y-2", children: [_jsxs("div", { className: "flex items-center gap-2", children: [_jsx("span", { className: "text-xs font-medium text-muted-foreground", children: "Filtre de date :" }), _jsxs("div", { className: "flex gap-1 flex-wrap", children: [_jsx(Button, { variant: startDate === format(new Date(), 'yyyy-MM-dd') && endDate === format(new Date(), 'yyyy-MM-dd') ? 'default' : 'outline', size: "sm", onClick: () => handleDatePreset('today'), className: "text-xs h-7 px-2", children: "Aujourd'hui" }), _jsx(Button, { variant: "outline", size: "sm", onClick: () => handleDatePreset('yesterday'), className: "text-xs h-7 px-2", children: "Hier" }), _jsx(Button, { variant: "outline", size: "sm", onClick: () => handleDatePreset('7days'), className: "text-xs h-7 px-2", children: "7 derniers jours" }), _jsx(Button, { variant: "outline", size: "sm", onClick: () => handleDatePreset('30days'), className: "text-xs h-7 px-2", children: "30 derniers jours" })] })] }), _jsxs("div", { className: "flex gap-2 items-end", children: [_jsxs("div", { className: "flex-1", children: [_jsx("label", { className: "text-xs text-muted-foreground", children: "Date de d\u00E9but" }), _jsx("input", { type: "date", value: startDate, onChange: (e) => setStartDate(e.target.value), className: "w-full px-2 py-1 text-xs border rounded bg-background" })] }), _jsxs("div", { className: "flex-1", children: [_jsx("label", { className: "text-xs text-muted-foreground", children: "Date de fin" }), _jsx("input", { type: "date", value: endDate, onChange: (e) => setEndDate(e.target.value), className: "w-full px-2 py-1 text-xs border rounded bg-background" })] }), _jsx(Button, { size: "sm", className: "text-xs h-7 px-3", onClick: () => {
+                                                if (startDate && endDate) {
+                                                    fetchGpsHistory(new Date(startDate).toISOString(), endOfDay(new Date(endDate)).toISOString());
+                                                }
+                                            }, disabled: !startDate || !endDate || loading, children: loading ? 'Chargement...' : 'Rechercher' })] })] }), _jsxs("div", { className: "flex items-center justify-between gap-4", children: [_jsxs("div", { className: "flex items-center gap-2", children: [_jsx(Button, { variant: "outline", size: "sm", onClick: () => setCurrentIndex(0), disabled: currentIndex === 0, children: _jsx(SkipBack, { className: "h-4 w-4" }) }), _jsxs(Button, { variant: "outline", size: "sm", onClick: () => {
                                                 if (currentPosition) {
                                                     const newIndex = findIndexByTimeOffset(positions, new Date(currentPosition.timestamp), -300);
                                                     setCurrentIndex(Math.max(0, newIndex));

@@ -107,6 +107,7 @@ function VehicleList({ vehicles, selectedVehicleId, useImperialUnits, onSelect }
 
 import { TOMTOM_TILE_URL, TOMTOM_TRAFFIC_FLOW_URL } from '@/lib/constants'
 import { apiClient } from '@/lib/api'
+import { API_ROUTES } from '@/lib/constants'
 
 // Helper: Derive GPS provider from vehicle metadata
 function getGpsProvider(vehicle: any): string {
@@ -374,32 +375,61 @@ function EventMarkers({ alerts }: { alerts: AlertEvent[] }) {
 }
 
 // Vehicle trail polyline component with breadcrumb dots
-function VehicleTrail({ trail }: { trail: VehicleTrail }) {
+function VehicleTrailComponent({ trail }: { trail: VehicleTrail }) {
   if (!trail || trail.length < 2) return null
   const coordinates = trail.map(t => [t.lat, t.lng] as [number, number])
+  // Show breadcrumb dots only for a subset of points (every Nth point)
+  const dotInterval = Math.max(1, Math.floor(trail.length / 80))
   return (
     <>
-      {/* Main trail line */}
+      {/* Main trail line — solid for real data */}
       <Polyline
         positions={coordinates}
         color="#4361EE"
-        weight={2}
-        opacity={0.6}
-        dashArray="5,5"
+        weight={3}
+        opacity={0.7}
       />
-      {/* Breadcrumb dots for recent positions */}
-      {trail.map((point, idx) => (
+      {/* Breadcrumb dots at regular intervals */}
+      {trail.filter((_, idx) => idx % dotInterval === 0).map((point, idx) => (
         <CircleMarker
           key={`trail-${idx}`}
           center={[point.lat, point.lng]}
           radius={3}
           fillColor="#4361EE"
-          color="#4361EE"
+          color="#ffffff"
           weight={1}
-          opacity={0.4 + (idx / trail.length) * 0.6}
-          fillOpacity={0.4 + (idx / trail.length) * 0.6}
-        />
+          opacity={0.8}
+          fillOpacity={0.8}
+        >
+          <Popup>
+            <div className="text-xs">
+              <div className="font-semibold">{new Date(point.timestamp).toLocaleString('fr-FR')}</div>
+            </div>
+          </Popup>
+        </CircleMarker>
       ))}
+      {/* Start marker */}
+      <CircleMarker
+        center={[trail[0].lat, trail[0].lng]}
+        radius={6}
+        fillColor="#22c55e"
+        color="#ffffff"
+        weight={2}
+        fillOpacity={0.9}
+      >
+        <Popup><span className="text-xs font-semibold">Début: {new Date(trail[0].timestamp).toLocaleString('fr-FR')}</span></Popup>
+      </CircleMarker>
+      {/* End marker */}
+      <CircleMarker
+        center={[trail[trail.length - 1].lat, trail[trail.length - 1].lng]}
+        radius={6}
+        fillColor="#ef4444"
+        color="#ffffff"
+        weight={2}
+        fillOpacity={0.9}
+      >
+        <Popup><span className="text-xs font-semibold">Fin: {new Date(trail[trail.length - 1].timestamp).toLocaleString('fr-FR')}</span></Popup>
+      </CircleMarker>
     </>
   )
 }
@@ -504,6 +534,9 @@ function getCurrentTimezone(): { offset: string; name: string } {
 
 export default function MapPage() {
   const navigate = useNavigate()
+  const orgId = useAuthStore.getState().user?.organizationId
+    || (useAuthStore.getState().user as any)?.organization_id
+    || ''
   const [searchTerm, setSearchTerm] = useState('')
   const [mapStyle, setMapStyle] = useState<MapStyle>('plan')
   const [tileLayer, setTileLayer] = useState<'streets' | 'satellite' | 'terrain'>('streets')
@@ -856,15 +889,99 @@ export default function MapPage() {
     queryClient.invalidateQueries({ queryKey: ['vehicles'] })
   }, [queryClient])
 
-  // Clear trail when vehicle selection changes
-  // TODO: In production, fetch real trail data from /api/vehicles/:id/history
+  // Fetch real GPS history trail when a vehicle is selected
+  const [trailLoading, setTrailLoading] = useState(false)
   useEffect(() => {
-    if (selectedVehicle?.id) {
-      // Clear any old trails — real trail data should come from the API
+    if (!selectedVehicle?.id) {
       setVehicleTrails({})
       setVehicleStops({})
+      return
     }
-  }, [selectedVehicle?.id])
+
+    const vehicleId = selectedVehicle.id
+    let cancelled = false
+    setTrailLoading(true)
+
+    const fetchTrail = async () => {
+      try {
+        const now = new Date()
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+        const params = new URLSearchParams({
+          vehicleId,
+          startDate: thirtyDaysAgo.toISOString(),
+          endDate: now.toISOString(),
+          limit: '1000',
+          interval: '300', // sample every 5 minutes to keep data manageable
+        })
+        const response = await apiClient.get(
+          `${API_ROUTES.GPS_HISTORY(orgId)}?${params}`
+        )
+        if (cancelled) return
+
+        // Handle response: { success, data: { data: [...], total } }
+        const raw = response.data
+        let points: any[] = []
+        if (raw?.data?.data && Array.isArray(raw.data.data)) {
+          points = raw.data.data
+        } else if (raw?.data && Array.isArray(raw.data)) {
+          points = raw.data
+        } else if (Array.isArray(raw)) {
+          points = raw
+        }
+
+        // Map to VehicleTrail format and sort chronologically
+        const trail: VehicleTrail = points
+          .filter((p: any) => p.lat && p.lng)
+          .map((p: any) => ({
+            lat: parseFloat(p.lat) || p.lat,
+            lng: parseFloat(p.lng) || p.lng,
+            timestamp: p.createdAt || p.timestamp || p.created_at || '',
+          }))
+          .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+
+        if (!cancelled) {
+          setVehicleTrails({ [vehicleId]: trail })
+
+          // Detect stops (speed < 2 for consecutive points)
+          const stops: VehicleStop[] = []
+          let stopStart: any = null
+          points.forEach((p: any, idx: number) => {
+            const speed = parseFloat(p.speed) || 0
+            if (speed < 2) {
+              if (!stopStart) stopStart = p
+            } else {
+              if (stopStart) {
+                const startTime = new Date(stopStart.createdAt || stopStart.timestamp).getTime()
+                const endTime = new Date(p.createdAt || p.timestamp).getTime()
+                const duration = (endTime - startTime) / 60000 // minutes
+                if (duration > 5) { // Only record stops > 5 minutes
+                  stops.push({
+                    lat: parseFloat(stopStart.lat),
+                    lng: parseFloat(stopStart.lng),
+                    duration,
+                    timestamp: stopStart.createdAt || stopStart.timestamp,
+                  })
+                }
+                stopStart = null
+              }
+            }
+          })
+          setVehicleStops({ [vehicleId]: stops })
+          setTrailLoading(false)
+        }
+      } catch (err) {
+        console.error('Failed to fetch GPS history trail:', err)
+        if (!cancelled) {
+          setVehicleTrails({})
+          setVehicleStops({})
+          setTrailLoading(false)
+        }
+      }
+    }
+
+    fetchTrail()
+    return () => { cancelled = true }
+  }, [selectedVehicle?.id, orgId])
 
   // Generate mock alert events
   useEffect(() => {
@@ -1068,7 +1185,7 @@ export default function MapPage() {
           )}
 
           {selectedVehicle?.id && vehicleTrails[selectedVehicle.id] && (
-            <VehicleTrail trail={vehicleTrails[selectedVehicle.id]} />
+            <VehicleTrailComponent trail={vehicleTrails[selectedVehicle.id]} />
           )}
 
           <EventMarkersComponent alerts={activeAlerts} />
@@ -1238,9 +1355,46 @@ export default function MapPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-4 text-sm text-gray-400 text-center py-12">
-                <Clock size={32} className="mx-auto text-gray-200 mb-2" />
-                Historique non disponible
+              <div className="p-4 text-sm">
+                {trailLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#4361EE] mx-auto mb-2" />
+                    <span className="text-gray-400">Chargement de l'historique...</span>
+                  </div>
+                ) : vehicleTrails[selectedVehicle.id]?.length ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-[#4361EE] font-semibold text-xs uppercase">
+                      <Navigation size={12} />
+                      Trajet — 30 derniers jours
+                    </div>
+                    <div className="space-y-2 text-[13px]">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Points GPS</span>
+                        <span className="font-medium text-gray-900">{vehicleTrails[selectedVehicle.id].length.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Premier point</span>
+                        <span className="font-medium text-gray-900">{new Date(vehicleTrails[selectedVehicle.id][0]?.timestamp).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Dernier point</span>
+                        <span className="font-medium text-gray-900">{new Date(vehicleTrails[selectedVehicle.id][vehicleTrails[selectedVehicle.id].length - 1]?.timestamp).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                      {vehicleStops[selectedVehicle.id]?.length > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Arrêts détectés</span>
+                          <span className="font-medium text-amber-600">{vehicleStops[selectedVehicle.id].length}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-gray-400 italic">Le tracé est affiché sur la carte</div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Clock size={32} className="mx-auto text-gray-200 mb-2" />
+                    <span className="text-gray-400">Aucun historique disponible</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

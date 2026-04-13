@@ -74,7 +74,8 @@ export function useVehicles(filters = {}) {
             }
         },
         enabled: !!orgId,
-        staleTime: 1000 * 30, // 30 seconds
+        staleTime: 1000 * 60 * 2, // 2 minutes — WebSocket handles real-time updates
+        gcTime: 1000 * 60 * 10, // Keep in cache 10 minutes
     });
 }
 // Get single vehicle

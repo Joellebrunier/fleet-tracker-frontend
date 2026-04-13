@@ -1,3 +1,7 @@
+export declare const TOMTOM_API_KEY: any;
+export declare const TOMTOM_TILE_URL: (style?: string) => string;
+export declare const TOMTOM_TRAFFIC_FLOW_URL: string;
+export declare const TOMTOM_TRAFFIC_INCIDENTS_URL: string;
 export declare const MAPBOX_TOKEN: any;
 export declare const MAPBOX_TILE_URL: (style?: string) => string;
 export declare const API_ROUTES: {
@@ -6,8 +10,17 @@ export declare const API_ROUTES: {
     readonly AUTH_REFRESH: "/api/auth/refresh";
     readonly AUTH_LOGOUT: "/api/auth/logout";
     readonly AUTH_ME: "/api/auth/me";
+    readonly AUTH_ORGANIZATIONS: "/api/auth/organizations";
+    readonly AUTH_SWITCH_ORG: "/api/auth/switch-organization";
     readonly ORGANIZATIONS: "/api/organizations";
     readonly ORGANIZATION: (orgId: string) => string;
+    readonly ORGANIZATION_TREE: (orgId: string) => string;
+    readonly ORGANIZATION_ACCESSIBLE_IDS: (orgId: string) => string;
+    readonly SUB_CLIENTS: (orgId: string) => string;
+    readonly PROVIDER_CREDENTIALS: (orgId: string) => string;
+    readonly PROVIDER_CREDENTIAL_DELETE: (orgId: string, provider: string) => string;
+    readonly BULK_ASSIGN_VEHICLES: (orgId: string) => string;
+    readonly BULK_UNASSIGN_VEHICLES: (orgId: string) => string;
     readonly VEHICLES: (orgId: string) => string;
     readonly VEHICLE_DETAIL: (orgId: string, id: string) => string;
     readonly VEHICLE_POSITION: (orgId: string, id: string) => string;
@@ -20,7 +33,7 @@ export declare const API_ROUTES: {
     readonly ALERT_RULES: (orgId: string) => string;
     readonly ALERT_RULE_DETAIL: (orgId: string, ruleId: string) => string;
     readonly GPS_HISTORY: (orgId: string) => string;
-    readonly GPS_PLAYBACK: (orgId: string, vehicleId: string) => string;
+    readonly GPS_PLAYBACK: (orgId: string, vehicleId: string, startDate?: string, endDate?: string) => string;
     readonly REPORTS_GENERATE: (orgId: string) => string;
     readonly USERS: (orgId: string) => string;
     readonly USER_DETAIL: (orgId: string, id: string) => string;
@@ -43,9 +56,9 @@ export declare const MAP_DEFAULTS: {
     readonly DEFAULT_ZOOM: 12;
     readonly MIN_ZOOM: 2;
     readonly MAX_ZOOM: 20;
-    readonly MAP_STYLE: "mapbox://styles/mapbox/streets-v12";
-    readonly SATELLITE_STYLE: "mapbox://styles/mapbox/satellite-streets-v12";
-    readonly TERRAIN_STYLE: "mapbox://styles/mapbox/outdoors-v12";
+    readonly MAP_STYLE: "basic";
+    readonly SATELLITE_STYLE: "satellite";
+    readonly TERRAIN_STYLE: "hybrid";
 };
 export declare const PAGINATION_DEFAULTS: {
     readonly DEFAULT_PAGE_SIZE: 20;

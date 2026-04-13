@@ -1,10 +1,11 @@
 /**
- * Reverse geocoding utility using OpenStreetMap Nominatim API
- * Provides caching and request throttling to respect API limits
+ * Reverse geocoding utility using TomTom Reverse Geocoding API
+ * Provides caching and request throttling
  */
-const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/reverse';
+import { TOMTOM_API_KEY } from './constants';
+const TOMTOM_REVERSE_URL = 'https://api.tomtom.com/search/2/reverseGeocode';
 const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
-const MIN_REQUEST_INTERVAL = 1000; // 1 second (Nominatim policy)
+const MIN_REQUEST_INTERVAL = 200; // 200ms (TomTom allows higher QPS than Nominatim)
 // In-memory cache for reverse geocoding results
 const geocodeCache = new Map();
 // Throttling mechanism
@@ -39,7 +40,7 @@ export function formatCoordinates(lat, lng) {
     return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 }
 /**
- * Reverse geocode a single coordinate pair
+ * Reverse geocode a single coordinate pair using TomTom API
  * Returns formatted address or "lat, lng" fallback on error
  */
 export async function reverseGeocode(lat, lng) {
@@ -57,27 +58,33 @@ export async function reverseGeocode(lat, lng) {
         return cached.address;
     }
     try {
-        // Enforce throttling to respect Nominatim API limits
+        // Enforce throttling
         await enforceThrottle();
-        const params = new URLSearchParams({
-            lat: clampedLat.toString(),
-            lon: clampedLng.toString(),
-            format: 'json',
-        });
-        const response = await fetch(`${NOMINATIM_URL}?${params}`, {
-            headers: {
-                'Accept-Language': 'en',
-            },
-        });
+        const url = `${TOMTOM_REVERSE_URL}/${clampedLat},${clampedLng}.json?key=${TOMTOM_API_KEY}&language=fr-FR`;
+        const response = await fetch(url);
         if (!response.ok) {
             return formatCoordinates(lat, lng);
         }
         const data = await response.json();
-        // Extract address from Nominatim response
-        const address = data.address?.name ||
-            data.name ||
-            data.display_name?.split(',')[0] ||
-            formatCoordinates(lat, lng);
+        // Extract address from TomTom response
+        const addr = data.addresses?.[0]?.address;
+        let address;
+        if (addr) {
+            // Build a readable address from TomTom fields
+            const parts = [];
+            if (addr.streetNumber && addr.streetName) {
+                parts.push(`${addr.streetNumber} ${addr.streetName}`);
+            }
+            else if (addr.streetName) {
+                parts.push(addr.streetName);
+            }
+            if (addr.municipality)
+                parts.push(addr.municipality);
+            address = parts.length > 0 ? parts.join(', ') : (addr.freeformAddress || formatCoordinates(lat, lng));
+        }
+        else {
+            address = formatCoordinates(lat, lng);
+        }
         // Cache the result
         geocodeCache.set(cacheKey, {
             address,

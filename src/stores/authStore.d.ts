@@ -1,4 +1,4 @@
-import { User, UserRole, Organization } from '@/types/user';
+import { User, UserRole, Organization, OrgMembership } from '@/types/user';
 interface AuthState {
     user: User | null;
     organization: Organization | null;
@@ -6,12 +6,16 @@ interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
+    /** All organizations the user belongs to (for org switcher) */
+    organizations: OrgMembership[];
     setUser: (user: User | null) => void;
     setOrganization: (org: Organization | null) => void;
     setToken: (token: string | null) => void;
     setIsLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
-    login: (user: User, token: string) => void;
+    setOrganizations: (orgs: OrgMembership[]) => void;
+    login: (user: User, token: string, organizations?: OrgMembership[]) => void;
+    switchOrg: (user: User, token: string, organizations?: OrgMembership[]) => void;
     logout: () => void;
     hydrate: () => void;
     hasRole: (role: UserRole | UserRole[]) => boolean;

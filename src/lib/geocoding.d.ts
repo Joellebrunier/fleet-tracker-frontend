@@ -1,6 +1,6 @@
 /**
- * Reverse geocoding utility using OpenStreetMap Nominatim API
- * Provides caching and request throttling to respect API limits
+ * Reverse geocoding utility using TomTom Reverse Geocoding API
+ * Provides caching and request throttling
  */
 interface ReverseGeocodeCoord {
     lat: number;
@@ -11,7 +11,7 @@ interface ReverseGeocodeCoord {
  */
 export declare function formatCoordinates(lat: number, lng: number): string;
 /**
- * Reverse geocode a single coordinate pair
+ * Reverse geocode a single coordinate pair using TomTom API
  * Returns formatted address or "lat, lng" fallback on error
  */
 export declare function reverseGeocode(lat: number, lng: number): Promise<string>;

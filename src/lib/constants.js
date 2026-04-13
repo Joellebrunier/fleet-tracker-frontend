@@ -1,6 +1,26 @@
-// Mapbox configuration
-export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
-export const MAPBOX_TILE_URL = (style = 'streets-v12') => `https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`;
+// TomTom configuration
+export const TOMTOM_API_KEY = import.meta.env.VITE_TOMTOM_API_KEY || '9fFJXdBwrgdAawv56noq3ldNdnlXqTHv';
+export const TOMTOM_TILE_URL = (style = 'basic') => {
+    switch (style) {
+        case 'satellite':
+        case 'sat':
+            return `https://api.tomtom.com/map/1/tile/sat/main/{z}/{x}/{y}.jpg?key=${TOMTOM_API_KEY}`;
+        case 'hybrid':
+            return `https://api.tomtom.com/map/1/tile/hybrid/main/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`;
+        case 'night':
+        case 'dark':
+            return `https://api.tomtom.com/map/1/tile/basic/night/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`;
+        case 'labels':
+            return `https://api.tomtom.com/map/1/tile/labels/main/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`;
+        default:
+            return `https://api.tomtom.com/map/1/tile/basic/main/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`;
+    }
+};
+export const TOMTOM_TRAFFIC_FLOW_URL = `https://api.tomtom.com/traffic/map/4/tile/flow/relative0/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`;
+export const TOMTOM_TRAFFIC_INCIDENTS_URL = `https://api.tomtom.com/traffic/map/4/tile/incidents/s3/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`;
+// Legacy aliases for compatibility
+export const MAPBOX_TOKEN = TOMTOM_API_KEY;
+export const MAPBOX_TILE_URL = TOMTOM_TILE_URL;
 // Helper to build org-scoped routes
 const org = (orgId) => `/api/organizations/${orgId}`;
 // API Routes
@@ -11,9 +31,18 @@ export const API_ROUTES = {
     AUTH_REFRESH: '/api/auth/refresh',
     AUTH_LOGOUT: '/api/auth/logout',
     AUTH_ME: '/api/auth/me',
+    AUTH_ORGANIZATIONS: '/api/auth/organizations',
+    AUTH_SWITCH_ORG: '/api/auth/switch-organization',
     // Organizations
     ORGANIZATIONS: '/api/organizations',
     ORGANIZATION: (orgId) => `/api/organizations/${orgId}`,
+    ORGANIZATION_TREE: (orgId) => `/api/organizations/${orgId}/tree`,
+    ORGANIZATION_ACCESSIBLE_IDS: (orgId) => `/api/organizations/${orgId}/accessible-ids`,
+    SUB_CLIENTS: (orgId) => `/api/organizations/${orgId}/sub-clients`,
+    PROVIDER_CREDENTIALS: (orgId) => `/api/organizations/${orgId}/provider-credentials`,
+    PROVIDER_CREDENTIAL_DELETE: (orgId, provider) => `/api/organizations/${orgId}/provider-credentials/${provider}`,
+    BULK_ASSIGN_VEHICLES: (orgId) => `${org(orgId)}/vehicles/bulk-assign`,
+    BULK_UNASSIGN_VEHICLES: (orgId) => `${org(orgId)}/vehicles/bulk-unassign`,
     // Vehicles (org-scoped)
     VEHICLES: (orgId) => `${org(orgId)}/vehicles`,
     VEHICLE_DETAIL: (orgId, id) => `${org(orgId)}/vehicles/${id}`,
@@ -30,7 +59,15 @@ export const API_ROUTES = {
     ALERT_RULE_DETAIL: (orgId, ruleId) => `${org(orgId)}/alerts/rules/${ruleId}`,
     // GPS History (org-scoped)
     GPS_HISTORY: (orgId) => `${org(orgId)}/gps-history`,
-    GPS_PLAYBACK: (orgId, vehicleId) => `${org(orgId)}/gps-history/${vehicleId}/playback`,
+    GPS_PLAYBACK: (orgId, vehicleId, startDate, endDate) => {
+        const base = `${org(orgId)}/gps-history`;
+        const params = new URLSearchParams({ vehicleId });
+        if (startDate)
+            params.append('startDate', startDate);
+        if (endDate)
+            params.append('endDate', endDate);
+        return `${base}?${params.toString()}`;
+    },
     // Reports (org-scoped)
     REPORTS_GENERATE: (orgId) => `${org(orgId)}/reports/generate`,
     // Users (org-scoped)
@@ -62,9 +99,9 @@ export const MAP_DEFAULTS = {
     DEFAULT_ZOOM: 12,
     MIN_ZOOM: 2,
     MAX_ZOOM: 20,
-    MAP_STYLE: 'mapbox://styles/mapbox/streets-v12',
-    SATELLITE_STYLE: 'mapbox://styles/mapbox/satellite-streets-v12',
-    TERRAIN_STYLE: 'mapbox://styles/mapbox/outdoors-v12',
+    MAP_STYLE: 'basic',
+    SATELLITE_STYLE: 'satellite',
+    TERRAIN_STYLE: 'hybrid',
 };
 // Pagination
 export const PAGINATION_DEFAULTS = {
