@@ -534,8 +534,8 @@ function getCurrentTimezone(): { offset: string; name: string } {
 
 export default function MapPage() {
   const navigate = useNavigate()
-  const orgId = useAuthStore.getState().user?.organizationId
-    || (useAuthStore.getState().user as any)?.organization_id
+  const orgId = useAuthStore((s) => s.user?.organizationId)
+    || useAuthStore((s) => (s.user as any)?.organization_id)
     || ''
   const [searchTerm, setSearchTerm] = useState('')
   const [mapStyle, setMapStyle] = useState<MapStyle>('plan')
@@ -913,21 +913,26 @@ export default function MapPage() {
           limit: '1000',
           interval: '300', // sample every 5 minutes to keep data manageable
         })
+        console.log('[GPS History] Fetching trail for vehicle', vehicleId, 'orgId', orgId)
         const response = await apiClient.get(
-          `${API_ROUTES.GPS_HISTORY(orgId)}?${params}`
+          `${API_ROUTES.GPS_HISTORY(orgId)}?${params}`,
+          { timeout: 30000 } // 30s timeout for large history queries
         )
         if (cancelled) return
 
-        // Handle response: { success, data: { data: [...], total } }
+        // The axios interceptor unwraps {success, data} → response.data = {data: [...], total: N}
+        // So response.data.data is the array of points
         const raw = response.data
+        console.log('[GPS History] Response shape:', { keys: Object.keys(raw || {}), type: typeof raw, isArray: Array.isArray(raw) })
         let points: any[] = []
-        if (raw?.data?.data && Array.isArray(raw.data.data)) {
-          points = raw.data.data
+        if (Array.isArray(raw)) {
+          points = raw
         } else if (raw?.data && Array.isArray(raw.data)) {
           points = raw.data
-        } else if (Array.isArray(raw)) {
-          points = raw
+        } else if (Array.isArray(raw?.rows)) {
+          points = raw.rows
         }
+        console.log('[GPS History] Extracted', points.length, 'points')
 
         // Map to VehicleTrail format and sort chronologically
         const trail: VehicleTrail = points
