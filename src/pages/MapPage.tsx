@@ -177,13 +177,13 @@ function createVehicleIcon(speed: number, heading: number, isSelected: boolean, 
 }
 
 // Component to fly the map to a selected vehicle
-function FlyToVehicle({ lat, lng }: { lat: number; lng: number }) {
+function FlyToVehicle({ lat, lng, vehicleId }: { lat: number; lng: number; vehicleId: string | null }) {
   const map = useMap()
   useEffect(() => {
-    if (lat && lng) {
-      map.flyTo([lat, lng], 15, { duration: 1 })
+    if (lat && lng && vehicleId) {
+      map.flyTo([lat, lng], Math.max(map.getZoom(), 14), { duration: 1 })
     }
-  }, [lat, lng, map])
+  }, [lat, lng, vehicleId, map])
   return null
 }
 
@@ -1076,7 +1076,7 @@ export default function MapPage() {
           <MapEvents onZoomChange={setCurrentZoom} />
 
           {selectedVehicle?.currentLat && selectedVehicle?.currentLng && (
-            <FlyToVehicle lat={selectedVehicle.currentLat} lng={selectedVehicle.currentLng} />
+            <FlyToVehicle lat={selectedVehicle.currentLat} lng={selectedVehicle.currentLng} vehicleId={selectedVehicleId} />
           )}
 
           {selectedVehicle?.id && vehicleTrails[selectedVehicle.id] && (
