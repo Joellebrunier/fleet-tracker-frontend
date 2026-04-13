@@ -48,6 +48,9 @@ export default function Header() {
   const notLocatedVehicles = vehicles.filter(
     (v: any) => v.status === VehicleStatus.OFFLINE || !v.currentLat || !v.currentLng
   ).length
+  const pausedVehicles = vehicles.filter(
+    (v: any) => v.status === VehicleStatus.IDLE || v.status === VehicleStatus.MAINTENANCE
+  ).length
 
   const handleLogout = async () => {
     await logout()
@@ -126,6 +129,7 @@ export default function Header() {
             <StatusPill label="VÉHICULES" value={totalVehicles} />
             <StatusPill label="EN MOUVEMENT" value={movingVehicles} color="text-emerald-400" />
             <StatusPill label="À L'ARRÊT" value={stoppedVehicles} color="text-amber-400" />
+            <StatusPill label="EN PAUSE" value={pausedVehicles} color="text-orange-400" />
             <StatusPill label="NON LOCALISÉS" value={notLocatedVehicles} color="text-red-400" />
           </div>
 

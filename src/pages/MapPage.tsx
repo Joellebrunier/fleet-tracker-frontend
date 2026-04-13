@@ -457,7 +457,7 @@ export default function MapPage() {
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Filter states
-  const [sourceFilter, setSourceFilter] = useState<'TOUS' | 'ECHOES' | 'UBIWAN' | 'KEEPTRACE'>('TOUS')
+  const [sourceFilter, setSourceFilter] = useState<'TOUS' | 'ECHOES' | 'UBIWAN' | 'KEEPTRACE' | 'FLESPI'>('TOUS')
   const [statutFilter, setStatutFilter] = useState<'TOUS' | 'LOCALISÉS' | 'NON LOC.'>('TOUS')
   const [groupeFilter, setGroupeFilter] = useState<string>('Tous')
 
@@ -834,28 +834,7 @@ export default function MapPage() {
             </button>
           </div>
 
-          {/* Map style selector row */}
-          <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-200 bg-gray-50">
-            {([
-              { id: 'plan', label: 'Plan' },
-              { id: 'satellite', label: 'Satellite' },
-              { id: 'relief', label: 'Relief' },
-              { id: 'sombre', label: 'Sombre' },
-              { id: 'clair', label: 'Clair' },
-            ] as const).map((style) => (
-              <button
-                key={style.id}
-                onClick={() => setMapStyle(style.id as MapStyle)}
-                className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
-                  mapStyle === style.id
-                    ? 'bg-[#4361EE] text-white shadow-sm'
-                    : 'text-gray-500 hover:bg-white hover:text-gray-700'
-                }`}
-              >
-                {style.label}
-              </button>
-            ))}
-          </div>
+          {/* Map style selector moved to floating overlay on map */}
 
           {/* Search */}
           <div className="px-3 py-2.5 border-b border-gray-200">
@@ -888,7 +867,7 @@ export default function MapPage() {
           <div className="px-3 pt-3 pb-1">
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">SOURCE</p>
             <div className="flex flex-wrap gap-1">
-              {(['TOUS', 'ECHOES', 'UBIWAN', 'KEEPTRACE'] as const).map((source) => (
+              {(['TOUS', 'ECHOES', 'UBIWAN', 'KEEPTRACE', 'FLESPI'] as const).map((source) => (
                 <button
                   key={source}
                   onClick={() => setSourceFilter(source)}
@@ -933,9 +912,23 @@ export default function MapPage() {
           {/* Vehicle list */}
           <div className="flex-1 overflow-y-auto">
             {filteredVehicles.map((vehicle: any) => {
-              const isMoving = (vehicle.currentSpeed || 0) > 2
+              const speed = vehicle.currentSpeed || 0
+              const isMoving = speed > 2
               const hasGps = vehicle.currentLat && vehicle.currentLng
               const isSelected = selectedVehicleId === vehicle.id
+              const provider = vehicle.gpsProvider || ''
+              const brandModel = [vehicle.brand, vehicle.model].filter(Boolean).join(' ')
+              // Speed donut: percent of 200 km/h max
+              const speedPct = Math.min(speed / 200, 1)
+              const circumference = 2 * Math.PI * 14
+              const strokeDash = speedPct * circumference
+              const speedColor = !hasGps ? '#ef4444' : isMoving ? '#10b981' : '#9ca3af'
+              const providerColors: Record<string, string> = {
+                ECHOES: 'bg-violet-100 text-violet-700',
+                UBIWAN: 'bg-sky-100 text-sky-700',
+                KEEPTRACE: 'bg-teal-100 text-teal-700',
+                FLESPI: 'bg-orange-100 text-orange-700',
+              }
               return (
                 <button
                   key={vehicle.id}
@@ -946,16 +939,43 @@ export default function MapPage() {
                       : 'hover:bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-bold text-[13px] ${isSelected ? 'text-[#4361EE]' : 'text-gray-900'}`}>{vehicle.plate || vehicle.name}</p>
-                      <p className="text-[11px] text-gray-400 truncate uppercase">{vehicle.name}</p>
+                  <div className="flex items-center gap-2.5">
+                    {/* Speed donut gauge */}
+                    <div className="relative w-9 h-9 shrink-0">
+                      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                        <circle cx="18" cy="18" r="14" fill="none" stroke="#e5e7eb" strokeWidth="3" />
+                        <circle cx="18" cy="18" r="14" fill="none" stroke={speedColor} strokeWidth="3" strokeDasharray={`${strokeDash} ${circumference}`} strokeLinecap="round" />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[8px] font-bold tabular-nums" style={{ color: speedColor }}>
+                          {hasGps ? Math.round(speed) : '—'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className={`text-[12px] font-bold tabular-nums ${isMoving ? 'text-emerald-600' : hasGps ? 'text-gray-400' : 'text-red-400'}`}>
-                        {hasGps ? `${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).value} ${getFormattedSpeed(vehicle.currentSpeed || 0, useImperialUnits).unit}` : 'N/A'}
-                      </p>
-                      <p className="text-[10px] font-medium text-gray-400 uppercase">{vehicle.gpsProvider || '—'}</p>
+                    {/* Vehicle info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className={`font-bold text-[12px] truncate ${isSelected ? 'text-[#4361EE]' : 'text-gray-900'}`}>
+                          {vehicle.plate || vehicle.name}
+                        </p>
+                        {hasGps && (
+                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isMoving ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                        )}
+                        {!hasGps && (
+                          <div className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-400" />
+                        )}
+                      </div>
+                      <p className="text-[10px] text-gray-400 truncate">{brandModel || vehicle.name}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        {provider && (
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${providerColors[provider] || 'bg-gray-100 text-gray-500'}`}>
+                            {provider}
+                          </span>
+                        )}
+                        <span className="text-[10px] text-gray-400 tabular-nums">
+                          {hasGps ? `${getFormattedSpeed(speed, useImperialUnits).value} ${getFormattedSpeed(speed, useImperialUnits).unit}` : 'Non localisé'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </button>
@@ -967,6 +987,26 @@ export default function MapPage() {
 
       {/* ═══ CENTER MAP ═══ */}
       <div className="relative flex-1 overflow-hidden">
+        {/* Floating map style toggle */}
+        <div className="absolute top-3 left-3 z-[1000] flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 p-1">
+          {([
+            { id: 'plan', label: 'Plan' },
+            { id: 'satellite', label: 'Satellite' },
+            { id: 'sombre', label: 'Sombre' },
+          ] as const).map((style) => (
+            <button
+              key={style.id}
+              onClick={() => setMapStyle(style.id as MapStyle)}
+              className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all ${
+                mapStyle === style.id
+                  ? 'bg-[#4361EE] text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+              }`}
+            >
+              {style.label}
+            </button>
+          ))}
+        </div>
         <MapContainer
           center={[43.7, 3.87]}
           zoom={6}
