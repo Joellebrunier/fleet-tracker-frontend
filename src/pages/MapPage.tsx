@@ -14,6 +14,97 @@ import { formatSpeed, formatTimeAgo } from '@/lib/utils'
 import { Search, Layers, Navigation, Eye, ChevronRight, Satellite, Map as MapIcon, Wifi, WifiOff, HelpCircle, Wind, MapPin, AlertCircle, ChevronDown, CheckCircle2, X, Edit2, Trash2, Maximize, Minimize, AlertTriangle, Clock, MapPinOff, Maximize2, Plus, Share2, Download, Settings, RefreshCw, Copy, Check } from 'lucide-react'
 import { useGpsWebSocket } from '@/hooks/useGpsWebSocket'
 import { useQueryClient } from '@tanstack/react-query'
+// Simple virtualization hook — renders only visible items
+function useVirtualization(totalItems: number, itemHeight: number, containerRef: React.RefObject<HTMLDivElement | null>) {
+  const [scrollTop, setScrollTop] = useState(0)
+  const [containerHeight, setContainerHeight] = useState(600)
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new ResizeObserver((entries) => {
+      setContainerHeight(entries[0]?.contentRect.height || 600)
+    })
+    observer.observe(el)
+    const handleScroll = () => setScrollTop(el.scrollTop)
+    el.addEventListener('scroll', handleScroll, { passive: true })
+    return () => { observer.disconnect(); el.removeEventListener('scroll', handleScroll) }
+  }, [containerRef])
+
+  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - 5)
+  const visibleCount = Math.ceil(containerHeight / itemHeight) + 10
+  const endIndex = Math.min(totalItems, startIndex + visibleCount)
+
+  return { startIndex, endIndex, totalHeight: totalItems * itemHeight, offsetY: startIndex * itemHeight }
+}
+
+const ITEM_HEIGHT = 68
+const PROVIDER_COLORS: Record<string, string> = {
+  ECHOES: 'bg-violet-100 text-violet-700',
+  UBIWAN: 'bg-sky-100 text-sky-700',
+  KEEPTRACE: 'bg-teal-100 text-teal-700',
+  FLESPI: 'bg-orange-100 text-orange-700',
+}
+const CIRCUMFERENCE = 2 * Math.PI * 14
+
+function VehicleList({ vehicles, selectedVehicleId, useImperialUnits, onSelect }: {
+  vehicles: any[]; selectedVehicleId: string | null; useImperialUnits: boolean; onSelect: (id: string) => void
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const { startIndex, endIndex, totalHeight, offsetY } = useVirtualization(vehicles.length, ITEM_HEIGHT, scrollRef)
+
+  return (
+    <div ref={scrollRef} className="flex-1 overflow-y-auto" style={{ contain: 'strict' }}>
+      <div style={{ height: totalHeight, position: 'relative' }}>
+        <div style={{ position: 'absolute', top: offsetY, left: 0, right: 0 }}>
+          {vehicles.slice(startIndex, endIndex).map((vehicle: any) => {
+            const speed = vehicle.currentSpeed || 0
+            const isMoving = speed > 2
+            const hasGps = vehicle.currentLat && vehicle.currentLng
+            const isSelected = selectedVehicleId === vehicle.id
+            const provider = vehicle.gpsProvider || ''
+            const brandModel = [vehicle.brand, vehicle.model].filter(Boolean).join(' ')
+            const speedPct = Math.min(speed / 200, 1)
+            const strokeDash = speedPct * CIRCUMFERENCE
+            const speedColor = !hasGps ? '#ef4444' : isMoving ? '#10b981' : '#9ca3af'
+            return (
+              <button
+                key={vehicle.id}
+                onClick={() => onSelect(vehicle.id)}
+                className={`w-full px-3 py-2 text-left border-b border-gray-100 ${isSelected ? 'bg-blue-50 border-l-3 border-l-[#4361EE]' : 'hover:bg-gray-50'}`}
+                style={{ height: ITEM_HEIGHT }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="relative w-9 h-9 shrink-0">
+                    <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                      <circle cx="18" cy="18" r="14" fill="none" stroke="#e5e7eb" strokeWidth="3" />
+                      <circle cx="18" cy="18" r="14" fill="none" stroke={speedColor} strokeWidth="3" strokeDasharray={`${strokeDash} ${CIRCUMFERENCE}`} strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[8px] font-bold tabular-nums" style={{ color: speedColor }}>{hasGps ? Math.round(speed) : '—'}</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className={`font-bold text-[12px] truncate ${isSelected ? 'text-[#4361EE]' : 'text-gray-900'}`}>{vehicle.plate || vehicle.name}</p>
+                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${!hasGps ? 'bg-red-400' : isMoving ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                    </div>
+                    <p className="text-[10px] text-gray-400 truncate">{brandModel || vehicle.name}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {provider && <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${PROVIDER_COLORS[provider] || 'bg-gray-100 text-gray-500'}`}>{provider}</span>}
+                      <span className="text-[10px] text-gray-400 tabular-nums">{hasGps ? `${getFormattedSpeed(speed, useImperialUnits).value} ${getFormattedSpeed(speed, useImperialUnits).unit}` : 'Non localisé'}</span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 import { TOMTOM_TILE_URL, TOMTOM_TRAFFIC_FLOW_URL } from '@/lib/constants'
 import { apiClient } from '@/lib/api'
 
@@ -38,6 +129,9 @@ function getFormattedSpeed(speedKmh: number, useImperial: boolean): { value: str
   return { value: speedKmh.toFixed(0), unit: 'km/h' }
 }
 
+// Reusable manual marker icon (created once)
+const manualMarkerIcon = L.divIcon({ html: '<div style="width:16px;height:16px;background:#f97316;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>', className: 'manual-marker', iconSize: [16, 16] as any, iconAnchor: [8, 8] as any })
+
 // Fix default marker icons for Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -46,41 +140,40 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 })
 
-// Vehicle marker icon factory
+// Vehicle marker icon factory — cached to avoid recreating icons
+const iconCache = new Map<string, L.DivIcon>()
+
 function createVehicleIcon(speed: number, heading: number, isSelected: boolean, vehicleType?: string) {
   const isMoving = speed > 2
+  // Quantize heading to 15-degree increments to improve cache hits
+  const quantizedHeading = isMoving ? Math.round(heading / 15) * 15 : 0
+  const cacheKey = `${isMoving ? 1 : 0}-${isSelected ? 1 : 0}-${vehicleType || 'd'}-${quantizedHeading}`
 
-  // Determine color based on vehicle type if moving, gray if stopped
-  let typeColor = '#22c55e' // default green
+  const cached = iconCache.get(cacheKey)
+  if (cached) return cached
+
+  let typeColor = '#22c55e'
   if (vehicleType === 'car') typeColor = '#3b82f6'
   else if (vehicleType === 'truck') typeColor = '#f97316'
   else if (vehicleType === 'van') typeColor = '#8b5cf6'
   else if (vehicleType === 'motorcycle') typeColor = '#ef4444'
 
-  const color = isMoving ? typeColor : '#6b7280' // use type color if moving, gray if stopped
+  const color = isMoving ? typeColor : '#6b7280'
   const borderColor = isSelected ? '#3b82f6' : '#ffffff'
   const size = isSelected ? 18 : 14
   const border = isSelected ? 4 : 2
 
-  return L.divIcon({
-    html: `<div style="
-      width: ${size}px; height: ${size}px;
-      background: ${color};
-      border: ${border}px solid ${borderColor};
-      border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      ${isMoving ? `transform: rotate(${heading}deg);` : ''}
-    "></div>
-    ${isMoving ? `<div style="
-      position: absolute; top: -6px; left: 50%; transform: translateX(-50%) rotate(${heading}deg);
-      width: 0; height: 0;
-      border-left: 4px solid transparent; border-right: 4px solid transparent;
-      border-bottom: 8px solid ${color};
-    "></div>` : ''}`,
+  const icon = L.divIcon({
+    html: `<div style="width:${size}px;height:${size}px;background:${color};border:${border}px solid ${borderColor};border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);${isMoving ? `transform:rotate(${quantizedHeading}deg);` : ''}"></div>${isMoving ? `<div style="position:absolute;top:-6px;left:50%;transform:translateX(-50%) rotate(${quantizedHeading}deg);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:8px solid ${color};"></div>` : ''}`,
     className: 'vehicle-marker',
     iconSize: [size + border * 2, size + border * 2],
     iconAnchor: [(size + border * 2) / 2, (size + border * 2) / 2],
   })
+
+  // Limit cache size
+  if (iconCache.size > 500) iconCache.clear()
+  iconCache.set(cacheKey, icon)
+  return icon
 }
 
 // Component to fly the map to a selected vehicle
@@ -480,13 +573,29 @@ export default function MapPage() {
   const queryClient = useQueryClient()
   const { data: vehiclesData, isLoading: vehiclesLoading, refetch: refetchVehicles } = useVehicles({ limit: 1000 })
 
-  // Real-time WebSocket for GPS position updates
+  // Real-time WebSocket for GPS position updates — update in-place instead of refetching
   const { isConnected } = useGpsWebSocket({
     enabled: true,
-    onPositionUpdate: (update) => {
-      // Invalidate vehicle queries to refresh positions
-      queryClient.invalidateQueries({ queryKey: ['vehicles'] })
-    },
+    onPositionUpdate: useCallback((update: any) => {
+      queryClient.setQueriesData({ queryKey: ['vehicles'] }, (oldData: any) => {
+        if (!oldData?.data) return oldData
+        return {
+          ...oldData,
+          data: oldData.data.map((v: any) =>
+            v.id === update.vehicleId
+              ? {
+                  ...v,
+                  currentLat: update.lat ?? v.currentLat,
+                  currentLng: update.lng ?? v.currentLng,
+                  currentSpeed: update.speed ?? v.currentSpeed,
+                  currentHeading: update.heading ?? v.currentHeading,
+                  lastCommunication: update.timestamp ?? v.lastCommunication,
+                }
+              : v
+          ),
+        }
+      })
+    }, [queryClient]),
   })
 
   // Enrich vehicles with derived gpsProvider
@@ -507,15 +616,16 @@ export default function MapPage() {
     return Array.from(groups).sort()
   }, [vehicles])
 
-  const filteredVehicles = useMemo(
-    () =>
-      vehicles.filter((v: any) => {
-        // Search filter
-        const matchesSearch =
-          v.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (v.plate || '').toLowerCase().includes(searchTerm.toLowerCase())
-
-        if (!matchesSearch) return false
+  // Pre-compute lowercase search once (not per vehicle)
+  const filteredVehicles = useMemo(() => {
+      const q = searchTerm.toLowerCase()
+      return vehicles.filter((v: any) => {
+        // Search filter — q computed once above
+        if (q) {
+          const name = (v.name || '').toLowerCase()
+          const plate = (v.plate || '').toLowerCase()
+          if (!name.includes(q) && !plate.includes(q)) return false
+        }
 
         // Source filter (GPS provider)
         if (sourceFilter !== 'TOUS') {
@@ -523,7 +633,7 @@ export default function MapPage() {
           if (provider !== sourceFilter) return false
         }
 
-        // Statut filter (GPS localized or not)
+        // Statut filter
         if (statutFilter === 'LOCALISÉS') {
           if (!v.currentLat || !v.currentLng) return false
         } else if (statutFilter === 'NON LOC.') {
@@ -536,7 +646,8 @@ export default function MapPage() {
         }
 
         return true
-      }),
+      })
+    },
     [vehicles, searchTerm, sourceFilter, statutFilter, groupeFilter]
   )
 
@@ -576,18 +687,28 @@ export default function MapPage() {
     }))
   }, [vehiclesWithGps, clusteringEnabled])
 
-  const selectedVehicle = vehicles.find((v: any) => v.id === selectedVehicleId)
+  const selectedVehicle = useMemo(
+    () => vehicles.find((v: any) => v.id === selectedVehicleId),
+    [vehicles, selectedVehicleId]
+  )
 
-  const movingCount = vehiclesWithGps.filter((v: any) => (v.currentSpeed || 0) > 2).length
-  const stoppedCount = vehiclesWithGps.length - movingCount
-  const offlineCount = vehicles.length - vehiclesWithGps.length
-
-  // Calculate average speed of moving vehicles
-  const avgFleetSpeed = movingCount > 0
-    ? vehiclesWithGps
-        .filter((v: any) => (v.currentSpeed || 0) > 2)
-        .reduce((sum: number, v: any) => sum + (v.currentSpeed || 0), 0) / movingCount
-    : 0
+  // Memoized fleet stats — single pass instead of multiple .filter() calls
+  const { movingCount, stoppedCount, offlineCount, avgFleetSpeed } = useMemo(() => {
+    let moving = 0
+    let speedSum = 0
+    for (const v of vehiclesWithGps) {
+      if ((v.currentSpeed || 0) > 2) {
+        moving++
+        speedSum += v.currentSpeed || 0
+      }
+    }
+    return {
+      movingCount: moving,
+      stoppedCount: vehiclesWithGps.length - moving,
+      offlineCount: vehicles.length - vehiclesWithGps.length,
+      avgFleetSpeed: moving > 0 ? speedSum / moving : 0,
+    }
+  }, [vehicles, vehiclesWithGps])
 
   // Map style to tile layer mapping
   const getTileUrl = (style: MapStyle) => {
@@ -909,79 +1030,13 @@ export default function MapPage() {
             <span>VITESSE</span>
           </div>
 
-          {/* Vehicle list */}
-          <div className="flex-1 overflow-y-auto">
-            {filteredVehicles.map((vehicle: any) => {
-              const speed = vehicle.currentSpeed || 0
-              const isMoving = speed > 2
-              const hasGps = vehicle.currentLat && vehicle.currentLng
-              const isSelected = selectedVehicleId === vehicle.id
-              const provider = vehicle.gpsProvider || ''
-              const brandModel = [vehicle.brand, vehicle.model].filter(Boolean).join(' ')
-              // Speed donut: percent of 200 km/h max
-              const speedPct = Math.min(speed / 200, 1)
-              const circumference = 2 * Math.PI * 14
-              const strokeDash = speedPct * circumference
-              const speedColor = !hasGps ? '#ef4444' : isMoving ? '#10b981' : '#9ca3af'
-              const providerColors: Record<string, string> = {
-                ECHOES: 'bg-violet-100 text-violet-700',
-                UBIWAN: 'bg-sky-100 text-sky-700',
-                KEEPTRACE: 'bg-teal-100 text-teal-700',
-                FLESPI: 'bg-orange-100 text-orange-700',
-              }
-              return (
-                <button
-                  key={vehicle.id}
-                  onClick={() => selectVehicle(vehicle.id)}
-                  className={`w-full px-3 py-2.5 text-left transition-all border-b border-gray-100 ${
-                    isSelected
-                      ? 'bg-blue-50 border-l-3 border-l-[#4361EE]'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {/* Speed donut gauge */}
-                    <div className="relative w-9 h-9 shrink-0">
-                      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                        <circle cx="18" cy="18" r="14" fill="none" stroke="#e5e7eb" strokeWidth="3" />
-                        <circle cx="18" cy="18" r="14" fill="none" stroke={speedColor} strokeWidth="3" strokeDasharray={`${strokeDash} ${circumference}`} strokeLinecap="round" />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[8px] font-bold tabular-nums" style={{ color: speedColor }}>
-                          {hasGps ? Math.round(speed) : '—'}
-                        </span>
-                      </div>
-                    </div>
-                    {/* Vehicle info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className={`font-bold text-[12px] truncate ${isSelected ? 'text-[#4361EE]' : 'text-gray-900'}`}>
-                          {vehicle.plate || vehicle.name}
-                        </p>
-                        {hasGps && (
-                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isMoving ? 'bg-emerald-500' : 'bg-gray-400'}`} />
-                        )}
-                        {!hasGps && (
-                          <div className="w-1.5 h-1.5 rounded-full shrink-0 bg-red-400" />
-                        )}
-                      </div>
-                      <p className="text-[10px] text-gray-400 truncate">{brandModel || vehicle.name}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        {provider && (
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${providerColors[provider] || 'bg-gray-100 text-gray-500'}`}>
-                            {provider}
-                          </span>
-                        )}
-                        <span className="text-[10px] text-gray-400 tabular-nums">
-                          {hasGps ? `${getFormattedSpeed(speed, useImperialUnits).value} ${getFormattedSpeed(speed, useImperialUnits).unit}` : 'Non localisé'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
+          {/* Vehicle list — virtualized: only renders visible items */}
+          <VehicleList
+            vehicles={filteredVehicles}
+            selectedVehicleId={selectedVehicleId}
+            useImperialUnits={useImperialUnits}
+            onSelect={selectVehicle}
+          />
         </div>
       )}
 
@@ -1084,7 +1139,7 @@ export default function MapPage() {
 
           {manualMarkers.map((marker, idx) => (
             <Marker key={`manual-${idx}`} position={[marker.lat, marker.lng]}
-              icon={L.divIcon({ html: `<div style="width:16px;height:16px;background:#f97316;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`, className: 'manual-marker', iconSize: [16, 16], iconAnchor: [8, 8] })}>
+              icon={manualMarkerIcon}>
               <Popup><div className="text-sm"><p className="font-bold">{marker.name}</p><p className="text-xs text-gray-500 font-mono">{marker.lat.toFixed(5)}, {marker.lng.toFixed(5)}</p></div></Popup>
             </Marker>
           ))}
