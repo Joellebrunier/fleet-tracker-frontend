@@ -856,25 +856,13 @@ export default function MapPage() {
     queryClient.invalidateQueries({ queryKey: ['vehicles'] })
   }, [queryClient])
 
-  // Simulate vehicle trails (in production, fetch from API)
+  // Clear trail when vehicle selection changes
+  // TODO: In production, fetch real trail data from /api/vehicles/:id/history
   useEffect(() => {
     if (selectedVehicle?.id) {
-      // Generate mock trail for demo
-      const trail: VehicleTrail = Array.from({ length: 10 }, (_, i) => ({
-        lat: selectedVehicle.currentLat + (Math.random() - 0.5) * 0.05,
-        lng: selectedVehicle.currentLng + (Math.random() - 0.5) * 0.05,
-        timestamp: new Date(Date.now() - (10 - i) * 60000).toISOString(),
-      }))
-      setVehicleTrails(prev => ({ ...prev, [selectedVehicle.id]: trail }))
-
-      // Generate mock stops for demo
-      const stops: VehicleStop[] = Array.from({ length: 3 }, (_, i) => ({
-        lat: selectedVehicle.currentLat + (Math.random() - 0.5) * 0.1,
-        lng: selectedVehicle.currentLng + (Math.random() - 0.5) * 0.1,
-        duration: (i + 1) * 15,
-        timestamp: new Date(Date.now() - (3 - i) * 120000).toISOString(),
-      }))
-      setVehicleStops(prev => ({ ...prev, [selectedVehicle.id]: stops }))
+      // Clear any old trails — real trail data should come from the API
+      setVehicleTrails({})
+      setVehicleStops({})
     }
   }, [selectedVehicle?.id])
 
