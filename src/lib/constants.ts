@@ -106,6 +106,14 @@ export const API_ROUTES = {
   AUTH_SESSIONS: '/api/auth/sessions',
   AUTH_SESSION_DETAIL: (id: string) => `/api/auth/sessions/${id}`,
 
+  // Shared Tracking (public, no auth)
+  SHARED_TRACKING: (token: string) => `/api/shared-tracking/${token}`,
+  SHARED_TRACKING_HISTORY: (token: string) => `/api/shared-tracking/${token}/history`,
+
+  // Shared Links (org-scoped)
+  SHARED_LINKS: (orgId: string) => `${org(orgId)}/shared-links`,
+  SHARED_LINK_DETAIL: (orgId: string, id: string) => `${org(orgId)}/shared-links/${id}`,
+
   // Super Admin
   SUPER_ADMIN_HEALTH: '/api/super-admin/health',
   SUPER_ADMIN_STATS: '/api/super-admin/stats',

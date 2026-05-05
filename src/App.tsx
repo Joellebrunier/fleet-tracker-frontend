@@ -31,6 +31,7 @@ const TestEnvironmentPage = lazy(() => import('@/pages/TestEnvironmentPage'))
 const OrganizationAdminPage = lazy(() => import('@/pages/OrganizationAdminPage'))
 const FourrieresPage = lazy(() => import('@/pages/FourrieresPage'))
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
+const PublicTrackingPage = lazy(() => import('@/pages/PublicTrackingPage'))
 
 function PageLoader() {
   return (
@@ -66,6 +67,7 @@ function App() {
         path="/login"
         element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
       />
+      <Route path="/track/:token" element={<PublicTrackingPage />} />
 
       {/* Protected routes */}
       <Route element={<AppLayout />}>
