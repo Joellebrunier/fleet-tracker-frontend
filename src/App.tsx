@@ -36,6 +36,17 @@ const SupportPage = lazy(() => import('@/pages/SupportPage'))
 const DriverDashboardPage = lazy(() => import('@/pages/DriverDashboardPage'))
 const SharedLinksPage = lazy(() => import('@/pages/SharedLinksPage'))
 
+// Fuel module
+const FuelLayout = lazy(() => import('@/pages/fuel/FuelLayout'))
+const FuelDashboardPage = lazy(() => import('@/pages/fuel/FuelDashboardPage'))
+const FuelVehiclesPage = lazy(() => import('@/pages/fuel/FuelVehiclesPage'))
+const FuelTransactionsPage = lazy(() => import('@/pages/fuel/FuelTransactionsPage'))
+const FuelStationsPage = lazy(() => import('@/pages/fuel/FuelStationsPage'))
+const FuelAnalysisPage = lazy(() => import('@/pages/fuel/FuelAnalysisPage'))
+const FuelAnomaliesPage = lazy(() => import('@/pages/fuel/FuelAnomaliesPage'))
+const FuelBudgetPage = lazy(() => import('@/pages/fuel/FuelBudgetPage'))
+const FuelSettingsPage = lazy(() => import('@/pages/fuel/FuelSettingsPage'))
+
 function PageLoader() {
   return (
     <div className="flex items-center justify-center h-64">
@@ -93,6 +104,19 @@ function App() {
         <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
         <Route path="/driver-dashboard" element={<ProtectedRoute><DriverDashboardPage /></ProtectedRoute>} />
         <Route path="/shared-links" element={<ProtectedRoute><SharedLinksPage /></ProtectedRoute>} />
+
+        {/* Fuel module */}
+        <Route path="/fuel" element={<ProtectedRoute><FuelLayout /></ProtectedRoute>}>
+          <Route index element={<FuelDashboardPage />} />
+          <Route path="vehicles" element={<FuelVehiclesPage />} />
+          <Route path="transactions" element={<FuelTransactionsPage />} />
+          <Route path="stations" element={<FuelStationsPage />} />
+          <Route path="analysis" element={<FuelAnalysisPage />} />
+          <Route path="anomalies" element={<FuelAnomaliesPage />} />
+          <Route path="budget" element={<FuelBudgetPage />} />
+          <Route path="settings" element={<FuelSettingsPage />} />
+        </Route>
+
         <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
         <Route
           path="/audit-log"
