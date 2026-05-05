@@ -36,6 +36,15 @@ const SupportPage = lazy(() => import('@/pages/SupportPage'))
 const DriverDashboardPage = lazy(() => import('@/pages/DriverDashboardPage'))
 const SharedLinksPage = lazy(() => import('@/pages/SharedLinksPage'))
 
+// Driver App module
+const DriverAppLayout = lazy(() => import('@/pages/driver-app/DriverAppLayout'))
+const DriverAppHome = lazy(() => import('@/pages/driver-app/DriverAppHome'))
+const DriverAppVehicles = lazy(() => import('@/pages/driver-app/DriverAppVehicles'))
+const DriverAppDeclare = lazy(() => import('@/pages/driver-app/DriverAppDeclare'))
+const DriverAppStations = lazy(() => import('@/pages/driver-app/DriverAppStations'))
+const DriverAppHistory = lazy(() => import('@/pages/driver-app/DriverAppHistory'))
+const DriverAppProfile = lazy(() => import('@/pages/driver-app/DriverAppProfile'))
+
 // Fuel module
 const FuelLayout = lazy(() => import('@/pages/fuel/FuelLayout'))
 const FuelDashboardPage = lazy(() => import('@/pages/fuel/FuelDashboardPage'))
@@ -82,6 +91,16 @@ function App() {
         element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
       />
       <Route path="/track/:token" element={<PublicTrackingPage />} />
+
+      {/* Driver App — mobile layout, outside AppLayout */}
+      <Route path="/driver-app" element={<ProtectedRoute><DriverAppLayout /></ProtectedRoute>}>
+        <Route index element={<DriverAppHome />} />
+        <Route path="vehicles" element={<DriverAppVehicles />} />
+        <Route path="declare" element={<DriverAppDeclare />} />
+        <Route path="stations" element={<DriverAppStations />} />
+        <Route path="history" element={<DriverAppHistory />} />
+        <Route path="profile" element={<DriverAppProfile />} />
+      </Route>
 
       {/* Protected routes */}
       <Route element={<AppLayout />}>
