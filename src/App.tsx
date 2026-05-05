@@ -32,6 +32,9 @@ const OrganizationAdminPage = lazy(() => import('@/pages/OrganizationAdminPage')
 const FourrieresPage = lazy(() => import('@/pages/FourrieresPage'))
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
 const PublicTrackingPage = lazy(() => import('@/pages/PublicTrackingPage'))
+const SupportPage = lazy(() => import('@/pages/SupportPage'))
+const DriverDashboardPage = lazy(() => import('@/pages/DriverDashboardPage'))
+const SharedLinksPage = lazy(() => import('@/pages/SharedLinksPage'))
 
 function PageLoader() {
   return (
@@ -87,6 +90,9 @@ function App() {
         <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+        <Route path="/driver-dashboard" element={<ProtectedRoute><DriverDashboardPage /></ProtectedRoute>} />
+        <Route path="/shared-links" element={<ProtectedRoute><SharedLinksPage /></ProtectedRoute>} />
         <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
         <Route
           path="/audit-log"
