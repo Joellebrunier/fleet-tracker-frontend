@@ -264,6 +264,13 @@ export default function Header() {
                       <Settings size={15} className="text-gray-400" />
                       <span className="font-medium">Paramètres</span>
                     </button>
+                    <button
+                      onClick={() => { navigate('/notifications'); setUserMenuOpen(false) }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13px] text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                    >
+                      <Bell size={15} className="text-gray-400" />
+                      <span className="font-medium">Notifications</span>
+                    </button>
                   </div>
                   <div className="border-t border-gray-100 py-1">
                     <button

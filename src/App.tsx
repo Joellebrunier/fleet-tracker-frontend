@@ -36,6 +36,11 @@ const SupportPage = lazy(() => import('@/pages/SupportPage'))
 const DriverDashboardPage = lazy(() => import('@/pages/DriverDashboardPage'))
 const SharedLinksPage = lazy(() => import('@/pages/SharedLinksPage'))
 
+// Phase 10 pages
+const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'))
+const MaintenancePage = lazy(() => import('@/pages/MaintenancePage'))
+const ClientPortalPage = lazy(() => import('@/pages/ClientPortalPage'))
+
 // Driver App module
 const DriverAppLayout = lazy(() => import('@/pages/driver-app/DriverAppLayout'))
 const DriverAppHome = lazy(() => import('@/pages/driver-app/DriverAppHome'))
@@ -123,6 +128,9 @@ function App() {
         <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
         <Route path="/driver-dashboard" element={<ProtectedRoute><DriverDashboardPage /></ProtectedRoute>} />
         <Route path="/shared-links" element={<ProtectedRoute><SharedLinksPage /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+        <Route path="/maintenance" element={<ProtectedRoute><MaintenancePage /></ProtectedRoute>} />
+        <Route path="/client-portal" element={<ProtectedRoute><ClientPortalPage /></ProtectedRoute>} />
 
         {/* Fuel module */}
         <Route path="/fuel" element={<ProtectedRoute><FuelLayout /></ProtectedRoute>}>
