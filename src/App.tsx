@@ -30,6 +30,7 @@ const SdkExamplesPage = lazy(() => import('@/pages/SdkExamplesPage'))
 const TestEnvironmentPage = lazy(() => import('@/pages/TestEnvironmentPage'))
 const OrganizationAdminPage = lazy(() => import('@/pages/OrganizationAdminPage'))
 const FourrieresPage = lazy(() => import('@/pages/FourrieresPage'))
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
 
 function PageLoader() {
   return (
@@ -83,6 +84,7 @@ function App() {
         <Route path="/fourrieres" element={<ProtectedRoute><FourrieresPage /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
         <Route
           path="/audit-log"
