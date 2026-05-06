@@ -186,7 +186,7 @@ function App() {
         />
         <Route
           path="/admin"
-          element={<ProtectedRoute requiredRoles={[UserRole.SUPER_ADMIN]}><SuperAdminPage /></ProtectedRoute>}
+          element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><SuperAdminPage /></ProtectedRoute>}
         />
         <Route
           path="/api-docs"
