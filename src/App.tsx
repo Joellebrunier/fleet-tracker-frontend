@@ -41,6 +41,19 @@ const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'))
 const MaintenancePage = lazy(() => import('@/pages/MaintenancePage'))
 const ClientPortalPage = lazy(() => import('@/pages/ClientPortalPage'))
 
+// Phase 11 — Missing Lovable pages
+const CSRDPage = lazy(() => import('@/pages/CSRDPage'))
+const AccountingPage = lazy(() => import('@/pages/AccountingPage'))
+const RecommendationsPage = lazy(() => import('@/pages/RecommendationsPage'))
+const VehicleArchivePage = lazy(() => import('@/pages/VehicleArchivePage'))
+const OnboardingPage = lazy(() => import('@/pages/OnboardingPage'))
+const ApiDiagnosticsPage = lazy(() => import('@/pages/ApiDiagnosticsPage'))
+const LandingPage = lazy(() => import('@/pages/LandingPage'))
+const LegalPage = lazy(() => import('@/pages/LegalPage'))
+const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'))
+const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'))
+const SuspendedPage = lazy(() => import('@/pages/SuspendedPage'))
+
 // Driver App module
 const DriverAppLayout = lazy(() => import('@/pages/driver-app/DriverAppLayout'))
 const DriverAppHome = lazy(() => import('@/pages/driver-app/DriverAppHome'))
@@ -60,6 +73,10 @@ const FuelAnalysisPage = lazy(() => import('@/pages/fuel/FuelAnalysisPage'))
 const FuelAnomaliesPage = lazy(() => import('@/pages/fuel/FuelAnomaliesPage'))
 const FuelBudgetPage = lazy(() => import('@/pages/fuel/FuelBudgetPage'))
 const FuelSettingsPage = lazy(() => import('@/pages/fuel/FuelSettingsPage'))
+const FuelValidationsPage = lazy(() => import('@/pages/fuel/FuelValidationsPage'))
+const FuelPricesPage = lazy(() => import('@/pages/fuel/FuelPricesPage'))
+const FuelRecalculationPage = lazy(() => import('@/pages/fuel/FuelRecalculationPage'))
+const FuelAnomalyDetailPage = lazy(() => import('@/pages/fuel/FuelAnomalyDetailPage'))
 
 function PageLoader() {
   return (
@@ -96,6 +113,11 @@ function App() {
         element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
       />
       <Route path="/track/:token" element={<PublicTrackingPage />} />
+      <Route path="/landing" element={<LandingPage />} />
+      <Route path="/legal" element={<LegalPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/verify" element={<VerifyEmailPage />} />
+      <Route path="/suspended" element={<SuspendedPage />} />
 
       {/* Driver App — mobile layout, outside AppLayout */}
       <Route path="/driver-app" element={<ProtectedRoute><DriverAppLayout /></ProtectedRoute>}>
@@ -131,6 +153,11 @@ function App() {
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
         <Route path="/maintenance" element={<ProtectedRoute><MaintenancePage /></ProtectedRoute>} />
         <Route path="/client-portal" element={<ProtectedRoute><ClientPortalPage /></ProtectedRoute>} />
+        <Route path="/csrd" element={<ProtectedRoute><CSRDPage /></ProtectedRoute>} />
+        <Route path="/accounting" element={<ProtectedRoute><AccountingPage /></ProtectedRoute>} />
+        <Route path="/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
+        <Route path="/vehicles/archive" element={<ProtectedRoute><VehicleArchivePage /></ProtectedRoute>} />
+        <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
 
         {/* Fuel module */}
         <Route path="/fuel" element={<ProtectedRoute><FuelLayout /></ProtectedRoute>}>
@@ -142,6 +169,10 @@ function App() {
           <Route path="anomalies" element={<FuelAnomaliesPage />} />
           <Route path="budget" element={<FuelBudgetPage />} />
           <Route path="settings" element={<FuelSettingsPage />} />
+          <Route path="validations" element={<FuelValidationsPage />} />
+          <Route path="prices" element={<FuelPricesPage />} />
+          <Route path="recalculation" element={<FuelRecalculationPage />} />
+          <Route path="anomalies/:id" element={<FuelAnomalyDetailPage />} />
         </Route>
 
         <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
@@ -172,6 +203,10 @@ function App() {
         <Route
           path="/organizations"
           element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><OrganizationAdminPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/api-diagnostics"
+          element={<ProtectedRoute requiredRoles={[UserRole.ADMIN, UserRole.SUPER_ADMIN]}><ApiDiagnosticsPage /></ProtectedRoute>}
         />
       </Route>
 

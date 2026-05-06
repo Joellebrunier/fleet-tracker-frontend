@@ -23,6 +23,8 @@ const TAB_ITEMS: NavTab[] = [
   { label: 'CONDUCTEURS', path: '/drivers', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN] },
   { label: 'CARBURANT', path: '/fuel', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN] },
   { label: 'MAINTENANCE', path: '/maintenance', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN] },
+  { label: 'CSRD', path: '/csrd', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN] },
+  { label: 'COMPTABILITÉ', path: '/accounting', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.SUPER_ADMIN] },
   { label: 'SUPPORT', path: '/help', roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.OPERATOR, UserRole.SUPER_ADMIN] },
   { label: 'ÉQUIPE', path: '/organizations', roles: [UserRole.ADMIN, UserRole.SUPER_ADMIN] },
 ]
