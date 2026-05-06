@@ -41,7 +41,7 @@ const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'))
 const MaintenancePage = lazy(() => import('@/pages/MaintenancePage'))
 const ClientPortalPage = lazy(() => import('@/pages/ClientPortalPage'))
 
-// Phase 11 — Missing Lovable pages
+// Phase 11 — Lovable parity pages
 const CSRDPage = lazy(() => import('@/pages/CSRDPage'))
 const AccountingPage = lazy(() => import('@/pages/AccountingPage'))
 const RecommendationsPage = lazy(() => import('@/pages/RecommendationsPage'))
@@ -62,8 +62,10 @@ const DriverAppDeclare = lazy(() => import('@/pages/driver-app/DriverAppDeclare'
 const DriverAppStations = lazy(() => import('@/pages/driver-app/DriverAppStations'))
 const DriverAppHistory = lazy(() => import('@/pages/driver-app/DriverAppHistory'))
 const DriverAppProfile = lazy(() => import('@/pages/driver-app/DriverAppProfile'))
+const DriverLoginPage = lazy(() => import('@/pages/driver-app/DriverLoginPage'))
+const DriverOnboardingPage = lazy(() => import('@/pages/driver-app/DriverOnboardingPage'))
 
-// Fuel module
+// Fuel module — all sub-pages
 const FuelLayout = lazy(() => import('@/pages/fuel/FuelLayout'))
 const FuelDashboardPage = lazy(() => import('@/pages/fuel/FuelDashboardPage'))
 const FuelVehiclesPage = lazy(() => import('@/pages/fuel/FuelVehiclesPage'))
@@ -77,6 +79,14 @@ const FuelValidationsPage = lazy(() => import('@/pages/fuel/FuelValidationsPage'
 const FuelPricesPage = lazy(() => import('@/pages/fuel/FuelPricesPage'))
 const FuelRecalculationPage = lazy(() => import('@/pages/fuel/FuelRecalculationPage'))
 const FuelAnomalyDetailPage = lazy(() => import('@/pages/fuel/FuelAnomalyDetailPage'))
+const FuelMapPage = lazy(() => import('@/pages/fuel/FuelMapPage'))
+const FuelDriversPage = lazy(() => import('@/pages/fuel/FuelDriversPage'))
+const FuelVehicleDetailPage = lazy(() => import('@/pages/fuel/FuelVehicleDetailPage'))
+const FuelReportsPage = lazy(() => import('@/pages/fuel/FuelReportsPage'))
+const FuelRecalcStatusPage = lazy(() => import('@/pages/fuel/FuelRecalcStatusPage'))
+const FuelRecalcAuditPage = lazy(() => import('@/pages/fuel/FuelRecalcAuditPage'))
+const FuelRecalcAuditDetailPage = lazy(() => import('@/pages/fuel/FuelRecalcAuditDetailPage'))
+const FuelApiDiagnosticsPage = lazy(() => import('@/pages/fuel/FuelApiDiagnosticsPage'))
 
 function PageLoader() {
   return (
@@ -112,16 +122,22 @@ function App() {
         path="/login"
         element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
       />
+      <Route path="/auth" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} />
       <Route path="/track/:token" element={<PublicTrackingPage />} />
+      <Route path="/t/:slug" element={<LandingPage />} />
       <Route path="/landing" element={<LandingPage />} />
       <Route path="/legal" element={<LegalPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify" element={<VerifyEmailPage />} />
       <Route path="/suspended" element={<SuspendedPage />} />
 
+      {/* Driver App login — outside layout */}
+      <Route path="/driver-app/login" element={<DriverLoginPage />} />
+
       {/* Driver App — mobile layout, outside AppLayout */}
       <Route path="/driver-app" element={<ProtectedRoute><DriverAppLayout /></ProtectedRoute>}>
         <Route index element={<DriverAppHome />} />
+        <Route path="onboarding" element={<DriverOnboardingPage />} />
         <Route path="vehicles" element={<DriverAppVehicles />} />
         <Route path="declare" element={<DriverAppDeclare />} />
         <Route path="stations" element={<DriverAppStations />} />
@@ -138,6 +154,7 @@ function App() {
           path="/vehicles/:id"
           element={<ProtectedRoute><VehicleDetailPage /></ProtectedRoute>}
         />
+        <Route path="/vehicles/archive" element={<ProtectedRoute><VehicleArchivePage /></ProtectedRoute>} />
         <Route path="/vehicle-groups" element={<ProtectedRoute><VehicleGroupsPage /></ProtectedRoute>} />
         <Route path="/drivers" element={<ProtectedRoute><DriversPage /></ProtectedRoute>} />
         <Route path="/devices" element={<ProtectedRoute><DevicesPage /></ProtectedRoute>} />
@@ -156,23 +173,34 @@ function App() {
         <Route path="/csrd" element={<ProtectedRoute><CSRDPage /></ProtectedRoute>} />
         <Route path="/accounting" element={<ProtectedRoute><AccountingPage /></ProtectedRoute>} />
         <Route path="/recommendations" element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
-        <Route path="/vehicles/archive" element={<ProtectedRoute><VehicleArchivePage /></ProtectedRoute>} />
         <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
 
-        {/* Fuel module */}
+        {/* Fuel module — mirrors Lovable structure */}
         <Route path="/fuel" element={<ProtectedRoute><FuelLayout /></ProtectedRoute>}>
           <Route index element={<FuelDashboardPage />} />
+          <Route path="map" element={<FuelMapPage />} />
           <Route path="vehicles" element={<FuelVehiclesPage />} />
-          <Route path="transactions" element={<FuelTransactionsPage />} />
+          <Route path="vehicles/archived" element={<VehicleArchivePage />} />
+          <Route path="vehicles/:id" element={<FuelVehicleDetailPage />} />
+          <Route path="drivers" element={<FuelDriversPage />} />
           <Route path="stations" element={<FuelStationsPage />} />
+          <Route path="recommendations" element={<RecommendationsPage />} />
           <Route path="analysis" element={<FuelAnalysisPage />} />
+          <Route path="analysis/vehicle/:id" element={<FuelVehicleDetailPage />} />
           <Route path="anomalies" element={<FuelAnomaliesPage />} />
-          <Route path="budget" element={<FuelBudgetPage />} />
-          <Route path="settings" element={<FuelSettingsPage />} />
-          <Route path="validations" element={<FuelValidationsPage />} />
-          <Route path="prices" element={<FuelPricesPage />} />
-          <Route path="recalculation" element={<FuelRecalculationPage />} />
           <Route path="anomalies/:id" element={<FuelAnomalyDetailPage />} />
+          <Route path="transactions" element={<FuelTransactionsPage />} />
+          <Route path="validations" element={<FuelValidationsPage />} />
+          <Route path="csrd" element={<CSRDPage />} />
+          <Route path="budget" element={<FuelBudgetPage />} />
+          <Route path="accounting" element={<AccountingPage />} />
+          <Route path="prices" element={<FuelPricesPage />} />
+          <Route path="reports" element={<FuelReportsPage />} />
+          <Route path="settings" element={<FuelSettingsPage />} />
+          <Route path="recalc-status" element={<FuelRecalcStatusPage />} />
+          <Route path="recalc-audit" element={<FuelRecalcAuditPage />} />
+          <Route path="recalc-audit/:id" element={<FuelRecalcAuditDetailPage />} />
+          <Route path="api-diagnostics" element={<FuelApiDiagnosticsPage />} />
         </Route>
 
         <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
